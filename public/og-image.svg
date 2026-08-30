@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title description">
+  <title id="title">Cubacadabra — World 01</title>
+  <desc id="description">A tiny, readable 3D world built with vanilla JavaScript.</desc>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#79a9c0"/>
+      <stop offset="0.57" stop-color="#b9d4d1"/>
+      <stop offset="1" stop-color="#e8e4cd"/>
+    </linearGradient>
+    <linearGradient id="wash" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0f353f" stop-opacity="0.18"/>
+      <stop offset="0.46" stop-color="#0f353f" stop-opacity="0"/>
+      <stop offset="1" stop-color="#0e2728" stop-opacity="0.22"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="52%" cy="42%" r="46%">
+      <stop offset="0" stop-color="#f6f1e7" stop-opacity="0.42"/>
+      <stop offset="1" stop-color="#f6f1e7" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="48" height="28" patternUnits="userSpaceOnUse" patternTransform="skewY(-22)">
+      <path d="M0 0h48M0 0v28" fill="none" stroke="#17383a" stroke-opacity="0.1" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#sky)"/>
+  <rect width="1200" height="630" fill="url(#wash)"/>
+  <ellipse cx="650" cy="254" rx="420" ry="260" fill="url(#glow)"/>
+
+  <path d="M0 475 245 420l246 30 244-84 465 80v184H0Z" fill="#d8dcc4" fill-opacity="0.82"/>
+  <path d="m0 511 245-55 246 30 244-84 465 80v148H0Z" fill="url(#grid)"/>
+  <path d="M0 548c179-30 332-22 485 5 183 32 354 34 715-31" fill="none" stroke="#17383a" stroke-opacity="0.16" stroke-width="2"/>
+
+  <g transform="translate(84 78)">
+    <g transform="rotate(45 32 32)" fill="none" stroke="#ed725b" stroke-linecap="round">
+      <rect x="12" y="12" width="40" height="40" rx="10" stroke-width="6"/>
+      <path d="M32 22v20M22 32h20" stroke-width="5"/>
+    </g>
+    <text x="92" y="33" fill="#17383a" font-family="Avenir Next, Avenir, Segoe UI, Helvetica, Arial, sans-serif" font-size="25" font-weight="800" letter-spacing="4">CUBACADABRA</text>
+    <text x="94" y="60" fill="#17383a" fill-opacity="0.65" font-family="Avenir Next, Avenir, Segoe UI, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="2.2">A TINY WORLD, IN PROGRESS</text>
+  </g>
+
+  <g transform="translate(84 382)">
+    <path d="M0 0h38" stroke="#ed725b" stroke-width="2"/>
+    <text x="0" y="44" fill="#17383a" font-family="Avenir Next, Avenir, Segoe UI, Helvetica, Arial, sans-serif" font-size="19" font-weight="700" letter-spacing="4">WORLD / 01</text>
+    <text x="0" y="112" fill="#17383a" font-family="Avenir Next, Avenir, Segoe UI, Helvetica, Arial, sans-serif" font-size="58" font-weight="700" letter-spacing="-1.5">Empty baseplate</text>
+    <text x="3" y="153" fill="#17383a" fill-opacity="0.72" font-family="Avenir Next, Avenir, Segoe UI, Helvetica, Arial, sans-serif" font-size="22" font-weight="500">Walk, run, and jump through the first quiet corner of a world.</text>
+  </g>
+
+  <text x="1116" y="572" text-anchor="end" fill="#17383a" fill-opacity="0.58" font-family="Avenir Next, Avenir, Segoe UI, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="2.5">LOCAL WORLD · PREVIEW 01</text>
+</svg>
