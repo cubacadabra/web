@@ -89,7 +89,6 @@ canvas:focus-visible {
 .look-hint,
 .compass,
 .bottom-meta,
-.corner-note,
 .mobile-controls,
 .loading-state {
   position: absolute;
@@ -168,8 +167,7 @@ canvas:focus-visible {
 .world-status,
 .camera-mode,
 .eyebrow,
-.bottom-meta,
-.corner-note {
+.bottom-meta {
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -547,17 +545,6 @@ canvas:focus-visible {
   background: rgba(23, 56, 58, 0.42);
 }
 
-.corner-note {
-  right: 32px;
-  bottom: 17px;
-  color: rgba(23, 56, 58, 0.48);
-}
-
-.corner-note span {
-  padding: 0 4px;
-  color: var(--accent-deep);
-}
-
 .mobile-controls {
   display: none;
   pointer-events: none;
@@ -850,14 +837,17 @@ canvas:focus-visible {
     height: 20px;
   }
 
-  .bottom-meta,
-  .corner-note {
+  .bottom-meta {
     display: none;
   }
 }
 
 /* iPad Safari reports a coarse pointer even when the viewport is wider than a phone. */
 @media (hover: none) and (pointer: coarse) and (min-width: 721px) {
+  .compass {
+    display: none;
+  }
+
   .mobile-controls {
     right: 28px;
     bottom: 28px;
@@ -925,6 +915,10 @@ canvas:focus-visible {
 
 /* maxTouchPoints covers iPad Safari configurations that expose a fine primary pointer. */
 @media (min-width: 721px) {
+  .world-shell.is-touch-device .compass {
+    display: none;
+  }
+
   .world-shell.is-touch-device .mobile-controls {
     right: 28px;
     bottom: 28px;
