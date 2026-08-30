@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Cubacadabra is a tiny, readable 3D world built with vanilla JavaScript."
+    />
+    <title>Cubacadabra — World 01</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <main class="world-shell" id="world-shell">
+      <canvas
+        id="world-canvas"
+        class="world-canvas"
+        tabindex="0"
+        aria-label="Cubacadabra world. Drag to turn your view."
+      ></canvas>
+
+      <div class="atmosphere" aria-hidden="true"></div>
+
+      <header class="topbar">
+        <a class="brand" href="./" aria-label="Cubacadabra home">
+          <span class="brand-mark" aria-hidden="true"><span></span></span>
+          <span class="brand-copy">
+            <span class="brand-name">Cubacadabra</span>
+            <span class="brand-caption">A tiny world, in progress</span>
+          </span>
+        </a>
+
+        <div class="topbar-actions">
+          <div class="world-status" aria-label="World status">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span>Local world</span>
+          </div>
+          <span class="build-label">Preview 01</span>
+          <button class="reset-button" id="reset-view" type="button">
+            Reset view
+          </button>
+        </div>
+      </header>
+
+      <section class="scene-intro" aria-labelledby="scene-title">
+        <p class="eyebrow">World / 01</p>
+        <h1 id="scene-title">Empty baseplate</h1>
+        <p class="scene-description">
+          A quiet starting point for a world that does not exist yet.
+        </p>
+      </section>
+
+      <div class="crosshair" aria-hidden="true">
+        <span></span>
+        <span></span>
+      </div>
+
+      <section class="look-hint" id="look-hint" aria-live="polite">
+        <span class="look-icon" aria-hidden="true">
+          <span class="look-icon-dot"></span>
+        </span>
+        <span class="look-copy">
+          <strong>Look around</strong>
+          <span>Drag to turn · arrow keys to fine-tune</span>
+        </span>
+      </section>
+
+      <aside class="compass" aria-label="Current view direction">
+        <div class="compass-heading">
+          <span>Heading</span>
+          <strong id="heading-value">N 0°</strong>
+        </div>
+        <div class="compass-face" aria-hidden="true">
+          <span class="compass-letter compass-north">N</span>
+          <span class="compass-letter compass-east">E</span>
+          <span class="compass-letter compass-south">S</span>
+          <span class="compass-letter compass-west">W</span>
+          <span class="compass-needle" id="compass-needle"></span>
+          <span class="compass-center"></span>
+        </div>
+      </aside>
+
+      <div class="bottom-meta" aria-label="Feature status">
+        <span class="meta-line"></span>
+        <span>Walking / coming next</span>
+      </div>
+
+      <div class="corner-note" aria-hidden="true">JS only <span>·</span> r01</div>
+
+      <div class="loading-state" id="loading-state" role="status">
+        <span class="loading-mark" aria-hidden="true"></span>
+        <span>Building world</span>
+      </div>
+    </main>
+
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>
