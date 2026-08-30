@@ -85,6 +85,100 @@ export function createEnvironment({ THREE, scene, world, colors }) {
     return pad;
   }
 
+  function createWorldLabel(text, accent) {
+    const labelCanvas = document.createElement("canvas");
+    labelCanvas.width = 420;
+    labelCanvas.height = 96;
+    const context = labelCanvas.getContext("2d");
+    context.fillStyle = "rgba(38, 75, 75, 0.92)";
+    context.fillRect(3, 3, 414, 90);
+    context.fillStyle = `#${accent.toString(16).padStart(6, "0")}`;
+    context.fillRect(3, 3, 7, 90);
+    context.fillStyle = "#f6f1e7";
+    context.font = "800 25px Arial, sans-serif";
+    context.letterSpacing = "2px";
+    context.fillText(text, 30, 58);
+
+    const texture = new THREE.CanvasTexture(labelCanvas);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    const label = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: texture,
+      transparent: true,
+      depthWrite: false,
+    }));
+    label.scale.set(4.1, 0.94, 1);
+    label.position.y = 4.55;
+    return label;
+  }
+
+  function createAssemblyPoint(position, color, label, code) {
+    const point = new THREE.Group();
+    point.position.set(position[0], 0, position[1]);
+
+    const base = new THREE.Mesh(
+      new THREE.CylinderGeometry(3.15, 3.15, 0.2, 32),
+      new THREE.MeshStandardMaterial({ color: colors.ink, roughness: 0.9 }),
+    );
+    base.position.y = 0.1;
+    base.receiveShadow = true;
+    point.add(base);
+
+    const inner = new THREE.Mesh(
+      new THREE.CircleGeometry(2.7, 32),
+      new THREE.MeshBasicMaterial({
+        color,
+        transparent: true,
+        opacity: 0.3,
+        side: THREE.DoubleSide,
+      }),
+    );
+    inner.rotation.x = -Math.PI / 2;
+    inner.position.y = 0.215;
+    point.add(inner);
+
+    const ring = new THREE.Mesh(
+      new THREE.TorusGeometry(2.55, 0.11, 8, 40),
+      new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.92 }),
+    );
+    ring.rotation.x = Math.PI / 2;
+    ring.position.y = 0.28;
+    point.add(ring);
+
+    const beacons = [];
+    [-2.35, 2.35].forEach((x) => {
+      const beacon = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.15, 0.23, 2.7, 8),
+        new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.18 }),
+      );
+      beacon.position.set(x, 1.35, -0.35);
+      beacon.castShadow = true;
+      point.add(beacon);
+      beacons.push(beacon);
+    });
+
+    const portalTop = new THREE.Mesh(
+      new THREE.BoxGeometry(5.05, 0.32, 0.38),
+      new THREE.MeshStandardMaterial({ color, roughness: 0.8 }),
+    );
+    portalTop.position.set(0, 2.62, -0.35);
+    portalTop.castShadow = true;
+    point.add(portalTop);
+
+    const labelSprite = createWorldLabel(`${code}  ${label}`, color);
+    point.add(labelSprite);
+
+    world.add(point);
+    return {
+      code,
+      label,
+      color,
+      group: point,
+      position: new THREE.Vector3(position[0], 0, position[1]),
+      ring,
+      beacons,
+    };
+  }
+
   function createCloud(position, scale) {
     const cloud = new THREE.Group();
     cloud.position.set(...position);
@@ -146,6 +240,11 @@ export function createEnvironment({ THREE, scene, world, colors }) {
   world.add(grid);
 
   const spawnPad = createSpawnPad();
+  const meetingPoints = [
+    createAssemblyPoint([-10, -3], colors.coral, "SUN COURT", "GATE 01"),
+    createAssemblyPoint([0, -7], colors.butter, "DEEP DIVE", "GATE 02"),
+    createAssemblyPoint([10, -3], colors.periwinkle, "SKY RUN", "GATE 03"),
+  ];
   const coralBlock = createBlock(
     [0.15, 1.35, -13.5],
     [2.8, 2.7, 2.8],
@@ -188,6 +287,8 @@ export function createEnvironment({ THREE, scene, world, colors }) {
       butterBlock,
       blueBlock,
       clouds: [cloudA, cloudB, cloudC],
+      meetingPoints,
     },
+    meetingPoints,
   };
 }

@@ -59,6 +59,22 @@ export function createHudController({ THREE, elements, state }) {
     }
   }
 
+  function updateLobby({ totalPlayers, meetingCounts, isFull }) {
+    if (elements.playerCount) {
+      elements.playerCount.textContent = `${totalPlayers} / 18`;
+    }
+    if (elements.lobbyCopy) {
+      elements.lobbyCopy.textContent = isFull
+        ? "Lobby full · choose a gate"
+        : "Players are finding their gates";
+    }
+    meetingCounts.forEach((count, index) => {
+      if (elements.meetingCounts?.[index]) {
+        elements.meetingCounts[index].textContent = String(count).padStart(2, "0");
+      }
+    });
+  }
+
   function markReady() {
     elements.worldShell?.classList.add("is-ready");
     elements.loadingState?.classList.add("is-ready");
@@ -68,6 +84,7 @@ export function createHudController({ THREE, elements, state }) {
     dismissHint,
     setCameraMode,
     updateMovementStatus,
+    updateLobby,
     updateCompass,
     markReady,
   };

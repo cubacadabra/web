@@ -5,6 +5,7 @@ import { createPlayerAvatar } from "../scene/createAvatar.js";
 import { createScene } from "../scene/createScene.js";
 import { createCameraController } from "../systems/camera.js";
 import { bindControls } from "../systems/controls.js";
+import { createNpcManager } from "../systems/npcs.js";
 import { updatePlayer } from "../systems/player.js";
 import { createGameState } from "../state/gameState.js";
 import { getDomElements } from "../ui/dom.js";
@@ -22,6 +23,14 @@ export function createGame() {
   });
   const environment = createEnvironment({ THREE, scene, world, colors });
   const playerAvatar = createPlayerAvatar({ THREE, world, colors });
+  const npcManager = createNpcManager({
+    THREE,
+    world,
+    colors,
+    obstacles: environment.obstacles,
+    meetingPoints: environment.meetingPoints,
+    createAvatar: createPlayerAvatar,
+  });
   const hud = createHudController({ THREE, elements, state });
   const cameraController = createCameraController({
     THREE,
@@ -55,7 +64,7 @@ export function createGame() {
   resizeRenderer();
 
   function animateEnvironment(elapsed) {
-    const { spawnPad, coralBlock, butterBlock, blueBlock, clouds } =
+    const { spawnPad, coralBlock, butterBlock, blueBlock, clouds, meetingPoints } =
       environment.animated;
 
     spawnPad.rotation.y = Math.sin(elapsed * 0.22) * 0.015;
@@ -65,6 +74,14 @@ export function createGame() {
     clouds[0].position.x = -18 + Math.sin(elapsed * 0.025) * 1.2;
     clouds[1].position.x = 24 + Math.sin(elapsed * 0.02 + 1) * 1.6;
     clouds[2].position.x = 42 + Math.sin(elapsed * 0.018 + 2) * 1.4;
+
+    meetingPoints.forEach((meetingPoint, index) => {
+      const pulse = 1 + Math.sin(elapsed * 2.2 + index * 1.7) * 0.045;
+      meetingPoint.ring.scale.setScalar(pulse);
+      meetingPoint.beacons.forEach((beacon, beaconIndex) => {
+        beacon.position.y = 1.35 + Math.sin(elapsed * 2.6 + index + beaconIndex) * 0.12;
+      });
+    });
   }
 
   function render(delta) {
@@ -78,6 +95,9 @@ export function createGame() {
       delta: step,
       onStatusChange: hud.updateMovementStatus,
     });
+
+    const lobbyStatus = npcManager.update(state.runtime.elapsed, step);
+    hud.updateLobby(lobbyStatus);
 
     cameraController.smooth(step);
 

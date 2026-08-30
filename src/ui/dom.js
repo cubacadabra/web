@@ -19,6 +19,13 @@ export function getDomElements() {
     compassNeedle: getElement("#compass-needle"),
     cameraMode: getElement("#camera-mode"),
     movementState: getElement("#movement-state"),
+    playerCount: getElement("#player-count"),
+    lobbyCopy: getElement("#lobby-copy"),
+    meetingCounts: [
+      getElement("#meeting-count-0"),
+      getElement("#meeting-count-1"),
+      getElement("#meeting-count-2"),
+    ],
     joystickElement: getElement("#joystick"),
     joystickKnob: getElement("#joystick-knob"),
     runToggle: getElement("#run-toggle"),
