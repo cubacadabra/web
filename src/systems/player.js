@@ -35,20 +35,24 @@ function playerCanOccupy(state, obstacles, candidate) {
       continue;
     }
 
-    const closestX = clamp(candidate.x, obstacle.minX, obstacle.maxX);
-    const closestZ = clamp(candidate.z, obstacle.minZ, obstacle.maxZ);
-    const distanceX = candidate.x - closestX;
-    const distanceZ = candidate.z - closestZ;
-
-    if (
-      distanceX * distanceX + distanceZ * distanceZ <
-      playerConfig.radius * playerConfig.radius
-    ) {
+    if (playerOverlapsObstacleHorizontally(candidate, obstacle)) {
       return false;
     }
   }
 
   return true;
+}
+
+function playerOverlapsObstacleHorizontally(position, obstacle) {
+  const closestX = clamp(position.x, obstacle.minX, obstacle.maxX);
+  const closestZ = clamp(position.z, obstacle.minZ, obstacle.maxZ);
+  const distanceX = position.x - closestX;
+  const distanceZ = position.z - closestZ;
+
+  return (
+    distanceX * distanceX + distanceZ * distanceZ <
+    playerConfig.radius * playerConfig.radius
+  );
 }
 
 function movePlayerHorizontally(state, obstacles, delta) {
@@ -86,6 +90,73 @@ function movePlayerHorizontally(state, obstacles, delta) {
   if (Math.abs(player.position.z) >= limit && Math.abs(player.velocity.z) > 0) {
     player.velocity.z = 0;
   }
+}
+
+function movePlayerVertically(state, obstacles, delta) {
+  const { player } = state;
+  const previousFeet = player.position.y;
+  const nextFeet = previousFeet + player.velocity.y * delta;
+  const epsilon = 0.05;
+
+  if (player.velocity.y <= 0) {
+    let landingHeight = null;
+
+    for (const obstacle of obstacles) {
+      if (!playerOverlapsObstacleHorizontally(player.position, obstacle)) {
+        continue;
+      }
+
+      const crossedTop =
+        previousFeet >= obstacle.top - epsilon &&
+        nextFeet <= obstacle.top + epsilon;
+
+      if (crossedTop && (landingHeight === null || obstacle.top > landingHeight)) {
+        landingHeight = obstacle.top;
+      }
+    }
+
+    if (landingHeight !== null) {
+      player.position.y = landingHeight;
+      player.velocity.y = 0;
+      player.grounded = true;
+      return;
+    }
+
+    if (nextFeet <= 0) {
+      player.position.y = 0;
+      player.velocity.y = 0;
+      player.grounded = true;
+      return;
+    }
+  } else {
+    let ceilingHeight = null;
+    const previousHead = previousFeet + playerConfig.bodyHeight;
+    const nextHead = nextFeet + playerConfig.bodyHeight;
+
+    for (const obstacle of obstacles) {
+      if (!playerOverlapsObstacleHorizontally(player.position, obstacle)) {
+        continue;
+      }
+
+      const hitBottom =
+        previousHead <= obstacle.bottom + epsilon &&
+        nextHead >= obstacle.bottom - epsilon;
+
+      if (hitBottom && (ceilingHeight === null || obstacle.bottom < ceilingHeight)) {
+        ceilingHeight = obstacle.bottom;
+      }
+    }
+
+    if (ceilingHeight !== null) {
+      player.position.y = ceilingHeight - playerConfig.bodyHeight;
+      player.velocity.y = 0;
+      player.grounded = false;
+      return;
+    }
+  }
+
+  player.position.y = nextFeet;
+  player.grounded = false;
 }
 
 export function updatePlayer({ THREE, state, obstacles, delta, onStatusChange }) {
@@ -129,16 +200,9 @@ export function updatePlayer({ THREE, state, obstacles, delta, onStatusChange })
   }
   state.movement.jumpQueued = false;
 
-  player.velocity.y -= playerConfig.gravity * delta;
-  player.position.y += player.velocity.y * delta;
-
-  if (player.position.y <= 0) {
-    player.position.y = 0;
-    player.velocity.y = 0;
-    player.grounded = true;
-  }
-
   movePlayerHorizontally(state, obstacles, delta);
+  player.velocity.y -= playerConfig.gravity * delta;
+  movePlayerVertically(state, obstacles, delta);
   onStatusChange?.(moving, sprinting);
 
   return { moving, sprinting };
