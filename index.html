@@ -23,7 +23,7 @@
         id="world-canvas"
         class="world-canvas"
         tabindex="0"
-        aria-label="Cubacadabra world. Drag to turn your view."
+        aria-label="Cubacadabra world. Drag to look. Use WASD or arrow keys to move, Shift to run, and Space to jump."
       ></canvas>
 
       <div class="atmosphere" aria-hidden="true"></div>
@@ -53,7 +53,7 @@
         <p class="eyebrow">World / 01</p>
         <h1 id="scene-title">Empty baseplate</h1>
         <p class="scene-description">
-          A quiet starting point for a world that does not exist yet.
+          Walk, run, and jump through the first quiet corner of a world.
         </p>
       </section>
 
@@ -67,8 +67,8 @@
           <span class="look-icon-dot"></span>
         </span>
         <span class="look-copy">
-          <strong>Look around</strong>
-          <span>Drag to turn · arrow keys to fine-tune</span>
+          <strong>Move + look</strong>
+          <span>WASD / arrows move · drag to look · Shift to run · Space to jump</span>
         </span>
       </section>
 
@@ -89,10 +89,36 @@
 
       <div class="bottom-meta" aria-label="Feature status">
         <span class="meta-line"></span>
-        <span>Walking / coming next</span>
+        <span id="movement-state" aria-live="polite" aria-atomic="true">Idle / ready</span>
       </div>
 
       <div class="corner-note" aria-hidden="true">JS only <span>·</span> r01</div>
+
+      <aside class="mobile-controls" aria-label="Touch movement controls">
+        <button
+          class="joystick"
+          id="joystick"
+          type="button"
+          aria-label="Move with virtual joystick"
+        >
+          <span class="joystick-ring" aria-hidden="true">
+            <span class="joystick-knob" id="joystick-knob"></span>
+          </span>
+        </button>
+        <div class="mobile-actions">
+          <button
+            class="run-toggle"
+            id="run-toggle"
+            type="button"
+            aria-pressed="false"
+          >
+            Run
+          </button>
+          <button class="jump-button" id="jump-button" type="button">
+            Jump
+          </button>
+        </div>
+      </aside>
 
       <div class="loading-state" id="loading-state" role="status">
         <span class="loading-mark" aria-hidden="true"></span>

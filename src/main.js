@@ -7,6 +7,11 @@ const loadingState = document.querySelector("#loading-state");
 const resetButton = document.querySelector("#reset-view");
 const headingValue = document.querySelector("#heading-value");
 const compassNeedle = document.querySelector("#compass-needle");
+const movementState = document.querySelector("#movement-state");
+const joystickElement = document.querySelector("#joystick");
+const joystickKnob = document.querySelector("#joystick-knob");
+const runToggle = document.querySelector("#run-toggle");
+const jumpButton = document.querySelector("#jump-button");
 
 if (!(canvas instanceof HTMLCanvasElement)) {
   throw new Error("The world canvas could not be found.");
@@ -51,6 +56,8 @@ scene.add(sunLight);
 const world = new THREE.Group();
 scene.add(world);
 
+const obstacles = [];
+
 const colors = {
   ground: 0x8caf83,
   groundEdge: 0x5f806d,
@@ -85,6 +92,17 @@ function createBlock(position, size, color, options = {}) {
       }),
     );
     block.add(outline);
+  }
+
+  if (options.collidable !== false) {
+    obstacles.push({
+      minX: position[0] - size[0] / 2,
+      maxX: position[0] + size[0] / 2,
+      minZ: position[2] - size[2] / 2,
+      maxZ: position[2] + size[2] / 2,
+      bottom: position[1] - size[1] / 2,
+      top: position[1] + size[1] / 2,
+    });
   }
 
   return block;
@@ -199,7 +217,7 @@ const spawnPad = createSpawnPad();
 const coralBlock = createBlock([0.15, 1.35, -13.5], [2.8, 2.7, 2.8], colors.coral);
 const butterBlock = createBlock([-8.1, 0.8, -22], [3.8, 1.6, 3.8], colors.butter);
 const blueBlock = createBlock([8.4, 1.5, -27], [2.2, 3, 2.2], colors.periwinkle);
-const tinyBlock = createBlock([13, 0.5, -17], [1, 1, 1], colors.ink, {
+createBlock([13, 0.5, -17], [1, 1, 1], colors.ink, {
   outline: false,
 });
 
@@ -230,6 +248,25 @@ const view = {
   targetPitch: initialView.pitch,
 };
 
+const player = {
+  position: new THREE.Vector3(0, 0, 11.5),
+  velocity: new THREE.Vector3(),
+  grounded: true,
+};
+
+const playerConfig = {
+  eyeHeight: 3.4,
+  bodyHeight: 3.15,
+  radius: 0.52,
+  walkSpeed: 6.4,
+  runSpeed: 11.5,
+  acceleration: 22,
+  airAcceleration: 9,
+  gravity: 28,
+  jumpVelocity: 10.5,
+  worldLimit: 57.5,
+};
+
 const pointer = {
   active: false,
   id: null,
@@ -239,9 +276,24 @@ const pointer = {
 
 const maxPitch = 1.1;
 const lookSensitivity = 0.0062;
-const keyboardSensitivity = 0.055;
+const keys = new Set();
+const movement = {
+  joystickX: 0,
+  joystickY: 0,
+  mobileSprint: false,
+  jumpQueued: false,
+};
+const joystickPointer = {
+  active: false,
+  id: null,
+};
+const forwardVector = new THREE.Vector3();
+const rightVector = new THREE.Vector3();
+const moveDirection = new THREE.Vector3();
+const nextPlayerPosition = new THREE.Vector3();
 let hintDismissed = false;
 let elapsed = 0;
+let lastMovementLabel = "";
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -264,6 +316,175 @@ function setViewFromInput(horizontal, vertical = 0) {
     -maxPitch,
     maxPitch,
   );
+}
+
+function queueJump() {
+  if (player.grounded) movement.jumpQueued = true;
+  dismissHint();
+}
+
+function isInteractiveTarget(target) {
+  return target instanceof Element && Boolean(
+    target.closest("button, a, input, textarea, select, [contenteditable='true']"),
+  );
+}
+
+function isKeyDown(...codes) {
+  return codes.some((code) => keys.has(code));
+}
+
+function getMovementAxes() {
+  let forward = 0;
+  let strafe = 0;
+
+  if (isKeyDown("KeyW", "ArrowUp")) forward += 1;
+  if (isKeyDown("KeyS", "ArrowDown")) forward -= 1;
+  if (isKeyDown("KeyD", "ArrowRight")) strafe += 1;
+  if (isKeyDown("KeyA", "ArrowLeft")) strafe -= 1;
+
+  forward += -movement.joystickY;
+  strafe += movement.joystickX;
+
+  const inputLength = Math.hypot(forward, strafe);
+  if (inputLength > 1) {
+    forward /= inputLength;
+    strafe /= inputLength;
+  }
+
+  return { forward, strafe };
+}
+
+function playerCanOccupy(candidate) {
+  const feet = player.position.y;
+  const head = feet + playerConfig.bodyHeight;
+
+  for (const obstacle of obstacles) {
+    if (feet >= obstacle.top - 0.05 || head <= obstacle.bottom + 0.05) {
+      continue;
+    }
+
+    const closestX = clamp(candidate.x, obstacle.minX, obstacle.maxX);
+    const closestZ = clamp(candidate.z, obstacle.minZ, obstacle.maxZ);
+    const distanceX = candidate.x - closestX;
+    const distanceZ = candidate.z - closestZ;
+
+    if (
+      distanceX * distanceX + distanceZ * distanceZ <
+      playerConfig.radius * playerConfig.radius
+    ) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function movePlayerHorizontally(delta) {
+  const limit = playerConfig.worldLimit - playerConfig.radius;
+
+  nextPlayerPosition.copy(player.position);
+  nextPlayerPosition.x = clamp(
+    player.position.x + player.velocity.x * delta,
+    -limit,
+    limit,
+  );
+  if (playerCanOccupy(nextPlayerPosition)) {
+    player.position.x = nextPlayerPosition.x;
+  } else {
+    player.velocity.x = 0;
+  }
+
+  nextPlayerPosition.copy(player.position);
+  nextPlayerPosition.z = clamp(
+    player.position.z + player.velocity.z * delta,
+    -limit,
+    limit,
+  );
+  if (playerCanOccupy(nextPlayerPosition)) {
+    player.position.z = nextPlayerPosition.z;
+  } else {
+    player.velocity.z = 0;
+  }
+
+  if (Math.abs(player.position.x) >= limit && Math.abs(player.velocity.x) > 0) {
+    player.velocity.x = 0;
+  }
+  if (Math.abs(player.position.z) >= limit && Math.abs(player.velocity.z) > 0) {
+    player.velocity.z = 0;
+  }
+}
+
+function updateMovementStatus(moving, sprinting) {
+  const label = !player.grounded
+    ? "Jumping"
+    : sprinting
+      ? "Running"
+      : moving
+        ? "Walking"
+        : "Idle / ready";
+
+  if (label !== lastMovementLabel) {
+    lastMovementLabel = label;
+    if (movementState) movementState.textContent = label;
+  }
+
+  worldShell?.classList.toggle("is-running", sprinting);
+  worldShell?.classList.toggle("is-jumping", !player.grounded);
+}
+
+function updatePlayer(delta) {
+  const axes = getMovementAxes();
+  const inputLength = Math.hypot(axes.forward, axes.strafe);
+  const moving = inputLength > 0.01;
+  const sprinting = moving && (
+    isKeyDown("ShiftLeft", "ShiftRight") || movement.mobileSprint
+  );
+
+  forwardVector.set(-Math.sin(view.yaw), 0, -Math.cos(view.yaw));
+  rightVector.set(Math.cos(view.yaw), 0, -Math.sin(view.yaw));
+  moveDirection.set(0, 0, 0);
+  moveDirection.addScaledVector(forwardVector, axes.forward);
+  moveDirection.addScaledVector(rightVector, axes.strafe);
+  if (moveDirection.lengthSq() > 1) moveDirection.normalize();
+
+  const speed = sprinting ? playerConfig.runSpeed : playerConfig.walkSpeed;
+  const targetVelocityX = moveDirection.x * speed;
+  const targetVelocityZ = moveDirection.z * speed;
+  const acceleration = player.grounded
+    ? playerConfig.acceleration
+    : playerConfig.airAcceleration;
+  const blend = 1 - Math.exp(-acceleration * delta);
+
+  player.velocity.x = THREE.MathUtils.lerp(
+    player.velocity.x,
+    targetVelocityX,
+    blend,
+  );
+  player.velocity.z = THREE.MathUtils.lerp(
+    player.velocity.z,
+    targetVelocityZ,
+    blend,
+  );
+
+  if (movement.jumpQueued && player.grounded) {
+    player.velocity.y = playerConfig.jumpVelocity;
+    player.grounded = false;
+  }
+  movement.jumpQueued = false;
+
+  player.velocity.y -= playerConfig.gravity * delta;
+  player.position.y += player.velocity.y * delta;
+
+  if (player.position.y <= 0) {
+    player.position.y = 0;
+    player.velocity.y = 0;
+    player.grounded = true;
+  }
+
+  movePlayerHorizontally(delta);
+  updateMovementStatus(moving, sprinting);
+
+  return { moving, sprinting };
 }
 
 function stopPointerLook(event) {
@@ -300,32 +521,106 @@ canvas.addEventListener("pointerup", stopPointerLook);
 canvas.addEventListener("pointercancel", stopPointerLook);
 canvas.addEventListener("lostpointercapture", () => stopPointerLook());
 
-canvas.addEventListener("keydown", (event) => {
-  const amount = event.shiftKey ? keyboardSensitivity * 1.8 : keyboardSensitivity;
-  let handled = true;
+window.addEventListener("keydown", (event) => {
+  if (isInteractiveTarget(event.target)) return;
 
-  switch (event.key) {
-    case "ArrowLeft":
-      view.targetYaw += amount;
-      break;
-    case "ArrowRight":
-      view.targetYaw -= amount;
-      break;
-    case "ArrowUp":
-      view.targetPitch = clamp(view.targetPitch - amount, -maxPitch, maxPitch);
-      break;
-    case "ArrowDown":
-      view.targetPitch = clamp(view.targetPitch + amount, -maxPitch, maxPitch);
-      break;
-    default:
-      handled = false;
-  }
+  const movementKey = [
+    "KeyW",
+    "KeyA",
+    "KeyS",
+    "KeyD",
+    "ArrowUp",
+    "ArrowLeft",
+    "ArrowDown",
+    "ArrowRight",
+    "ShiftLeft",
+    "ShiftRight",
+    "Space",
+  ].includes(event.code);
 
-  if (handled) {
-    event.preventDefault();
-    dismissHint();
-  }
+  if (!movementKey) return;
+
+  keys.add(event.code);
+  event.preventDefault();
+  dismissHint();
+
+  if (event.code === "Space" && !event.repeat) queueJump();
 });
+
+window.addEventListener("keyup", (event) => {
+  keys.delete(event.code);
+});
+
+window.addEventListener("blur", () => {
+  keys.clear();
+  movement.jumpQueued = false;
+  resetJoystick();
+});
+
+function resetJoystick() {
+  joystickPointer.active = false;
+  joystickPointer.id = null;
+  movement.joystickX = 0;
+  movement.joystickY = 0;
+  if (joystickKnob) {
+    joystickKnob.style.transform = "translate(-50%, -50%) translate(0, 0)";
+  }
+}
+
+function updateJoystick(event) {
+  if (!(joystickElement instanceof HTMLElement)) return;
+
+  const bounds = joystickElement.getBoundingClientRect();
+  const centerX = bounds.left + bounds.width / 2;
+  const centerY = bounds.top + bounds.height / 2;
+  const maxDistance = Math.max(bounds.width / 2 - 22, 20);
+  const deltaX = event.clientX - centerX;
+  const deltaY = event.clientY - centerY;
+  const distance = Math.hypot(deltaX, deltaY);
+  const limitedDistance = Math.min(distance, maxDistance);
+  const angle = distance === 0 ? 0 : Math.atan2(deltaY, deltaX);
+  const knobX = Math.cos(angle) * limitedDistance;
+  const knobY = Math.sin(angle) * limitedDistance;
+
+  movement.joystickX = knobX / maxDistance;
+  movement.joystickY = knobY / maxDistance;
+  if (joystickKnob) {
+    joystickKnob.style.transform =
+      `translate(-50%, -50%) translate(${knobX}px, ${knobY}px)`;
+  }
+  dismissHint();
+}
+
+joystickElement?.addEventListener("pointerdown", (event) => {
+  event.preventDefault();
+  joystickPointer.active = true;
+  joystickPointer.id = event.pointerId;
+  joystickElement.setPointerCapture(event.pointerId);
+  updateJoystick(event);
+});
+
+joystickElement?.addEventListener("pointermove", (event) => {
+  if (!joystickPointer.active || event.pointerId !== joystickPointer.id) return;
+  event.preventDefault();
+  updateJoystick(event);
+});
+
+joystickElement?.addEventListener("pointerup", resetJoystick);
+joystickElement?.addEventListener("pointercancel", resetJoystick);
+joystickElement?.addEventListener("lostpointercapture", resetJoystick);
+
+runToggle?.addEventListener("click", () => {
+  movement.mobileSprint = !movement.mobileSprint;
+  runToggle.setAttribute("aria-pressed", String(movement.mobileSprint));
+  runToggle.classList.toggle("is-active", movement.mobileSprint);
+});
+
+jumpButton?.addEventListener("pointerdown", (event) => {
+  event.preventDefault();
+  queueJump();
+});
+
+jumpButton?.addEventListener("click", queueJump);
 
 canvas.addEventListener("wheel", (event) => {
   if (Math.abs(event.deltaX) < 0.5) return;
@@ -381,16 +676,26 @@ resizeObserver.observe(canvas);
 resizeRenderer();
 
 function render(delta) {
-  elapsed += Math.min(delta, 0.05);
+  const step = Math.min(delta, 0.05);
+  elapsed += step;
 
-  view.yaw = damp(view.yaw, view.targetYaw, 10, delta);
-  view.pitch = damp(view.pitch, view.targetPitch, 10, delta);
+  const currentMovement = updatePlayer(step);
+
+  view.yaw = damp(view.yaw, view.targetYaw, 10, step);
+  view.pitch = damp(view.pitch, view.targetPitch, 10, step);
 
   camera.rotation.order = "YXZ";
   camera.rotation.y = view.yaw;
   camera.rotation.x = view.pitch;
   camera.rotation.z = 0;
-  camera.position.y = 3.4 + Math.sin(elapsed * 0.7) * 0.018;
+
+  const headBob = currentMovement.moving && player.grounded
+    ? Math.sin(elapsed * (currentMovement.sprinting ? 14 : 10)) *
+      (currentMovement.sprinting ? 0.045 : 0.025)
+    : 0;
+  camera.position.x = player.position.x;
+  camera.position.y = player.position.y + playerConfig.eyeHeight + headBob;
+  camera.position.z = player.position.z;
 
   spawnPad.rotation.y = Math.sin(elapsed * 0.22) * 0.015;
   coralBlock.rotation.y = Math.sin(elapsed * 0.16) * 0.008;

@@ -90,6 +90,7 @@ canvas:focus-visible {
 .compass,
 .bottom-meta,
 .corner-note,
+.mobile-controls,
 .loading-state {
   position: absolute;
   z-index: 3;
@@ -548,6 +549,108 @@ canvas:focus-visible {
   color: var(--accent-deep);
 }
 
+.mobile-controls {
+  display: none;
+  pointer-events: none;
+}
+
+.joystick,
+.run-toggle,
+.jump-button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.joystick {
+  position: relative;
+  width: 82px;
+  height: 82px;
+  padding: 0;
+  border: 1px solid rgba(246, 241, 231, 0.58);
+  border-radius: 50%;
+  background: rgba(23, 56, 58, 0.2);
+  box-shadow: 0 8px 24px rgba(22, 49, 48, 0.14);
+  cursor: grab;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.joystick:active {
+  cursor: grabbing;
+}
+
+.joystick-ring {
+  position: absolute;
+  inset: 9px;
+  display: block;
+  border: 1px solid rgba(246, 241, 231, 0.42);
+  border-radius: 50%;
+}
+
+.joystick-knob {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: block;
+  width: 27px;
+  height: 27px;
+  border: 2px solid rgba(246, 241, 231, 0.92);
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 3px 12px rgba(22, 49, 48, 0.22);
+  transform: translate(-50%, -50%);
+}
+
+.mobile-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+.run-toggle,
+.jump-button {
+  min-width: 68px;
+  min-height: 54px;
+  padding: 0 13px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  touch-action: manipulation;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.run-toggle {
+  border: 1px solid rgba(23, 56, 58, 0.28);
+  background: rgba(246, 241, 231, 0.54);
+  color: var(--ink);
+  backdrop-filter: blur(10px);
+}
+
+.run-toggle.is-active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--paper);
+}
+
+.jump-button {
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  box-shadow: 0 8px 24px rgba(22, 49, 48, 0.15);
+}
+
+.run-toggle:active,
+.jump-button:active {
+  transform: translateY(1px) scale(0.98);
+}
+
 .loading-state {
   top: 50%;
   left: 50%;
@@ -631,7 +734,7 @@ canvas:focus-visible {
 
   .look-hint {
     right: 18px;
-    bottom: 20px;
+    bottom: 112px;
     left: 18px;
     justify-content: center;
     padding-right: 12px;
@@ -644,6 +747,15 @@ canvas:focus-visible {
 
   .look-copy span {
     font-size: 10px;
+  }
+
+  .mobile-controls {
+    right: 18px;
+    bottom: 18px;
+    left: 18px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
   }
 
   .compass {
