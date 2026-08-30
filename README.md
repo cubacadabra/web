@@ -24,3 +24,4 @@ Three.js is loaded as a pinned browser module from jsDelivr. There is no build s
 - Hold `Shift` to run
 - Press `Space` to jump
 - Drag the world to look around
+- Press `O` to zoom out into third person, `I` to zoom back in

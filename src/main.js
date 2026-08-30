@@ -7,6 +7,7 @@ const loadingState = document.querySelector("#loading-state");
 const resetButton = document.querySelector("#reset-view");
 const headingValue = document.querySelector("#heading-value");
 const compassNeedle = document.querySelector("#compass-needle");
+const cameraMode = document.querySelector("#camera-mode");
 const movementState = document.querySelector("#movement-state");
 const joystickElement = document.querySelector("#joystick");
 const joystickKnob = document.querySelector("#joystick-knob");
@@ -248,6 +249,17 @@ const view = {
   targetPitch: initialView.pitch,
 };
 
+const cameraZoom = {
+  distance: 0,
+  targetDistance: 0,
+};
+
+const zoomConfig = {
+  step: 8,
+  maxDistance: 16,
+  thirdPersonThreshold: 0.75,
+};
+
 const player = {
   position: new THREE.Vector3(0, 0, 11.5),
   velocity: new THREE.Vector3(),
@@ -266,6 +278,75 @@ const playerConfig = {
   jumpVelocity: 10.5,
   worldLimit: 57.5,
 };
+
+function addAvatarPart(parent, size, position, material, options = {}) {
+  const geometry = new THREE.BoxGeometry(...size);
+  const part = new THREE.Mesh(geometry, material);
+  part.position.set(...position);
+  part.castShadow = true;
+  part.receiveShadow = true;
+  parent.add(part);
+
+  if (options.outline !== false) {
+    part.add(new THREE.LineSegments(
+      new THREE.EdgesGeometry(geometry),
+      new THREE.LineBasicMaterial({
+        color: colors.paper,
+        transparent: true,
+        opacity: 0.16,
+      }),
+    ));
+  }
+
+  return part;
+}
+
+function createPlayerAvatar() {
+  const avatar = new THREE.Group();
+  const skin = new THREE.MeshStandardMaterial({
+    color: 0xe8ae86,
+    roughness: 0.9,
+  });
+  const shirt = new THREE.MeshStandardMaterial({
+    color: 0x2d6663,
+    roughness: 0.88,
+  });
+  const pants = new THREE.MeshStandardMaterial({
+    color: 0x536a90,
+    roughness: 0.9,
+  });
+  const shoes = new THREE.MeshStandardMaterial({
+    color: 0x293a43,
+    roughness: 0.92,
+  });
+  const face = new THREE.MeshBasicMaterial({ color: colors.ink });
+
+  addAvatarPart(avatar, [1.1, 1.25, 0.64], [0, 1.82, 0], shirt);
+  addAvatarPart(avatar, [0.84, 0.84, 0.84], [0, 3.01, 0], skin);
+  addAvatarPart(avatar, [0.36, 1.15, 0.45], [-0.76, 1.84, 0], shirt);
+  addAvatarPart(avatar, [0.36, 1.15, 0.45], [0.76, 1.84, 0], shirt);
+  addAvatarPart(avatar, [0.47, 1.25, 0.55], [-0.28, 0.62, 0], pants);
+  addAvatarPart(avatar, [0.47, 1.25, 0.55], [0.28, 0.62, 0], pants);
+  addAvatarPart(avatar, [0.56, 0.22, 0.7], [-0.28, 0.11, -0.06], shoes, {
+    outline: false,
+  });
+  addAvatarPart(avatar, [0.56, 0.22, 0.7], [0.28, 0.11, -0.06], shoes, {
+    outline: false,
+  });
+
+  addAvatarPart(avatar, [0.1, 0.12, 0.03], [-0.16, 3.04, -0.43], face, {
+    outline: false,
+  });
+  addAvatarPart(avatar, [0.1, 0.12, 0.03], [0.16, 3.04, -0.43], face, {
+    outline: false,
+  });
+
+  avatar.visible = false;
+  world.add(avatar);
+  return avatar;
+}
+
+const playerAvatar = createPlayerAvatar();
 
 const pointer = {
   active: false,
@@ -291,6 +372,7 @@ const forwardVector = new THREE.Vector3();
 const rightVector = new THREE.Vector3();
 const moveDirection = new THREE.Vector3();
 const nextPlayerPosition = new THREE.Vector3();
+const cameraTarget = new THREE.Vector3();
 let hintDismissed = false;
 let elapsed = 0;
 let lastMovementLabel = "";
@@ -301,6 +383,59 @@ function clamp(value, min, max) {
 
 function damp(current, target, smoothing, delta) {
   return THREE.MathUtils.lerp(current, target, 1 - Math.exp(-smoothing * delta));
+}
+
+function adjustZoom(amount) {
+  cameraZoom.targetDistance = clamp(
+    cameraZoom.targetDistance + amount,
+    0,
+    zoomConfig.maxDistance,
+  );
+  dismissHint();
+}
+
+function updateCameraMode() {
+  const isThirdPerson = cameraZoom.distance > zoomConfig.thirdPersonThreshold;
+  if (cameraMode) {
+    cameraMode.textContent = isThirdPerson ? "Third person" : "First person";
+  }
+  playerAvatar.visible = isThirdPerson;
+  worldShell?.classList.toggle("is-third-person", isThirdPerson);
+}
+
+function updateCameraPosition(headBob) {
+  const isThirdPerson = cameraZoom.distance > zoomConfig.thirdPersonThreshold;
+
+  playerAvatar.position.copy(player.position);
+  playerAvatar.rotation.y = view.yaw;
+  updateCameraMode();
+
+  if (!isThirdPerson) {
+    camera.rotation.order = "YXZ";
+    camera.rotation.y = view.yaw;
+    camera.rotation.x = view.pitch;
+    camera.rotation.z = 0;
+    camera.position.x = player.position.x;
+    camera.position.y = player.position.y + playerConfig.eyeHeight + headBob;
+    camera.position.z = player.position.z;
+    return;
+  }
+
+  cameraTarget.set(
+    player.position.x,
+    player.position.y + 1.78,
+    player.position.z,
+  );
+
+  const horizontalDistance = cameraZoom.distance * Math.cos(view.pitch);
+  const verticalDistance = cameraZoom.distance * Math.sin(view.pitch);
+  camera.position.x = player.position.x + Math.sin(view.yaw) * horizontalDistance;
+  camera.position.y = Math.max(
+    player.position.y + 0.55,
+    player.position.y + 2.65 + verticalDistance,
+  );
+  camera.position.z = player.position.z + Math.cos(view.yaw) * horizontalDistance;
+  camera.lookAt(cameraTarget);
 }
 
 function dismissHint() {
@@ -524,6 +659,14 @@ canvas.addEventListener("lostpointercapture", () => stopPointerLook());
 window.addEventListener("keydown", (event) => {
   if (isInteractiveTarget(event.target)) return;
 
+  if (event.code === "KeyO" || event.code === "KeyI") {
+    event.preventDefault();
+    if (!event.repeat) {
+      adjustZoom(event.code === "KeyO" ? zoomConfig.step : -zoomConfig.step);
+    }
+    return;
+  }
+
   const movementKey = [
     "KeyW",
     "KeyA",
@@ -623,10 +766,17 @@ jumpButton?.addEventListener("pointerdown", (event) => {
 jumpButton?.addEventListener("click", queueJump);
 
 canvas.addEventListener("wheel", (event) => {
-  if (Math.abs(event.deltaX) < 0.5) return;
-  event.preventDefault();
-  setViewFromInput(event.deltaX * 0.6);
-  dismissHint();
+  if (Math.abs(event.deltaY) >= Math.abs(event.deltaX) && Math.abs(event.deltaY) > 0.5) {
+    event.preventDefault();
+    adjustZoom(Math.sign(event.deltaY) * 0.9);
+    return;
+  }
+
+  if (Math.abs(event.deltaX) > 0.5) {
+    event.preventDefault();
+    setViewFromInput(event.deltaX * 0.6);
+    dismissHint();
+  }
 }, { passive: false });
 
 resetButton?.addEventListener("click", () => {
@@ -634,6 +784,8 @@ resetButton?.addEventListener("click", () => {
   view.pitch = initialView.pitch;
   view.targetYaw = initialView.yaw;
   view.targetPitch = initialView.pitch;
+  cameraZoom.distance = 0;
+  cameraZoom.targetDistance = 0;
   canvas.focus({ preventScroll: true });
 });
 
@@ -683,19 +835,13 @@ function render(delta) {
 
   view.yaw = damp(view.yaw, view.targetYaw, 10, step);
   view.pitch = damp(view.pitch, view.targetPitch, 10, step);
-
-  camera.rotation.order = "YXZ";
-  camera.rotation.y = view.yaw;
-  camera.rotation.x = view.pitch;
-  camera.rotation.z = 0;
+  cameraZoom.distance = damp(cameraZoom.distance, cameraZoom.targetDistance, 9, step);
 
   const headBob = currentMovement.moving && player.grounded
     ? Math.sin(elapsed * (currentMovement.sprinting ? 14 : 10)) *
       (currentMovement.sprinting ? 0.045 : 0.025)
     : 0;
-  camera.position.x = player.position.x;
-  camera.position.y = player.position.y + playerConfig.eyeHeight + headBob;
-  camera.position.z = player.position.z;
+  updateCameraPosition(headBob);
 
   spawnPad.rotation.y = Math.sin(elapsed * 0.22) * 0.015;
   coralBlock.rotation.y = Math.sin(elapsed * 0.16) * 0.008;

@@ -166,6 +166,7 @@ canvas:focus-visible {
 .brand-caption,
 .build-label,
 .world-status,
+.camera-mode,
 .eyebrow,
 .bottom-meta,
 .corner-note {
@@ -205,6 +206,10 @@ canvas:focus-visible {
 
 .build-label {
   color: var(--ink-faint);
+}
+
+.camera-mode {
+  color: var(--accent-deep);
 }
 
 .reset-button {
@@ -700,7 +705,8 @@ canvas:focus-visible {
 
   .brand-caption,
   .build-label,
-  .world-status {
+  .world-status,
+  .camera-mode {
     display: none;
   }
 
