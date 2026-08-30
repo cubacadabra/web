@@ -1,4 +1,4 @@
-import { initialView } from "../config/gameConfig.js";
+import { initialView, zoomConfig } from "../config/gameConfig.js";
 
 export function createGameState(THREE) {
   return {
@@ -9,8 +9,8 @@ export function createGameState(THREE) {
       targetPitch: initialView.pitch,
     },
     cameraZoom: {
-      distance: 0,
-      targetDistance: 0,
+      distance: zoomConfig.step,
+      targetDistance: zoomConfig.step,
     },
     player: {
       position: new THREE.Vector3(0, 0, 11.5),
