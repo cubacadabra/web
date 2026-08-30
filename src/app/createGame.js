@@ -12,6 +12,9 @@ import { createHudController } from "../ui/hud.js";
 
 export function createGame() {
   const elements = getDomElements();
+  const isTouchDevice =
+    typeof navigator !== "undefined" && navigator.maxTouchPoints > 0;
+  elements.worldShell?.classList.toggle("is-touch-device", isTouchDevice);
   const state = createGameState(THREE);
   const { renderer, scene, camera, world } = createScene({
     THREE,

@@ -15,7 +15,7 @@
         id="world-canvas"
         class="world-canvas"
         tabindex="0"
-        aria-label="Cubacadabra world. Drag to look. Use WASD or arrow keys to move, Shift to run, and Space to jump."
+        aria-label="Cubacadabra world. Drag to look. Use WASD or arrow keys to move, Shift to run, and Space to jump. Touch devices have on-screen controls."
       ></canvas>
 
       <div class="atmosphere" aria-hidden="true"></div>
@@ -61,7 +61,8 @@
         </span>
         <span class="look-copy">
           <strong>Move + look</strong>
-          <span>WASD move · drag look · Shift run · Space jump · O/I zoom</span>
+          <span class="desktop-hint">WASD move · drag look · Shift run · Space jump · O/I zoom</span>
+          <span class="touch-hint">Left stick move · drag to look · Run + Jump buttons</span>
         </span>
       </section>
 
@@ -87,7 +88,10 @@
 
       <div class="corner-note" aria-hidden="true">JS only <span>·</span> r01</div>
 
-      <aside class="mobile-controls" aria-label="Touch movement controls">
+      <aside
+        class="mobile-controls"
+        aria-label="Touch controls. Use the left thumbstick to move, drag the world to look, and use the action buttons to run or jump."
+      >
         <button
           class="joystick"
           id="joystick"
@@ -109,6 +113,25 @@
           </button>
           <button class="jump-button" id="jump-button" type="button">
             Jump
+          </button>
+        </div>
+        <div class="view-controls" aria-label="Camera zoom controls">
+          <button
+            class="view-button"
+            id="zoom-out"
+            type="button"
+            aria-label="Zoom out to third person"
+          >
+            <span aria-hidden="true">−</span>
+          </button>
+          <span class="view-label" aria-hidden="true">View</span>
+          <button
+            class="view-button"
+            id="zoom-in"
+            type="button"
+            aria-label="Zoom in to first person"
+          >
+            <span aria-hidden="true">+</span>
           </button>
         </div>
       </aside>

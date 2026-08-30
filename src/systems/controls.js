@@ -29,6 +29,8 @@ export function bindControls({ elements, state, onDismissHint, onResetView }) {
     runToggle,
     jumpButton,
     resetButton,
+    zoomOutButton,
+    zoomInButton,
   } = elements;
 
   function adjustZoom(amount) {
@@ -206,6 +208,8 @@ export function bindControls({ elements, state, onDismissHint, onResetView }) {
     onResetView();
     canvas.focus({ preventScroll: true });
   });
+  zoomOutButton?.addEventListener("click", () => adjustZoom(zoomConfig.step));
+  zoomInButton?.addEventListener("click", () => adjustZoom(-zoomConfig.step));
 
   return { resetJoystick };
 }

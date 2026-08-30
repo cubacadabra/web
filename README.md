@@ -37,3 +37,4 @@ Vite. The project intentionally remains plain JavaScript with no framework.
 - Press `Space` to jump
 - Drag the world to look around
 - Press `O` to zoom out into third person, `I` to zoom back in
+- On touch devices, use the on-screen thumbstick to move, drag the world to look, and use Run, Jump, and View controls

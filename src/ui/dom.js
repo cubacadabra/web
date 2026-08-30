@@ -23,5 +23,7 @@ export function getDomElements() {
     joystickKnob: getElement("#joystick-knob"),
     runToggle: getElement("#run-toggle"),
     jumpButton: getElement("#jump-button"),
+    zoomOutButton: getElement("#zoom-out"),
+    zoomInButton: getElement("#zoom-in"),
   };
 }
