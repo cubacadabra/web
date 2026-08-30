@@ -96,7 +96,11 @@ export function createGame() {
       onStatusChange: hud.updateMovementStatus,
     });
 
-    const lobbyStatus = npcManager.update(state.runtime.elapsed, step);
+    const lobbyStatus = npcManager.update(
+      state.runtime.elapsed,
+      step,
+      state.player.position,
+    );
     hud.updateLobby(lobbyStatus);
 
     cameraController.smooth(step);

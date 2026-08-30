@@ -223,7 +223,7 @@ export function createNpcManager({ THREE, world, colors, obstacles, meetingPoint
     parts.torso.position.y = 1.82 + (agent.grounded ? Math.abs(Math.sin(agent.walkCycle)) * 0.025 : 0);
   }
 
-  function update(elapsed, delta) {
+  function update(elapsed, delta, playerPosition) {
     if (agents.length < TOTAL_PLAYERS - 1 && elapsed >= nextSpawnAt) {
       spawnNpc(elapsed);
       nextSpawnAt += 3;
@@ -231,9 +231,16 @@ export function createNpcManager({ THREE, world, colors, obstacles, meetingPoint
 
     for (const agent of agents) updateAgent(agent, elapsed, delta);
 
-    const meetingCounts = meetingPoints.map((_, index) => agents.filter(
+    const meetingCounts = meetingPoints.map((meetingPoint, index) => agents.filter(
       (agent) => agent.meetingIndex === index && agent.assembled,
-    ).length);
+    ).length + (
+      playerPosition && Math.hypot(
+        playerPosition.x - meetingPoint.position.x,
+        playerPosition.z - meetingPoint.position.z,
+      ) <= 2.7
+        ? 1
+        : 0
+    ));
 
     return {
       totalPlayers: agents.length + 1,
