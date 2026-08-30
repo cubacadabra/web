@@ -8,15 +8,27 @@ Cubacadabra intentionally uses modern vanilla JavaScript rather than TypeScript.
 
 ## Run it
 
-The browser needs a local server to load ES modules. From this directory, run:
+Install dependencies and start the Vite development server:
 
 ```sh
-python3 -m http.server 8000
+npm install
+npm run dev
 ```
 
-Then open `http://localhost:8000`.
+Then open the local URL printed by Vite, usually `http://localhost:5173`.
 
-Three.js is loaded as a pinned browser module from jsDelivr. There is no build step yet.
+Create a production build with `npm run build`, or serve the build locally with
+`npm run preview`. Three.js is installed as a regular dependency and bundled by
+Vite. The project intentionally remains plain JavaScript with no framework.
+
+## Structure
+
+- `src/app` wires the game together
+- `src/config` holds world and player tuning
+- `src/scene` creates the Three.js scene, environment, and avatar
+- `src/state` owns the mutable game state
+- `src/systems` contains camera, controls, and player movement
+- `src/ui` contains DOM access and HUD updates
 
 ## Controls
 
