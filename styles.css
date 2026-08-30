@@ -207,7 +207,7 @@ canvas:focus-visible {
 }
 
 .camera-mode {
-  color: var(--accent-deep);
+  color: var(--ink);
 }
 
 .reset-button {
