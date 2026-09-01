@@ -29,12 +29,13 @@ export function createHudController({ THREE, elements, state }) {
     elements.worldShell?.classList.toggle("is-third-person", isThirdPerson);
   }
 
-  function updateMovementStatus(moving, sprinting) {
-    const label = !state.player.grounded
+  function updateMovementStatus(frame) {
+    const { player } = frame;
+    const label = !player.grounded
       ? "Jumping"
-      : sprinting
+      : player.sprinting
         ? "Running"
-        : moving
+        : player.moving
           ? "Walking"
           : "Idle / ready";
 
@@ -43,12 +44,12 @@ export function createHudController({ THREE, elements, state }) {
       if (elements.movementState) elements.movementState.textContent = label;
     }
 
-    elements.worldShell?.classList.toggle("is-running", sprinting);
-    elements.worldShell?.classList.toggle("is-jumping", !state.player.grounded);
+    elements.worldShell?.classList.toggle("is-running", player.sprinting);
+    elements.worldShell?.classList.toggle("is-jumping", !player.grounded);
   }
 
-  function updateCompass() {
-    const heading = getHeading(THREE, state.view.yaw);
+  function updateCompass(frame) {
+    const heading = getHeading(THREE, frame.camera.yaw);
     const cardinal = getCardinalDirection(heading);
     if (elements.headingValue) {
       elements.headingValue.textContent = `${cardinal} ${heading}°`;
@@ -80,6 +81,13 @@ export function createHudController({ THREE, elements, state }) {
     elements.loadingState?.classList.add("is-ready");
   }
 
+  function markError(message) {
+    if (elements.loadingState) {
+      elements.loadingState.textContent = message;
+      elements.loadingState.classList.add("is-error");
+    }
+  }
+
   return {
     dismissHint,
     setCameraMode,
@@ -87,5 +95,6 @@ export function createHudController({ THREE, elements, state }) {
     updateLobby,
     updateCompass,
     markReady,
+    markError,
   };
 }

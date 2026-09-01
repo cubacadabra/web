@@ -1,28 +1,14 @@
-import { initialView, zoomConfig } from "../config/gameConfig.js";
-
-export function createGameState(THREE) {
+export function createGameState() {
   return {
-    view: {
-      yaw: initialView.yaw,
-      pitch: initialView.pitch,
-      targetYaw: initialView.yaw,
-      targetPitch: initialView.pitch,
-    },
-    cameraZoom: {
-      distance: zoomConfig.step,
-      targetDistance: zoomConfig.step,
-    },
-    player: {
-      position: new THREE.Vector3(0, 0, 11.5),
-      velocity: new THREE.Vector3(),
-      grounded: true,
-    },
     keys: new Set(),
     movement: {
       joystickX: 0,
       joystickY: 0,
       mobileSprint: false,
       jumpQueued: false,
+      lookX: 0,
+      lookY: 0,
+      zoomDelta: 0,
     },
     pointer: {
       active: false,
@@ -34,17 +20,11 @@ export function createGameState(THREE) {
       active: false,
       id: null,
     },
-    vectors: {
-      forward: new THREE.Vector3(),
-      right: new THREE.Vector3(),
-      moveDirection: new THREE.Vector3(),
-      nextPlayerPosition: new THREE.Vector3(),
-      cameraTarget: new THREE.Vector3(),
-    },
     runtime: {
       elapsed: 0,
       hintDismissed: false,
       lastMovementLabel: "",
+      engineFrame: null,
     },
   };
 }

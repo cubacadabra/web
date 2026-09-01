@@ -2,9 +2,13 @@
 
 A tiny 3D world built from scratch.
 
-JavaScript. No framework. Shapes, lighting, a baseplate, and a player who can look, move, run, and jump.
+Rust simulation compiled to WebAssembly, with vanilla JavaScript and Three.js
+handling presentation and input. Shapes, lighting, a baseplate, and a player
+who can look, move, run, and jump.
 
-Cubacadabra intentionally uses modern vanilla JavaScript rather than TypeScript. One goal of the project is to keep the implementation small, readable, and directly executable in the browser. Type safety is useful, but it is not one of the concepts this project is trying to teach.
+Cubacadabra intentionally uses modern vanilla JavaScript rather than
+TypeScript. Rust owns the platform-neutral game simulation so this browser
+client and a future iOS app can share the same engine.
 
 ## Run it
 
@@ -13,6 +17,13 @@ Install dependencies and start the Vite development server:
 ```sh
 npm install
 npm run dev
+```
+
+The WebAssembly artifact is committed under `public/wasm` for immediate local
+startup. Rebuild it after changing Rust with:
+
+```sh
+npm run build:wasm
 ```
 
 Then open the local URL printed by Vite, usually `http://localhost:5173`.
@@ -27,7 +38,8 @@ Vite. The project intentionally remains plain JavaScript with no framework.
 - `src/config` holds world and player tuning
 - `src/scene` creates the Three.js scene, environment, and avatar
 - `src/state` owns the mutable game state
-- `src/systems` contains camera, controls, and player movement
+- `src/engine` loads the Rust/WebAssembly simulation boundary
+- `src/systems` contains camera, controls, and the Three.js NPC adapter
 - `src/ui` contains DOM access and HUD updates
 
 ## Controls

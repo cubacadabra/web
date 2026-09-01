@@ -1,23 +1,18 @@
-import {
-  initialView,
-  playerConfig,
-  zoomConfig,
-} from "../config/gameConfig.js";
-import { damp } from "../lib/math.js";
+import { playerConfig, zoomConfig } from "../config/gameConfig.js";
 
 export function createCameraController({
   THREE,
   camera,
   playerAvatar,
-  state,
   worldShell,
   onModeChange,
 }) {
   let previousThirdPerson = null;
+  const cameraTarget = new THREE.Vector3();
 
-  function updateMode() {
+  function updateMode(distance) {
     const isThirdPerson =
-      state.cameraZoom.distance > zoomConfig.thirdPersonThreshold;
+      distance > zoomConfig.thirdPersonThreshold;
 
     if (isThirdPerson !== previousThirdPerson) {
       previousThirdPerson = isThirdPerson;
@@ -29,11 +24,15 @@ export function createCameraController({
     return isThirdPerson;
   }
 
-  function update(headBob) {
-    const { player, view, cameraZoom, vectors } = state;
-    const isThirdPerson = updateMode();
+  function update(frame, headBob) {
+    const { player, camera: view } = frame;
+    const isThirdPerson = updateMode(frame.camera.distance);
 
-    playerAvatar.position.copy(player.position);
+    playerAvatar.position.set(
+      player.position.x,
+      player.position.y,
+      player.position.z,
+    );
     playerAvatar.rotation.y = view.yaw;
 
     if (!isThirdPerson) {
@@ -47,14 +46,14 @@ export function createCameraController({
       return;
     }
 
-    vectors.cameraTarget.set(
+    cameraTarget.set(
       player.position.x,
       player.position.y + 1.78,
       player.position.z,
     );
 
-    const horizontalDistance = cameraZoom.distance * Math.cos(view.pitch);
-    const verticalDistance = cameraZoom.distance * Math.sin(view.pitch);
+    const horizontalDistance = frame.camera.distance * Math.cos(view.pitch);
+    const verticalDistance = frame.camera.distance * Math.sin(view.pitch);
     camera.position.x =
       player.position.x + Math.sin(view.yaw) * horizontalDistance;
     camera.position.y = Math.max(
@@ -63,35 +62,12 @@ export function createCameraController({
     );
     camera.position.z =
       player.position.z + Math.cos(view.yaw) * horizontalDistance;
-    camera.lookAt(vectors.cameraTarget);
+    camera.lookAt(cameraTarget);
   }
 
   function reset() {
-    state.view.yaw = initialView.yaw;
-    state.view.pitch = initialView.pitch;
-    state.view.targetYaw = initialView.yaw;
-    state.view.targetPitch = initialView.pitch;
-    state.cameraZoom.distance = 0;
-    state.cameraZoom.targetDistance = 0;
+    previousThirdPerson = null;
   }
 
-  function smooth(delta) {
-    state.view.yaw = damp(THREE, state.view.yaw, state.view.targetYaw, 10, delta);
-    state.view.pitch = damp(
-      THREE,
-      state.view.pitch,
-      state.view.targetPitch,
-      10,
-      delta,
-    );
-    state.cameraZoom.distance = damp(
-      THREE,
-      state.cameraZoom.distance,
-      state.cameraZoom.targetDistance,
-      9,
-      delta,
-    );
-  }
-
-  return { reset, smooth, update };
+  return { reset, update };
 }

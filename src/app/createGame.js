@@ -1,22 +1,24 @@
 import * as THREE from "three";
 import { colors } from "../config/gameConfig.js";
+import { createRustEngine } from "../engine/wasm.js";
 import { createEnvironment } from "../scene/createEnvironment.js";
 import { createPlayerAvatar } from "../scene/createAvatar.js";
 import { createScene } from "../scene/createScene.js";
 import { createCameraController } from "../systems/camera.js";
 import { bindControls } from "../systems/controls.js";
 import { createNpcManager } from "../systems/npcs.js";
-import { updatePlayer } from "../systems/player.js";
+import { getMovementInput } from "../systems/player.js";
 import { createGameState } from "../state/gameState.js";
 import { getDomElements } from "../ui/dom.js";
 import { createHudController } from "../ui/hud.js";
 
-export function createGame() {
+export async function createGame() {
   const elements = getDomElements();
   const isTouchDevice =
     typeof navigator !== "undefined" && navigator.maxTouchPoints > 0;
   elements.worldShell?.classList.toggle("is-touch-device", isTouchDevice);
-  const state = createGameState(THREE);
+  const engine = await createRustEngine();
+  const state = createGameState();
   const { renderer, scene, camera, world } = createScene({
     THREE,
     canvas: elements.canvas,
@@ -27,8 +29,6 @@ export function createGame() {
     THREE,
     world,
     colors,
-    obstacles: environment.obstacles,
-    meetingPoints: environment.meetingPoints,
     createAvatar: createPlayerAvatar,
   });
   const hud = createHudController({ THREE, elements, state });
@@ -36,7 +36,6 @@ export function createGame() {
     THREE,
     camera,
     playerAvatar,
-    state,
     worldShell: elements.worldShell,
     onModeChange: hud.setCameraMode,
   });
@@ -45,7 +44,17 @@ export function createGame() {
     elements,
     state,
     onDismissHint: hud.dismissHint,
-    onResetView: cameraController.reset,
+    onResetView: () => {
+      engine.resetView();
+      cameraController.reset();
+    },
+    onLook: (horizontal, vertical) => {
+      state.movement.lookX += horizontal;
+      state.movement.lookY += vertical;
+    },
+    onZoom: (amount) => {
+      state.movement.zoomDelta += amount;
+    },
   });
 
   function resizeRenderer() {
@@ -86,33 +95,37 @@ export function createGame() {
 
   function render(delta) {
     const step = Math.min(delta, 0.05);
-    state.runtime.elapsed += step;
-
-    const currentMovement = updatePlayer({
-      THREE,
-      state,
-      obstacles: environment.obstacles,
-      delta: step,
-      onStatusChange: hud.updateMovementStatus,
-    });
-
-    const lobbyStatus = npcManager.update(
-      state.runtime.elapsed,
-      step,
-      state.player.position,
+    const movement = getMovementInput(state);
+    engine.setInput(
+      movement.forward,
+      movement.strafe,
+      movement.sprinting,
+      state.movement.jumpQueued,
+      state.movement.lookX,
+      state.movement.lookY,
+      state.movement.zoomDelta,
     );
+    state.movement.jumpQueued = false;
+    state.movement.lookX = 0;
+    state.movement.lookY = 0;
+    state.movement.zoomDelta = 0;
+    engine.step(step);
+
+    const frame = engine.readFrame();
+    state.runtime.engineFrame = frame;
+    state.runtime.elapsed = frame.elapsed;
+    const lobbyStatus = npcManager.update(frame);
     hud.updateLobby(lobbyStatus);
 
-    cameraController.smooth(step);
-
-    const headBob = currentMovement.moving && state.player.grounded
+    const headBob = frame.player.moving && frame.player.grounded
       ? Math.sin(
-        state.runtime.elapsed * (currentMovement.sprinting ? 14 : 10),
-      ) * (currentMovement.sprinting ? 0.045 : 0.025)
+        frame.elapsed * (frame.player.sprinting ? 14 : 10),
+      ) * (frame.player.sprinting ? 0.045 : 0.025)
       : 0;
-    cameraController.update(headBob);
-    animateEnvironment(state.runtime.elapsed);
-    hud.updateCompass();
+    cameraController.update(frame, headBob);
+    animateEnvironment(frame.elapsed);
+    hud.updateMovementStatus(frame);
+    hud.updateCompass(frame);
     renderer.render(scene, camera);
   }
 
@@ -124,4 +137,6 @@ export function createGame() {
 
   hud.markReady();
   animate();
+
+  window.addEventListener("pagehide", () => engine.destroy(), { once: true });
 }

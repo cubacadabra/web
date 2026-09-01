@@ -1,5 +1,4 @@
-import { lookConfig, zoomConfig } from "../config/gameConfig.js";
-import { clamp } from "../lib/math.js";
+import { zoomConfig } from "../config/gameConfig.js";
 
 const movementCodes = new Set([
   "KeyW",
@@ -21,7 +20,15 @@ function isInteractiveTarget(target) {
   );
 }
 
-export function bindControls({ elements, state, onDismissHint, onResetView }) {
+export function bindControls({
+  elements,
+  state,
+  onDismissHint,
+  onResetView,
+  onLook,
+  onZoom,
+  onJump,
+}) {
   const {
     canvas,
     joystickElement,
@@ -34,25 +41,17 @@ export function bindControls({ elements, state, onDismissHint, onResetView }) {
   } = elements;
 
   function adjustZoom(amount) {
-    state.cameraZoom.targetDistance = clamp(
-      state.cameraZoom.targetDistance + amount,
-      0,
-      zoomConfig.maxDistance,
-    );
+    onZoom?.(amount);
     onDismissHint();
   }
 
   function setViewFromInput(horizontal, vertical = 0) {
-    state.view.targetYaw -= horizontal * lookConfig.sensitivity;
-    state.view.targetPitch = clamp(
-      state.view.targetPitch + vertical * lookConfig.sensitivity,
-      -lookConfig.maxPitch,
-      lookConfig.maxPitch,
-    );
+    onLook?.(horizontal, vertical);
   }
 
   function queueJump() {
-    if (state.player.grounded) state.movement.jumpQueued = true;
+    state.movement.jumpQueued = true;
+    onJump?.();
     onDismissHint();
   }
 

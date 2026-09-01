@@ -1,6 +1,4 @@
 export function createEnvironment({ THREE, scene, world, colors }) {
-  const obstacles = [];
-
   function createBlock(position, size, color, options = {}) {
     const geometry = new THREE.BoxGeometry(...size);
     const material = new THREE.MeshStandardMaterial({
@@ -24,17 +22,6 @@ export function createEnvironment({ THREE, scene, world, colors }) {
         }),
       );
       block.add(outline);
-    }
-
-    if (options.collidable !== false) {
-      obstacles.push({
-        minX: position[0] - size[0] / 2,
-        maxX: position[0] + size[0] / 2,
-        minZ: position[2] - size[2] / 2,
-        maxZ: position[2] + size[2] / 2,
-        bottom: position[1] - size[1] / 2,
-        top: position[1] + size[1] / 2,
-      });
     }
 
     return block;
@@ -280,7 +267,6 @@ export function createEnvironment({ THREE, scene, world, colors }) {
   const cloudC = createCloud([42, 15, 12], 0.95);
 
   return {
-    obstacles,
     animated: {
       spawnPad,
       coralBlock,
