@@ -17,40 +17,53 @@ function getCardinalDirection(degrees) {
 }
 
 export function createHudController({ THREE, elements, state, gameDefinition }) {
-  const launchPads = gameDefinition.launchPads ?? [];
+  let activeWorld = gameDefinition;
   const launchPadCountElements = [];
-  const scene = gameDefinition.scene ?? {};
 
-  if (elements.sceneEyebrow && scene.eyebrow) {
-    elements.sceneEyebrow.textContent = scene.eyebrow;
-  }
-  if (elements.sceneTitle && scene.title) {
-    elements.sceneTitle.textContent = scene.title;
-  }
-  if (elements.sceneDescription && scene.description) {
-    elements.sceneDescription.textContent = scene.description;
+  function renderWorldDetails() {
+    const scene = activeWorld.scene ?? {};
+    if (elements.sceneEyebrow) elements.sceneEyebrow.textContent = scene.eyebrow ?? "";
+    if (elements.sceneTitle) elements.sceneTitle.textContent = scene.title ?? "";
+    if (elements.sceneDescription) {
+      elements.sceneDescription.textContent = scene.description ?? "";
+    }
   }
 
-  launchPads.forEach((pad) => {
+  function renderLaunchPadRows() {
     if (!elements.launchPadList) return;
-    const row = document.createElement("div");
-    row.className = "meeting-row";
+    elements.launchPadList.replaceChildren();
+    launchPadCountElements.length = 0;
+    (activeWorld.launchPads ?? []).forEach((pad) => {
+      const row = document.createElement("div");
+      row.className = "meeting-row";
 
-    const swatch = document.createElement("span");
-    swatch.className = "meeting-swatch";
-    swatch.setAttribute("aria-hidden", "true");
-    swatch.style.backgroundColor = `#${pad.color.toString(16).padStart(6, "0")}`;
+      const swatch = document.createElement("span");
+      swatch.className = "meeting-swatch";
+      swatch.setAttribute("aria-hidden", "true");
+      swatch.style.backgroundColor = `#${pad.color.toString(16).padStart(6, "0")}`;
 
-    const label = document.createElement("span");
-    label.textContent = pad.label;
+      const label = document.createElement("span");
+      label.textContent = pad.label;
 
-    const count = document.createElement("strong");
-    count.textContent = "00";
+      const count = document.createElement("strong");
+      count.textContent = "00";
 
-    row.append(swatch, label, count);
-    elements.launchPadList.append(row);
-    launchPadCountElements.push(count);
-  });
+      row.append(swatch, label, count);
+      elements.launchPadList.append(row);
+      launchPadCountElements.push(count);
+    });
+  }
+
+  function setWorld(nextWorld, { lobby = false } = {}) {
+    activeWorld = nextWorld;
+    renderWorldDetails();
+    renderLaunchPadRows();
+    if (elements.lobbyStatus) elements.lobbyStatus.hidden = !lobby;
+    elements.worldShell?.classList.toggle("is-session-world", !lobby);
+    elements.worldShell?.classList.remove("is-countdown", "is-launch-complete");
+  }
+
+  setWorld(gameDefinition, { lobby: true });
 
   function dismissHint() {
     if (state.runtime.hintDismissed) return;
@@ -100,7 +113,7 @@ export function createHudController({ THREE, elements, state, gameDefinition }) 
 
   function updateLobby({ totalPlayers, launchPadCounts, isFull }) {
     if (elements.playerCount) {
-      elements.playerCount.textContent = `${totalPlayers} / ${scene.maxPlayers ?? 18}`;
+      elements.playerCount.textContent = `${totalPlayers} / ${activeWorld.scene?.maxPlayers ?? 18}`;
     }
     if (elements.lobbyCopy) {
       elements.lobbyCopy.textContent = isFull
@@ -124,7 +137,7 @@ export function createHudController({ THREE, elements, state, gameDefinition }) 
       : padStates.findIndex((pad) => pad.phase === LAUNCH_COMPLETE_PHASE);
     const padIndex = activeIndex >= 0 ? activeIndex : fallbackIndex;
     const padState = padStates[padIndex];
-    const pad = launchPads[padIndex];
+    const pad = activeWorld.launchPads?.[padIndex];
 
     if (frame.launchEventId !== state.runtime.lastLaunchEventId) {
       state.runtime.lastLaunchEventId = frame.launchEventId;
@@ -181,6 +194,7 @@ export function createHudController({ THREE, elements, state, gameDefinition }) 
 
   return {
     dismissHint,
+    setWorld,
     setCameraMode,
     updateMovementStatus,
     updateLobby,

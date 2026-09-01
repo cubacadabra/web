@@ -160,6 +160,15 @@ export async function createRustEngine() {
         );
       });
     },
+    enterSession(launchPadIndex, spawn) {
+      return call(
+        "engine_enter_session",
+        launchPadIndex,
+        spawn[0],
+        spawn[1],
+        spawn[2],
+      );
+    },
     setLaunchPad,
     step(delta) {
       call("engine_step", delta);

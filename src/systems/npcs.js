@@ -27,6 +27,7 @@ export function createNpcManager({ THREE, world, colors, createAvatar }) {
   function update(frame) {
     frame.agents.forEach((agent, index) => {
       const avatar = ensureAvatar(index);
+      avatar.visible = true;
       avatar.position.set(
         agent.position.x,
         agent.position.y,
@@ -45,6 +46,10 @@ export function createNpcManager({ THREE, world, colors, createAvatar }) {
           ? Math.abs(Math.sin(agent.walkCycle)) * 0.025
           : 0
       );
+    });
+
+    avatars.forEach((avatar, index) => {
+      if (index >= frame.agents.length) avatar.visible = false;
     });
 
     return {

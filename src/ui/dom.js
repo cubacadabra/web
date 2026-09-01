@@ -21,6 +21,7 @@ export function getDomElements() {
     movementState: getElement("#movement-state"),
     playerCount: getElement("#player-count"),
     lobbyCopy: getElement("#lobby-copy"),
+    lobbyStatus: getElement("#lobby-status"),
     sceneEyebrow: getElement("#scene-eyebrow"),
     sceneTitle: getElement("#scene-title"),
     sceneDescription: getElement("#scene-description"),

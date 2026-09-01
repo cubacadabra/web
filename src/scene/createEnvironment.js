@@ -1,6 +1,8 @@
 export function createEnvironment({ THREE, scene, world, gameDefinition }) {
   const colors = gameDefinition.palette;
   const worldDefinition = gameDefinition.world ?? {};
+  const root = new THREE.Group();
+  world.add(root);
 
   function colorToCss(color) {
     return `#${color.toString(16).padStart(6, "0")}`;
@@ -17,7 +19,7 @@ export function createEnvironment({ THREE, scene, world, gameDefinition }) {
     block.position.set(...position);
     block.castShadow = true;
     block.receiveShadow = true;
-    world.add(block);
+    root.add(block);
 
     if (options.outline !== false) {
       const outline = new THREE.LineSegments(
@@ -72,7 +74,7 @@ export function createEnvironment({ THREE, scene, world, gameDefinition }) {
     center.position.y = 0.205;
     pad.add(center);
 
-    world.add(pad);
+    root.add(pad);
     return pad;
   }
 
@@ -163,7 +165,7 @@ export function createEnvironment({ THREE, scene, world, gameDefinition }) {
     point.add(portalTop);
 
     point.add(createWorldLabel(`${code}  ${label}`, color));
-    world.add(point);
+    root.add(point);
     return {
       code,
       label,
@@ -202,7 +204,7 @@ export function createEnvironment({ THREE, scene, world, gameDefinition }) {
       cloud.add(puff);
     });
 
-    scene.add(cloud);
+    root.add(cloud);
     return cloud;
   }
 
@@ -217,7 +219,7 @@ export function createEnvironment({ THREE, scene, world, gameDefinition }) {
   );
   ground.position.y = -0.35;
   ground.receiveShadow = true;
-  world.add(ground);
+  root.add(ground);
 
   const groundEdge = new THREE.LineSegments(
     new THREE.EdgesGeometry(ground.geometry),
@@ -228,7 +230,7 @@ export function createEnvironment({ THREE, scene, world, gameDefinition }) {
     }),
   );
   groundEdge.position.copy(ground.position);
-  world.add(groundEdge);
+  root.add(groundEdge);
 
   const gridSize = worldDefinition.gridSize ?? 112;
   const grid = new THREE.GridHelper(
@@ -241,9 +243,11 @@ export function createEnvironment({ THREE, scene, world, gameDefinition }) {
   grid.material.transparent = true;
   grid.material.opacity = 0.22;
   grid.material.depthWrite = false;
-  world.add(grid);
+  root.add(grid);
 
-  const spawnPad = createSpawnPad();
+  const spawnPad = worldDefinition.showSpawnPad === false
+    ? null
+    : createSpawnPad();
   const renderedLaunchPads = (gameDefinition.launchPads ?? []).map(createLaunchPad);
   const blocks = (gameDefinition.blocks ?? []).map((block) => createBlock(
     block.position,
@@ -257,6 +261,7 @@ export function createEnvironment({ THREE, scene, world, gameDefinition }) {
   ));
 
   return {
+    root,
     animated: {
       spawnPad,
       blocks,

@@ -29,24 +29,47 @@ export async function loadGamePackage() {
   const baseUrl = new URL(`${GAME_PACKAGE_PATH}/`, document.baseURI);
   const manifest = await loadJson(new URL("manifest.json", baseUrl));
   const script = await loadText(new URL("game.luau", baseUrl));
-  const palette = Object.fromEntries(
-    Object.entries(manifest.palette ?? {}).map(([name, value]) => [
-      name,
-      parseColor(value),
+
+  function normalizeWorld(world = {}) {
+    const palette = Object.fromEntries(
+      Object.entries(world.palette ?? {}).map(([name, value]) => [
+        name,
+        parseColor(value),
+      ]),
+    );
+
+    return {
+      ...world,
+      palette,
+      launchPads: (world.launchPads ?? []).map((pad) => ({
+        ...pad,
+        color: parseColor(pad.color, palette.accent ?? 0xffffff),
+      })),
+      blocks: (world.blocks ?? []).map((block) => ({
+        ...block,
+        color: palette[block.color] ?? parseColor(block.color),
+      })),
+    };
+  }
+
+  const worlds = Object.fromEntries([
+    ["lobby", normalizeWorld(manifest)],
+    ...Object.entries(manifest.worlds ?? {}).map(([id, world]) => [
+      id,
+      normalizeWorld(world),
     ]),
-  );
+  ]);
+  const startWorld = manifest.startWorld ?? "lobby";
+  const initialWorld = worlds[startWorld];
+  if (!initialWorld) {
+    throw new Error(`The game start world "${startWorld}" was not found.`);
+  }
 
   return {
     ...manifest,
     script,
-    palette,
-    launchPads: (manifest.launchPads ?? []).map((pad) => ({
-      ...pad,
-      color: parseColor(pad.color, palette.accent ?? 0xffffff),
-    })),
-    blocks: (manifest.blocks ?? []).map((block) => ({
-      ...block,
-      color: palette[block.color] ?? parseColor(block.color),
-    })),
+    worlds,
+    activeWorldId: startWorld,
+    ...initialWorld,
   };
 }

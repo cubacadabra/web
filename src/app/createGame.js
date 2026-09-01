@@ -27,7 +27,8 @@ export async function createGame() {
     THREE,
     canvas: elements.canvas,
   });
-  const environment = createEnvironment({ THREE, scene, world, gameDefinition });
+  let activeWorld = gameDefinition;
+  let environment = createEnvironment({ THREE, scene, world, gameDefinition: activeWorld });
   const playerAvatar = createPlayerAvatar({
     THREE,
     world,
@@ -80,11 +81,33 @@ export async function createGame() {
   resizeObserver.observe(elements.canvas);
   resizeRenderer();
 
+  function enterWorld(worldId, launchFrame) {
+    if (state.runtime.worldId !== "lobby") return;
+    const nextWorld = gameDefinition.worlds?.[worldId];
+    if (!nextWorld || launchFrame.playerLaunchPad !== launchFrame.lastLaunchPad) {
+      return;
+    }
+
+    const spawn = nextWorld.world?.spawn ?? [0, 0, 0];
+    engine.enterSession(launchFrame.lastLaunchPad, spawn);
+    engine.configureObstacles(nextWorld.blocks ?? []);
+    environment.root.removeFromParent();
+    activeWorld = nextWorld;
+    environment = createEnvironment({
+      THREE,
+      scene,
+      world,
+      gameDefinition: activeWorld,
+    });
+    hud.setWorld(activeWorld);
+    state.runtime.worldId = worldId;
+  }
+
   function animateEnvironment(elapsed) {
     const { spawnPad, blocks, clouds, launchPads: renderedLaunchPads } =
       environment.animated;
 
-    spawnPad.rotation.y = Math.sin(elapsed * 0.22) * 0.015;
+    if (spawnPad) spawnPad.rotation.y = Math.sin(elapsed * 0.22) * 0.015;
     blocks.forEach((block, index) => {
       block.rotation.y = Math.sin(elapsed * (0.13 + index * 0.01) + index) * 0.008;
     });
@@ -121,10 +144,16 @@ export async function createGame() {
     engine.step(step);
 
     const frame = engine.readFrame();
+    if (
+      frame.launchEventId !== state.runtime.lastLaunchEventId &&
+      frame.playerLaunchPad === frame.lastLaunchPad
+    ) {
+      enterWorld(gameDefinition.launch?.destinationWorld, frame);
+    }
     state.runtime.engineFrame = frame;
     state.runtime.elapsed = frame.elapsed;
     const lobbyStatus = npcManager.update(frame);
-    hud.updateLobby(lobbyStatus);
+    if (state.runtime.worldId === "lobby") hud.updateLobby(lobbyStatus);
     hud.updateLaunchStatus(frame);
 
     const headBob = frame.player.moving && frame.player.grounded

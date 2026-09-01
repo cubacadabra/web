@@ -68,6 +68,18 @@ canvas:focus-visible {
     linear-gradient(180deg, #79a9c0 0%, #b9d4d1 48%, #e8e4cd 100%);
 }
 
+.world-shell.is-session-world .world-canvas {
+  background:
+    linear-gradient(180deg, #263e4a 0%, #49686d 54%, #71887d 100%);
+}
+
+.world-shell.is-session-world .atmosphere {
+  background:
+    linear-gradient(180deg, rgba(8, 24, 36, 0.32), transparent 24%),
+    linear-gradient(0deg, rgba(5, 24, 29, 0.3), transparent 34%),
+    radial-gradient(circle at 53% 39%, transparent 0 23%, rgba(8, 27, 35, 0.18) 100%);
+}
+
 .world-canvas.is-looking {
   cursor: grabbing;
 }
