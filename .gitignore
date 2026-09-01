@@ -1,4 +1,5 @@
 node_modules
+public/wasm/cubacadabra_engine.wasm
 package-lock.json
 dist
 .DS_Store
