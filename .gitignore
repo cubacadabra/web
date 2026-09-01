@@ -1,5 +1,6 @@
 node_modules
 public/wasm/cubacadabra_engine.wasm
+public/wasm/renderer
 package-lock.json
 dist
 .DS_Store

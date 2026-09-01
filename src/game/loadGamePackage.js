@@ -70,6 +70,5 @@ export async function loadGamePackage() {
     script,
     worlds,
     activeWorldId: startWorld,
-    ...initialWorld,
   };
 }

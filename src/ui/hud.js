@@ -3,10 +3,10 @@ import { clamp } from "../lib/math.js";
 const LAUNCH_COUNTDOWN_PHASE = 1;
 const LAUNCH_COMPLETE_PHASE = 2;
 
-function getHeading(THREE, yaw) {
+function getHeading(yaw) {
   const fullTurn = Math.PI * 2;
   const wrappedYaw = ((-yaw % fullTurn) + fullTurn) % fullTurn;
-  return Math.round(THREE.MathUtils.radToDeg(wrappedYaw)) % 360;
+  return Math.round((wrappedYaw * 180) / Math.PI) % 360;
 }
 
 function getCardinalDirection(degrees) {
@@ -16,7 +16,7 @@ function getCardinalDirection(degrees) {
   return "W";
 }
 
-export function createHudController({ THREE, elements, state, gameDefinition }) {
+export function createHudController({ elements, state, gameDefinition }) {
   let activeWorld = gameDefinition;
   const launchPadCountElements = [];
 
@@ -100,7 +100,7 @@ export function createHudController({ THREE, elements, state, gameDefinition }) 
   }
 
   function updateCompass(frame) {
-    const heading = getHeading(THREE, frame.camera.yaw);
+    const heading = getHeading(frame.camera.yaw);
     const cardinal = getCardinalDirection(heading);
     if (elements.headingValue) {
       elements.headingValue.textContent = `${cardinal} ${heading}°`;
