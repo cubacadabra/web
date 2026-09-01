@@ -1,5 +1,4 @@
 import { clamp } from "../lib/math.js";
-import { launchPads } from "../config/gameConfig.js";
 
 const LAUNCH_COUNTDOWN_PHASE = 1;
 const LAUNCH_COMPLETE_PHASE = 2;
@@ -17,7 +16,42 @@ function getCardinalDirection(degrees) {
   return "W";
 }
 
-export function createHudController({ THREE, elements, state }) {
+export function createHudController({ THREE, elements, state, gameDefinition }) {
+  const launchPads = gameDefinition.launchPads ?? [];
+  const launchPadCountElements = [];
+  const scene = gameDefinition.scene ?? {};
+
+  if (elements.sceneEyebrow && scene.eyebrow) {
+    elements.sceneEyebrow.textContent = scene.eyebrow;
+  }
+  if (elements.sceneTitle && scene.title) {
+    elements.sceneTitle.textContent = scene.title;
+  }
+  if (elements.sceneDescription && scene.description) {
+    elements.sceneDescription.textContent = scene.description;
+  }
+
+  launchPads.forEach((pad) => {
+    if (!elements.launchPadList) return;
+    const row = document.createElement("div");
+    row.className = "meeting-row";
+
+    const swatch = document.createElement("span");
+    swatch.className = "meeting-swatch";
+    swatch.setAttribute("aria-hidden", "true");
+    swatch.style.backgroundColor = `#${pad.color.toString(16).padStart(6, "0")}`;
+
+    const label = document.createElement("span");
+    label.textContent = pad.label;
+
+    const count = document.createElement("strong");
+    count.textContent = "00";
+
+    row.append(swatch, label, count);
+    elements.launchPadList.append(row);
+    launchPadCountElements.push(count);
+  });
+
   function dismissHint() {
     if (state.runtime.hintDismissed) return;
     state.runtime.hintDismissed = true;
@@ -66,7 +100,7 @@ export function createHudController({ THREE, elements, state }) {
 
   function updateLobby({ totalPlayers, launchPadCounts, isFull }) {
     if (elements.playerCount) {
-      elements.playerCount.textContent = `${totalPlayers} / 18`;
+      elements.playerCount.textContent = `${totalPlayers} / ${scene.maxPlayers ?? 18}`;
     }
     if (elements.lobbyCopy) {
       elements.lobbyCopy.textContent = isFull
@@ -74,8 +108,8 @@ export function createHudController({ THREE, elements, state }) {
         : "Players are finding their launch pads";
     }
     launchPadCounts.forEach((count, index) => {
-      if (elements.launchPadCounts?.[index]) {
-        elements.launchPadCounts[index].textContent = String(count).padStart(2, "0");
+      if (launchPadCountElements[index]) {
+        launchPadCountElements[index].textContent = String(count).padStart(2, "0");
       }
     });
   }

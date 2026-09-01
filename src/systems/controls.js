@@ -1,4 +1,4 @@
-import { zoomConfig } from "../config/gameConfig.js";
+import { zoomConfig } from "../config/clientConfig.js";
 
 const movementCodes = new Set([
   "KeyW",

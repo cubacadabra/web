@@ -38,11 +38,12 @@ export async function createRustEngine() {
   }
 
   function setLaunchPad(index, { position, radius, countdown }) {
+    const z = position.length > 2 ? position[2] : position[1];
     call(
       "engine_set_launch_pad",
       index,
       position[0],
-      position[1],
+      z,
       radius,
       countdown,
     );
@@ -117,6 +118,17 @@ export async function createRustEngine() {
   }
 
   return {
+    loadGameScript(source) {
+      const bytes = new TextEncoder().encode(source);
+      const pointer = call("engine_script_buffer_ptr", bytes.length);
+      if (!pointer && bytes.length) {
+        throw new Error("The game script buffer could not be allocated.");
+      }
+      new Uint8Array(exports.memory.buffer, pointer, bytes.length).set(bytes);
+      if (!call("engine_load_script_buffer")) {
+        throw new Error("The game script could not be compiled.");
+      }
+    },
     setInput(forward, strafe, sprint, jump, lookX, lookY, zoomDelta) {
       call(
         "engine_set_input",
@@ -132,6 +144,21 @@ export async function createRustEngine() {
     configureLaunchPads(pads) {
       call("engine_set_launch_pad_count", pads.length);
       pads.forEach((pad, index) => setLaunchPad(index, pad));
+    },
+    configureObstacles(blocks) {
+      call("engine_set_obstacle_count", blocks.length);
+      blocks.forEach((block, index) => {
+        call(
+          "engine_set_obstacle",
+          index,
+          block.position[0],
+          block.position[1],
+          block.position[2],
+          block.size[0],
+          block.size[1],
+          block.size[2],
+        );
+      });
     },
     setLaunchPad,
     step(delta) {

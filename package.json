@@ -4,9 +4,10 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "sync:game": "sh scripts/sync_first_game.sh",
+    "dev": "npm run sync:game && vite",
     "build:wasm": "sh ../rust/scripts/build_wasm.sh",
-    "build": "npm run build:wasm && vite build",
+    "build": "npm run sync:game && npm run build:wasm && vite build",
     "preview": "vite preview"
   },
   "dependencies": {

@@ -1,4 +1,11 @@
-export function createEnvironment({ THREE, scene, world, colors, launchPads }) {
+export function createEnvironment({ THREE, scene, world, gameDefinition }) {
+  const colors = gameDefinition.palette;
+  const worldDefinition = gameDefinition.world ?? {};
+
+  function colorToCss(color) {
+    return `#${color.toString(16).padStart(6, "0")}`;
+  }
+
   function createBlock(position, size, color, options = {}) {
     const geometry = new THREE.BoxGeometry(...size);
     const material = new THREE.MeshStandardMaterial({
@@ -29,14 +36,11 @@ export function createEnvironment({ THREE, scene, world, colors, launchPads }) {
 
   function createSpawnPad() {
     const pad = new THREE.Group();
-    pad.position.set(0, 0, 6.25);
+    pad.position.set(...(worldDefinition.spawn ?? [0, 0, 6.25]));
 
     const base = new THREE.Mesh(
       new THREE.CylinderGeometry(2.45, 2.45, 0.18, 32),
-      new THREE.MeshStandardMaterial({
-        color: colors.ink,
-        roughness: 0.92,
-      }),
+      new THREE.MeshStandardMaterial({ color: colors.ink, roughness: 0.92 }),
     );
     base.position.y = 0.11;
     base.castShadow = true;
@@ -77,11 +81,13 @@ export function createEnvironment({ THREE, scene, world, colors, launchPads }) {
     labelCanvas.width = 420;
     labelCanvas.height = 96;
     const context = labelCanvas.getContext("2d");
-    context.fillStyle = "rgba(38, 75, 75, 0.92)";
+    context.fillStyle = colorToCss(colors.ink);
+    context.globalAlpha = 0.92;
     context.fillRect(3, 3, 414, 90);
+    context.globalAlpha = 1;
     context.fillStyle = `#${accent.toString(16).padStart(6, "0")}`;
     context.fillRect(3, 3, 7, 90);
-    context.fillStyle = "#f6f1e7";
+    context.fillStyle = colorToCss(colors.paper);
     context.font = "800 25px Arial, sans-serif";
     context.letterSpacing = "2px";
     context.fillText(text, 30, 58);
@@ -98,12 +104,13 @@ export function createEnvironment({ THREE, scene, world, colors, launchPads }) {
     return label;
   }
 
-  function createLaunchPad(position, color, label, code) {
+  function createLaunchPad(launchPad) {
+    const { position, color, label, code } = launchPad;
     const point = new THREE.Group();
-    point.position.set(position[0], 0, position[1]);
+    point.position.set(position[0], position[1] ?? 0, position[2] ?? 0);
 
     const base = new THREE.Mesh(
-      new THREE.CylinderGeometry(3.15, 3.15, 0.2, 32),
+      new THREE.CylinderGeometry(launchPad.radius + 0.45, launchPad.radius + 0.45, 0.2, 32),
       new THREE.MeshStandardMaterial({ color: colors.ink, roughness: 0.9 }),
     );
     base.position.y = 0.1;
@@ -111,7 +118,7 @@ export function createEnvironment({ THREE, scene, world, colors, launchPads }) {
     point.add(base);
 
     const inner = new THREE.Mesh(
-      new THREE.CircleGeometry(2.7, 32),
+      new THREE.CircleGeometry(launchPad.radius, 32),
       new THREE.MeshBasicMaterial({
         color,
         transparent: true,
@@ -124,7 +131,7 @@ export function createEnvironment({ THREE, scene, world, colors, launchPads }) {
     point.add(inner);
 
     const ring = new THREE.Mesh(
-      new THREE.TorusGeometry(2.55, 0.11, 8, 40),
+      new THREE.TorusGeometry(Math.max(0.2, launchPad.radius - 0.15), 0.11, 8, 40),
       new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.92 }),
     );
     ring.rotation.x = Math.PI / 2;
@@ -135,7 +142,11 @@ export function createEnvironment({ THREE, scene, world, colors, launchPads }) {
     [-2.35, 2.35].forEach((x) => {
       const beacon = new THREE.Mesh(
         new THREE.CylinderGeometry(0.15, 0.23, 2.7, 8),
-        new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.18 }),
+        new THREE.MeshStandardMaterial({
+          color,
+          emissive: color,
+          emissiveIntensity: 0.18,
+        }),
       );
       beacon.position.set(x, 1.35, -0.35);
       beacon.castShadow = true;
@@ -151,16 +162,14 @@ export function createEnvironment({ THREE, scene, world, colors, launchPads }) {
     portalTop.castShadow = true;
     point.add(portalTop);
 
-    const labelSprite = createWorldLabel(`${code}  ${label}`, color);
-    point.add(labelSprite);
-
+    point.add(createWorldLabel(`${code}  ${label}`, color));
     world.add(point);
     return {
       code,
       label,
       color,
       group: point,
-      position: new THREE.Vector3(position[0], 0, position[1]),
+      position: new THREE.Vector3(point.position.x, point.position.y, point.position.z),
       ring,
       beacons,
     };
@@ -170,6 +179,7 @@ export function createEnvironment({ THREE, scene, world, colors, launchPads }) {
     const cloud = new THREE.Group();
     cloud.position.set(...position);
     cloud.scale.setScalar(scale);
+    cloud.userData.initialX = cloud.position.x;
 
     const cloudMaterial = new THREE.MeshBasicMaterial({
       color: colors.paper,
@@ -196,8 +206,9 @@ export function createEnvironment({ THREE, scene, world, colors, launchPads }) {
     return cloud;
   }
 
+  const groundSize = worldDefinition.groundSize ?? 120;
   const ground = new THREE.Mesh(
-    new THREE.BoxGeometry(120, 0.7, 120),
+    new THREE.BoxGeometry(groundSize, 0.7, groundSize),
     new THREE.MeshStandardMaterial({
       color: colors.ground,
       roughness: 1,
@@ -219,7 +230,13 @@ export function createEnvironment({ THREE, scene, world, colors, launchPads }) {
   groundEdge.position.copy(ground.position);
   world.add(groundEdge);
 
-  const grid = new THREE.GridHelper(112, 28, colors.grid, colors.grid);
+  const gridSize = worldDefinition.gridSize ?? 112;
+  const grid = new THREE.GridHelper(
+    gridSize,
+    worldDefinition.gridDivisions ?? 28,
+    colors.grid,
+    colors.grid,
+  );
   grid.position.y = 0.012;
   grid.material.transparent = true;
   grid.material.opacity = 0.22;
@@ -227,53 +244,23 @@ export function createEnvironment({ THREE, scene, world, colors, launchPads }) {
   world.add(grid);
 
   const spawnPad = createSpawnPad();
-  const renderedLaunchPads = launchPads.map((launchPad) => createLaunchPad(
-    launchPad.position,
-    launchPad.color,
-    launchPad.label,
-    launchPad.code,
+  const renderedLaunchPads = (gameDefinition.launchPads ?? []).map(createLaunchPad);
+  const blocks = (gameDefinition.blocks ?? []).map((block) => createBlock(
+    block.position,
+    block.size,
+    block.color,
+    block,
   ));
-  const coralBlock = createBlock(
-    [0.15, 1.35, -13.5],
-    [2.8, 2.7, 2.8],
-    colors.coral,
-  );
-  const butterBlock = createBlock(
-    [-8.1, 0.8, -22],
-    [3.8, 1.6, 3.8],
-    colors.butter,
-  );
-  const blueBlock = createBlock(
-    [8.4, 1.5, -27],
-    [2.2, 3, 2.2],
-    colors.periwinkle,
-  );
-  createBlock([13, 0.5, -17], [1, 1, 1], colors.ink, {
-    outline: false,
-  });
-
-  // A handful of soft horizon markers keep the world readable while it stays sparse.
-  createBlock([-22, 0.35, -34], [1.2, 0.7, 1.2], colors.coral, {
-    outline: false,
-  });
-  createBlock([24, 0.5, -39], [1.5, 1, 1.5], colors.butter, {
-    outline: false,
-  });
-  createBlock([-28, 0.5, 18], [1.5, 1, 1.5], colors.periwinkle, {
-    outline: false,
-  });
-
-  const cloudA = createCloud([-18, 18, -55], 1.35);
-  const cloudB = createCloud([24, 22, -72], 1.8);
-  const cloudC = createCloud([42, 15, 12], 0.95);
+  const clouds = (worldDefinition.clouds ?? []).map((cloud) => createCloud(
+    cloud.position,
+    cloud.scale,
+  ));
 
   return {
     animated: {
       spawnPad,
-      coralBlock,
-      butterBlock,
-      blueBlock,
-      clouds: [cloudA, cloudB, cloudC],
+      blocks,
+      clouds,
       launchPads: renderedLaunchPads,
     },
     launchPads: renderedLaunchPads,

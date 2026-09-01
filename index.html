@@ -59,23 +59,7 @@
           <strong id="player-count">1 / 18</strong>
         </div>
         <p id="lobby-copy">Players are finding their launch pads</p>
-        <div class="meeting-list" aria-label="Players on launch pads">
-          <div class="meeting-row">
-            <span class="meeting-swatch meeting-swatch-coral" aria-hidden="true"></span>
-            <span>Sun Court</span>
-            <strong id="launch-count-0">00</strong>
-          </div>
-          <div class="meeting-row">
-            <span class="meeting-swatch meeting-swatch-butter" aria-hidden="true"></span>
-            <span>Deep Dive</span>
-            <strong id="launch-count-1">00</strong>
-          </div>
-          <div class="meeting-row">
-            <span class="meeting-swatch meeting-swatch-blue" aria-hidden="true"></span>
-            <span>Sky Run</span>
-            <strong id="launch-count-2">00</strong>
-          </div>
-        </div>
+        <div class="meeting-list" id="launch-pad-list" aria-label="Players on launch pads"></div>
         <div class="launch-status" id="launch-status" aria-live="polite">
           <div class="launch-status-header">
             <span>Next launch</span>
@@ -86,9 +70,9 @@
       </aside>
 
       <section class="scene-intro" aria-labelledby="scene-title">
-        <p class="eyebrow">cubacadabra</p>
+        <p class="eyebrow" id="scene-eyebrow">cubacadabra</p>
         <h1 id="scene-title">Lobby</h1>
-        <p class="scene-description">
+        <p class="scene-description" id="scene-description">
           Walk, run, and jump if you dare.
         </p>
       </section>

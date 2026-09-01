@@ -1,6 +1,6 @@
 import * as THREE from "three";
-import { colors, launchPads } from "../config/gameConfig.js";
 import { createRustEngine } from "../engine/wasm.js";
+import { loadGamePackage } from "../game/loadGamePackage.js";
 import { createEnvironment } from "../scene/createEnvironment.js";
 import { createPlayerAvatar } from "../scene/createAvatar.js";
 import { createScene } from "../scene/createScene.js";
@@ -14,25 +14,32 @@ import { createHudController } from "../ui/hud.js";
 
 export async function createGame() {
   const elements = getDomElements();
+  const gameDefinition = await loadGamePackage();
   const isTouchDevice =
     typeof navigator !== "undefined" && navigator.maxTouchPoints > 0;
   elements.worldShell?.classList.toggle("is-touch-device", isTouchDevice);
   const engine = await createRustEngine();
-  engine.configureLaunchPads(launchPads);
+  engine.loadGameScript(gameDefinition.script);
+  engine.configureLaunchPads(gameDefinition.launchPads);
+  engine.configureObstacles(gameDefinition.blocks);
   const state = createGameState();
   const { renderer, scene, camera, world } = createScene({
     THREE,
     canvas: elements.canvas,
   });
-  const environment = createEnvironment({ THREE, scene, world, colors, launchPads });
-  const playerAvatar = createPlayerAvatar({ THREE, world, colors });
+  const environment = createEnvironment({ THREE, scene, world, gameDefinition });
+  const playerAvatar = createPlayerAvatar({
+    THREE,
+    world,
+    colors: gameDefinition.palette,
+  });
   const npcManager = createNpcManager({
     THREE,
     world,
-    colors,
+    colors: gameDefinition.palette,
     createAvatar: createPlayerAvatar,
   });
-  const hud = createHudController({ THREE, elements, state });
+  const hud = createHudController({ THREE, elements, state, gameDefinition });
   const cameraController = createCameraController({
     THREE,
     camera,
@@ -74,22 +81,17 @@ export async function createGame() {
   resizeRenderer();
 
   function animateEnvironment(elapsed) {
-    const {
-      spawnPad,
-      coralBlock,
-      butterBlock,
-      blueBlock,
-      clouds,
-      launchPads: renderedLaunchPads,
-    } = environment.animated;
+    const { spawnPad, blocks, clouds, launchPads: renderedLaunchPads } =
+      environment.animated;
 
     spawnPad.rotation.y = Math.sin(elapsed * 0.22) * 0.015;
-    coralBlock.rotation.y = Math.sin(elapsed * 0.16) * 0.008;
-    butterBlock.rotation.y = Math.sin(elapsed * 0.13 + 1) * 0.006;
-    blueBlock.rotation.y = Math.sin(elapsed * 0.18 + 2) * 0.008;
-    clouds[0].position.x = -18 + Math.sin(elapsed * 0.025) * 1.2;
-    clouds[1].position.x = 24 + Math.sin(elapsed * 0.02 + 1) * 1.6;
-    clouds[2].position.x = 42 + Math.sin(elapsed * 0.018 + 2) * 1.4;
+    blocks.forEach((block, index) => {
+      block.rotation.y = Math.sin(elapsed * (0.13 + index * 0.01) + index) * 0.008;
+    });
+    clouds.forEach((cloud, index) => {
+      cloud.position.x = cloud.userData.initialX +
+        Math.sin(elapsed * (0.02 + index * 0.003) + index) * (1.2 + index * 0.2);
+    });
 
     renderedLaunchPads.forEach((launchPad, index) => {
       const pulse = 1 + Math.sin(elapsed * 2.2 + index * 1.7) * 0.045;

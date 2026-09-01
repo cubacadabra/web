@@ -1,4 +1,4 @@
-import { playerConfig, zoomConfig } from "../config/gameConfig.js";
+import { playerPresentationConfig, zoomConfig } from "../config/clientConfig.js";
 
 export function createCameraController({
   THREE,
@@ -41,7 +41,7 @@ export function createCameraController({
       camera.rotation.x = view.pitch;
       camera.rotation.z = 0;
       camera.position.x = player.position.x;
-      camera.position.y = player.position.y + playerConfig.eyeHeight + headBob;
+      camera.position.y = player.position.y + playerPresentationConfig.eyeHeight + headBob;
       camera.position.z = player.position.z;
       return;
     }
