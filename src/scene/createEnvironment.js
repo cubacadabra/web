@@ -1,4 +1,4 @@
-export function createEnvironment({ THREE, scene, world, colors }) {
+export function createEnvironment({ THREE, scene, world, colors, launchPads }) {
   function createBlock(position, size, color, options = {}) {
     const geometry = new THREE.BoxGeometry(...size);
     const material = new THREE.MeshStandardMaterial({
@@ -98,7 +98,7 @@ export function createEnvironment({ THREE, scene, world, colors }) {
     return label;
   }
 
-  function createAssemblyPoint(position, color, label, code) {
+  function createLaunchPad(position, color, label, code) {
     const point = new THREE.Group();
     point.position.set(position[0], 0, position[1]);
 
@@ -227,11 +227,12 @@ export function createEnvironment({ THREE, scene, world, colors }) {
   world.add(grid);
 
   const spawnPad = createSpawnPad();
-  const meetingPoints = [
-    createAssemblyPoint([-10, -3], colors.coral, "SUN COURT", "GATE 01"),
-    createAssemblyPoint([0, -7], colors.butter, "DEEP DIVE", "GATE 02"),
-    createAssemblyPoint([10, -3], colors.periwinkle, "SKY RUN", "GATE 03"),
-  ];
+  const renderedLaunchPads = launchPads.map((launchPad) => createLaunchPad(
+    launchPad.position,
+    launchPad.color,
+    launchPad.label,
+    launchPad.code,
+  ));
   const coralBlock = createBlock(
     [0.15, 1.35, -13.5],
     [2.8, 2.7, 2.8],
@@ -273,8 +274,8 @@ export function createEnvironment({ THREE, scene, world, colors }) {
       butterBlock,
       blueBlock,
       clouds: [cloudA, cloudB, cloudC],
-      meetingPoints,
+      launchPads: renderedLaunchPads,
     },
-    meetingPoints,
+    launchPads: renderedLaunchPads,
   };
 }

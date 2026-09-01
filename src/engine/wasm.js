@@ -37,6 +37,17 @@ export async function createRustEngine() {
     return exports[name](handle, ...args);
   }
 
+  function setLaunchPad(index, { position, radius, countdown }) {
+    call(
+      "engine_set_launch_pad",
+      index,
+      position[0],
+      position[1],
+      radius,
+      countdown,
+    );
+  }
+
   function readFrame() {
     const memory = exports.memory;
     const pointer = call("engine_snapshot_ptr");
@@ -73,6 +84,16 @@ export async function createRustEngine() {
       });
     }
 
+    const launchPadCount = call("engine_launch_pad_count");
+    const launchPads = [];
+    for (let index = 0; index < launchPadCount; index += 1) {
+      launchPads.push({
+        occupants: call("engine_launch_pad_occupants", index),
+        seconds: call("engine_launch_pad_seconds", index),
+        phase: call("engine_launch_pad_phase", index),
+      });
+    }
+
     return {
       elapsed: exports.engine_elapsed(handle),
       player,
@@ -82,9 +103,16 @@ export async function createRustEngine() {
         pitch: call("engine_camera_pitch"),
         distance: call("engine_camera_distance"),
       },
-      meetingCounts: [0, 1, 2].map((index) => call("engine_meeting_count", index)),
+      launchPadCounts: launchPads.map((_, index) => (
+        call("engine_launch_pad_occupants", index)
+      )),
       totalPlayers: agentCount + 1,
       isFull: agentCount >= 17,
+      launchPads,
+      playerLaunchPad: call("engine_player_launch_pad"),
+      launchEventId: call("engine_launch_event_id"),
+      lastLaunchPad: call("engine_last_launch_pad"),
+      lastLaunchOccupants: call("engine_last_launch_occupants"),
     };
   }
 
@@ -101,6 +129,11 @@ export async function createRustEngine() {
         zoomDelta,
       );
     },
+    configureLaunchPads(pads) {
+      call("engine_set_launch_pad_count", pads.length);
+      pads.forEach((pad, index) => setLaunchPad(index, pad));
+    },
+    setLaunchPad,
     step(delta) {
       call("engine_step", delta);
     },

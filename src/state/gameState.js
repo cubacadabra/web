@@ -24,6 +24,7 @@ export function createGameState() {
       elapsed: 0,
       hintDismissed: false,
       lastMovementLabel: "",
+      lastLaunchEventId: 0,
       engineFrame: null,
     },
   };

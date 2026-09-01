@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { colors } from "../config/gameConfig.js";
+import { colors, launchPads } from "../config/gameConfig.js";
 import { createRustEngine } from "../engine/wasm.js";
 import { createEnvironment } from "../scene/createEnvironment.js";
 import { createPlayerAvatar } from "../scene/createAvatar.js";
@@ -18,12 +18,13 @@ export async function createGame() {
     typeof navigator !== "undefined" && navigator.maxTouchPoints > 0;
   elements.worldShell?.classList.toggle("is-touch-device", isTouchDevice);
   const engine = await createRustEngine();
+  engine.configureLaunchPads(launchPads);
   const state = createGameState();
   const { renderer, scene, camera, world } = createScene({
     THREE,
     canvas: elements.canvas,
   });
-  const environment = createEnvironment({ THREE, scene, world, colors });
+  const environment = createEnvironment({ THREE, scene, world, colors, launchPads });
   const playerAvatar = createPlayerAvatar({ THREE, world, colors });
   const npcManager = createNpcManager({
     THREE,
@@ -73,8 +74,14 @@ export async function createGame() {
   resizeRenderer();
 
   function animateEnvironment(elapsed) {
-    const { spawnPad, coralBlock, butterBlock, blueBlock, clouds, meetingPoints } =
-      environment.animated;
+    const {
+      spawnPad,
+      coralBlock,
+      butterBlock,
+      blueBlock,
+      clouds,
+      launchPads: renderedLaunchPads,
+    } = environment.animated;
 
     spawnPad.rotation.y = Math.sin(elapsed * 0.22) * 0.015;
     coralBlock.rotation.y = Math.sin(elapsed * 0.16) * 0.008;
@@ -84,10 +91,10 @@ export async function createGame() {
     clouds[1].position.x = 24 + Math.sin(elapsed * 0.02 + 1) * 1.6;
     clouds[2].position.x = 42 + Math.sin(elapsed * 0.018 + 2) * 1.4;
 
-    meetingPoints.forEach((meetingPoint, index) => {
+    renderedLaunchPads.forEach((launchPad, index) => {
       const pulse = 1 + Math.sin(elapsed * 2.2 + index * 1.7) * 0.045;
-      meetingPoint.ring.scale.setScalar(pulse);
-      meetingPoint.beacons.forEach((beacon, beaconIndex) => {
+      launchPad.ring.scale.setScalar(pulse);
+      launchPad.beacons.forEach((beacon, beaconIndex) => {
         beacon.position.y = 1.35 + Math.sin(elapsed * 2.6 + index + beaconIndex) * 0.12;
       });
     });
@@ -116,6 +123,7 @@ export async function createGame() {
     state.runtime.elapsed = frame.elapsed;
     const lobbyStatus = npcManager.update(frame);
     hud.updateLobby(lobbyStatus);
+    hud.updateLaunchStatus(frame);
 
     const headBob = frame.player.moving && frame.player.grounded
       ? Math.sin(

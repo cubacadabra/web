@@ -49,7 +49,7 @@ export function createNpcManager({ THREE, world, colors, createAvatar }) {
 
     return {
       totalPlayers: frame.totalPlayers,
-      meetingCounts: frame.meetingCounts,
+      launchPadCounts: frame.launchPadCounts,
       isFull: frame.isFull,
     };
   }

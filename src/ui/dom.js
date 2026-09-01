@@ -21,10 +21,13 @@ export function getDomElements() {
     movementState: getElement("#movement-state"),
     playerCount: getElement("#player-count"),
     lobbyCopy: getElement("#lobby-copy"),
-    meetingCounts: [
-      getElement("#meeting-count-0"),
-      getElement("#meeting-count-1"),
-      getElement("#meeting-count-2"),
+    launchStatus: getElement("#launch-status"),
+    launchCountdown: getElement("#launch-countdown"),
+    launchCopy: getElement("#launch-copy"),
+    launchPadCounts: [
+      getElement("#launch-count-0"),
+      getElement("#launch-count-1"),
+      getElement("#launch-count-2"),
     ],
     joystickElement: getElement("#joystick"),
     joystickKnob: getElement("#joystick-knob"),

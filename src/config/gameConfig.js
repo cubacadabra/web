@@ -9,6 +9,36 @@ export const colors = {
   paper: 0xf6f1e7,
 };
 
+// World content stays in the client so each renderer can dress the same
+// platform behavior in its own presentation. Rust receives these as launch
+// pad registrations and owns the countdown and launch event.
+export const launchPads = [
+  {
+    code: "GATE 01",
+    label: "SUN COURT",
+    position: [-10, -3],
+    color: colors.coral,
+    radius: 2.7,
+    countdown: 8,
+  },
+  {
+    code: "GATE 02",
+    label: "DEEP DIVE",
+    position: [0, -7],
+    color: colors.butter,
+    radius: 2.7,
+    countdown: 8,
+  },
+  {
+    code: "GATE 03",
+    label: "SKY RUN",
+    position: [10, -3],
+    color: colors.periwinkle,
+    radius: 2.7,
+    countdown: 8,
+  },
+];
+
 export const initialView = {
   yaw: 0,
   pitch: -0.095,
