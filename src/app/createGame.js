@@ -20,9 +20,13 @@ export async function createGame() {
   elements.worldShell?.classList.toggle("is-touch-device", isTouchDevice);
   const engine = await createRustEngine();
   engine.loadGameScript(gameDefinition.script);
-  engine.configureLaunchPads(gameDefinition.launchPads);
-  engine.configureObstacles(gameDefinition.blocks);
+  const runtimeWorldIds = Object.keys(gameDefinition.worlds);
+  engine.configureWorlds(
+    runtimeWorldIds.map((id) => ({ id, definition: gameDefinition.worlds[id] })),
+    gameDefinition.activeWorldId,
+  );
   const state = createGameState();
+  state.runtime.worldId = gameDefinition.activeWorldId;
   const { renderer, scene, camera, world } = createScene({
     THREE,
     canvas: elements.canvas,
@@ -81,16 +85,10 @@ export async function createGame() {
   resizeObserver.observe(elements.canvas);
   resizeRenderer();
 
-  function enterWorld(worldId, launchFrame) {
-    if (state.runtime.worldId !== "lobby") return;
-    const nextWorld = gameDefinition.worlds?.[worldId];
-    if (!nextWorld || launchFrame.playerLaunchPad !== launchFrame.lastLaunchPad) {
-      return;
-    }
-
-    const spawn = nextWorld.world?.spawn ?? [0, 0, 0];
-    engine.enterSession(launchFrame.lastLaunchPad, spawn);
-    engine.configureObstacles(nextWorld.blocks ?? []);
+  function syncActiveWorld(frame) {
+    const worldId = runtimeWorldIds[frame.activeWorldIndex];
+    if (!worldId || worldId === state.runtime.worldId) return;
+    const nextWorld = gameDefinition.worlds[worldId];
     environment.root.removeFromParent();
     activeWorld = nextWorld;
     environment = createEnvironment({
@@ -144,12 +142,7 @@ export async function createGame() {
     engine.step(step);
 
     const frame = engine.readFrame();
-    if (
-      frame.launchEventId !== state.runtime.lastLaunchEventId &&
-      frame.playerLaunchPad === frame.lastLaunchPad
-    ) {
-      enterWorld(gameDefinition.launch?.destinationWorld, frame);
-    }
+    syncActiveWorld(frame);
     state.runtime.engineFrame = frame;
     state.runtime.elapsed = frame.elapsed;
     const lobbyStatus = npcManager.update(frame);

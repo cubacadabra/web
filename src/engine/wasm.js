@@ -37,18 +37,6 @@ export async function createRustEngine() {
     return exports[name](handle, ...args);
   }
 
-  function setLaunchPad(index, { position, radius, countdown }) {
-    const z = position.length > 2 ? position[2] : position[1];
-    call(
-      "engine_set_launch_pad",
-      index,
-      position[0],
-      z,
-      radius,
-      countdown,
-    );
-  }
-
   function readFrame() {
     const memory = exports.memory;
     const pointer = call("engine_snapshot_ptr");
@@ -114,6 +102,10 @@ export async function createRustEngine() {
       launchEventId: call("engine_launch_event_id"),
       lastLaunchPad: call("engine_last_launch_pad"),
       lastLaunchOccupants: call("engine_last_launch_occupants"),
+      activeWorldIndex: call("engine_active_world"),
+      worldEventId: call("engine_world_event_id"),
+      lastWorldSourcePad: call("engine_last_world_source_pad"),
+      lastWorldDestination: call("engine_last_world_destination"),
     };
   }
 
@@ -141,35 +133,60 @@ export async function createRustEngine() {
         zoomDelta,
       );
     },
-    configureLaunchPads(pads) {
-      call("engine_set_launch_pad_count", pads.length);
-      pads.forEach((pad, index) => setLaunchPad(index, pad));
-    },
-    configureObstacles(blocks) {
-      call("engine_set_obstacle_count", blocks.length);
-      blocks.forEach((block, index) => {
-        call(
-          "engine_set_obstacle",
-          index,
-          block.position[0],
-          block.position[1],
-          block.position[2],
-          block.size[0],
-          block.size[1],
-          block.size[2],
-        );
-      });
-    },
-    enterSession(launchPadIndex, spawn) {
-      return call(
-        "engine_enter_session",
-        launchPadIndex,
-        spawn[0],
-        spawn[1],
-        spawn[2],
+    configureWorlds(worldEntries, startWorldId) {
+      const worldIndices = new Map(
+        worldEntries.map(({ id }, index) => [id, index]),
       );
+      call("engine_set_world_count", worldEntries.length);
+      worldEntries.forEach(({ definition }, worldIndex) => {
+        const spawn = definition.world?.spawn ?? [0, 0, 0];
+        call("engine_set_world_spawn", worldIndex, spawn[0], spawn[1], spawn[2]);
+
+        const pads = definition.launchPads ?? [];
+        call("engine_set_world_launch_pad_count", worldIndex, pads.length);
+        pads.forEach((pad, padIndex) => {
+          const z = pad.position.length > 2 ? pad.position[2] : pad.position[1];
+          call(
+            "engine_set_world_launch_pad",
+            worldIndex,
+            padIndex,
+            pad.position[0],
+            z,
+            pad.radius,
+            pad.countdown,
+          );
+          const destinationId = pad.destinationWorld ??
+            definition.launch?.destinationWorld;
+          call(
+            "engine_set_world_launch_destination",
+            worldIndex,
+            padIndex,
+            worldIndices.get(destinationId) ?? -1,
+          );
+        });
+
+        const blocks = definition.blocks ?? [];
+        call("engine_set_world_obstacle_count", worldIndex, blocks.length);
+        blocks.forEach((block, blockIndex) => {
+          call(
+            "engine_set_world_obstacle",
+            worldIndex,
+            blockIndex,
+            block.position[0],
+            block.position[1],
+            block.position[2],
+            block.size[0],
+            block.size[1],
+            block.size[2],
+          );
+        });
+      });
+
+      const startWorldIndex = worldIndices.get(startWorldId);
+      if (startWorldIndex === undefined || !call("engine_start_world", startWorldIndex)) {
+        throw new Error(`The engine could not start world "${startWorldId}".`);
+      }
     },
-    setLaunchPad,
     step(delta) {
       call("engine_step", delta);
     },
