@@ -11,6 +11,10 @@ export const playerPresentationConfig = {
   eyeHeight: 3.4,
 };
 
+const productionBackendUrl = "wss://cubacadabra.andrew-f97.workers.dev";
+const localBackendUrl = "ws://127.0.0.1:8787";
+
 export const backendConfig = {
-  webSocketUrl: "wss://cubacadabra.andrew-f97.workers.dev",
+  webSocketUrl: import.meta.env.VITE_BACKEND_WS_URL
+    || (import.meta.env.DEV ? localBackendUrl : productionBackendUrl),
 };
