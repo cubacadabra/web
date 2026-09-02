@@ -26,6 +26,7 @@ export function createGameState() {
       lastMovementLabel: "",
       lastLaunchEventId: 0,
       engineFrame: null,
+      settingsOpen: false,
       worldId: "lobby",
     },
   };

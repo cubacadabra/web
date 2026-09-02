@@ -58,6 +58,84 @@
         <span id="world-event-copy"></span>
       </aside>
 
+      <aside class="settings-room-hint" id="settings-room-hint" aria-live="polite" hidden>
+        <span class="settings-room-hint-icon" aria-hidden="true">⚙</span>
+        <span>
+          <strong>Settings room</strong>
+          <span>Walk through the gear door</span>
+        </span>
+      </aside>
+
+      <aside
+        class="settings-room-panel"
+        id="settings-room-panel"
+        aria-labelledby="settings-room-title"
+        aria-hidden="true"
+        hidden
+      >
+        <div class="settings-room-card">
+          <header class="settings-room-header">
+            <div class="settings-room-title-wrap">
+              <span class="settings-room-icon" aria-hidden="true">⚙</span>
+              <div>
+                <p class="eyebrow">Lobby settings</p>
+                <h2 id="settings-room-title">Settings room</h2>
+              </div>
+            </div>
+            <button class="settings-leave-button" id="settings-leave-button" type="button">
+              Leave room
+            </button>
+          </header>
+
+          <div class="settings-room-body">
+            <p class="settings-room-intro">
+              A quiet place for the details that make this world yours.
+            </p>
+
+            <button class="settings-option" id="settings-username-option" type="button">
+              <span class="settings-option-copy">
+                <span class="settings-option-label">Username</span>
+                <span class="settings-option-description">How other players see you</span>
+              </span>
+              <span class="settings-option-value" id="settings-username-value">Web Player 0011</span>
+              <span class="settings-option-arrow" aria-hidden="true">→</span>
+            </button>
+
+            <form class="settings-username-form" id="settings-username-form" hidden>
+              <label class="settings-field-label" for="settings-username-input">Your player name</label>
+              <div class="settings-field-row">
+                <input
+                  id="settings-username-input"
+                  name="username"
+                  type="text"
+                  autocomplete="nickname"
+                  minlength="2"
+                  maxlength="24"
+                  pattern="[A-Za-z0-9 _-]+"
+                  required
+                />
+                <button class="settings-save-button" type="submit">Save name</button>
+              </div>
+              <p class="settings-status" id="settings-username-status" aria-live="polite">
+                Choose a name other players can find you by.
+              </p>
+            </form>
+
+            <div class="settings-future-options" aria-label="More settings coming soon">
+              <span class="settings-future-icon" aria-hidden="true">＋</span>
+              <span>
+                <strong>More rooms to come</strong>
+                <span>Display, controls, and accessibility options are being furnished.</span>
+              </span>
+            </div>
+          </div>
+
+          <footer class="settings-room-footer">
+            Walk back through the door when you’re ready to return to the lobby.
+          </footer>
+        </div>
+      </aside>
+
       <aside class="lobby-status" id="lobby-status" aria-label="Lobby population and launch pads">
         <div class="lobby-status-header">
           <span class="eyebrow lobby-eyebrow">Live lobby</span>

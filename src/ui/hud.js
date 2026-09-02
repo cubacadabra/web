@@ -22,7 +22,8 @@ export function createHudController({ elements, state, gameDefinition }) {
   let worldEventHideTimer = 0;
   const launchPadCountElements = [];
 
-  function playerLabel(playerId) {
+  function playerLabel(playerId, username = "") {
+    if (typeof username === "string" && username.trim()) return username.trim();
     const [platform] = playerId.split("-");
     const platformLabel = platform === "ios"
       ? "iOS"
@@ -50,8 +51,13 @@ export function createHudController({ elements, state, gameDefinition }) {
 
     window.clearTimeout(worldEventTimer);
     window.clearTimeout(worldEventHideTimer);
-    const action = event.type === "player_join" ? "joined the world" : "left the world";
-    elements.worldEventCopy.textContent = `${playerLabel(event.id)} ${action}`;
+    const label = playerLabel(event.id, event.username);
+    const copy = event.type === "player_join"
+      ? `${label} joined the world`
+      : event.type === "player_name"
+        ? `${label} is now in the lobby`
+        : `${label} left the world`;
+    elements.worldEventCopy.textContent = copy;
     elements.worldEvent.hidden = false;
     requestAnimationFrame(() => elements.worldEvent?.classList.add("is-visible"));
 

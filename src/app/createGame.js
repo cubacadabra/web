@@ -5,6 +5,7 @@ import { createWorldSocket } from "../network/worldSocket.js";
 import { bindControls } from "../systems/controls.js";
 import { getMovementInput } from "../systems/player.js";
 import { createGameState } from "../state/gameState.js";
+import { createSettingsRoomController } from "../ui/settingsRoom.js";
 import { getDomElements } from "../ui/dom.js";
 import { createHudController } from "../ui/hud.js";
 
@@ -42,6 +43,7 @@ export async function createGame() {
     },
     onStatusChange: hud.setConnectionStatus,
   });
+  const settingsRoom = createSettingsRoomController({ elements, state, worldSocket });
 
   function syncRemotePlayers() {
     engine.setRemotePlayers([...remotePlayers.values()]);
@@ -114,6 +116,7 @@ export async function createGame() {
 
     const frame = engine.readFrame();
     syncActiveWorld(frame);
+    settingsRoom.update(frame, state.runtime.worldId);
     state.runtime.engineFrame = frame;
     state.runtime.elapsed = frame.elapsed;
     worldSocket.sendMove({
@@ -157,6 +160,7 @@ export async function createGame() {
     controls.destroy();
     worldSocket.destroy();
     hud.destroy();
+    settingsRoom.destroy();
     renderer.destroy();
     engine.destroy();
     window.removeEventListener("pagehide", dispose);

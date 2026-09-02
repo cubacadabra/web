@@ -96,6 +96,7 @@ export function bindControls({
   }
 
   function handleKeyDown(event) {
+    if (state.runtime.settingsOpen) return;
     if (isInteractiveTarget(event.target)) return;
 
     if (event.code === "KeyO" || event.code === "KeyI") {

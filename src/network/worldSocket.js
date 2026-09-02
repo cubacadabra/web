@@ -1,6 +1,8 @@
 import { backendConfig } from "../config/clientConfig.js";
 
 const PLAYER_ID_STORAGE_KEY = "cubacadabra.player-id";
+const USERNAME_STORAGE_KEY = "cubacadabra.username";
+const USERNAME_MAX_LENGTH = 24;
 const RECONNECT_BASE_DELAY = 750;
 const RECONNECT_MAX_DELAY = 8_000;
 const MOVE_SEND_INTERVAL_MS = 1000 / 12;
@@ -38,6 +40,45 @@ function getPlayerId() {
   }
 }
 
+function platformLabel(playerId) {
+  if (playerId.startsWith("ios-")) return "iOS";
+  if (playerId.startsWith("web-")) return "Web";
+  if (playerId.startsWith("android-")) return "Android";
+  return "Player";
+}
+
+export function defaultUsernameForPlayer(playerId) {
+  return `${platformLabel(playerId)} Player ${playerId.slice(-4).toUpperCase()}`;
+}
+
+function normalizeUsername(value) {
+  if (typeof value !== "string") return null;
+  const username = value.trim().replace(/\s+/g, " ");
+  if (
+    username.length < 2
+    || username.length > USERNAME_MAX_LENGTH
+    || !/^[A-Za-z0-9 _-]+$/.test(username)
+  ) return null;
+  return username;
+}
+
+function getUsername(playerId) {
+  const fallback = defaultUsernameForPlayer(playerId);
+  try {
+    return normalizeUsername(localStorage.getItem(USERNAME_STORAGE_KEY)) || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function storeUsername(username) {
+  try {
+    localStorage.setItem(USERNAME_STORAGE_KEY, username);
+  } catch {
+    // The live connection still owns the current name when storage is unavailable.
+  }
+}
+
 function createSocketUrl(worldId, playerId) {
   const url = new URL(backendConfig.webSocketUrl);
   const basePath = url.pathname.replace(/\/$/, "");
@@ -48,6 +89,9 @@ function createSocketUrl(worldId, playerId) {
 
 export function createWorldSocket({ onEvent, onMove, onStatusChange }) {
   const playerId = getPlayerId();
+  let username = getUsername(playerId);
+  let pendingUsername = username;
+  let usernameResultHandler = null;
   let socket = null;
   let worldId = null;
   let reconnectTimer = 0;
@@ -88,6 +132,16 @@ export function createWorldSocket({ onEvent, onMove, onStatusChange }) {
       lastMoveSentAt = Number.NEGATIVE_INFINITY;
       lastSentMove = null;
       setStatus("connected");
+      if (pendingUsername) {
+        try {
+          nextSocket.send(JSON.stringify({
+            type: "set_username",
+            username: pendingUsername,
+          }));
+        } catch {
+          // The close handler will schedule a reconnect if the socket is gone.
+        }
+      }
     });
 
     nextSocket.addEventListener("message", (message) => {
@@ -108,10 +162,28 @@ export function createWorldSocket({ onEvent, onMove, onStatusChange }) {
           });
           return;
         }
-        if (event?.type !== "player_join" && event?.type !== "player_leave") {
+        if (
+          event?.type !== "player_join"
+          && event?.type !== "player_leave"
+          && event?.type !== "player_name"
+          && event?.type !== "username_updated"
+          && event?.type !== "username_error"
+        ) {
+          return;
+        }
+        if (event.type === "username_updated" || event.type === "username_error") {
+          if (event.type === "username_updated" && typeof event.username === "string") {
+            username = event.username;
+            pendingUsername = event.username;
+            storeUsername(event.username);
+          } else if (event.type === "username_error") {
+            pendingUsername = username;
+          }
+          usernameResultHandler?.(event);
           return;
         }
         if (typeof event.id !== "string") return;
+        if (event.type === "player_name" && typeof event.username !== "string") return;
         onEvent?.({
           ...event,
           isSelf: event.id === playerId,
@@ -186,6 +258,27 @@ export function createWorldSocket({ onEvent, onMove, onStatusChange }) {
     }
   }
 
+  function setUsername(nextUsername) {
+    const normalizedUsername = normalizeUsername(nextUsername);
+    if (!normalizedUsername) {
+      usernameResultHandler?.({ type: "username_error", code: "invalid_username" });
+      return false;
+    }
+
+    pendingUsername = normalizedUsername;
+    if (!socket || socket.readyState !== WebSocket.OPEN) return true;
+
+    try {
+      socket.send(JSON.stringify({
+        type: "set_username",
+        username: normalizedUsername,
+      }));
+    } catch {
+      return true;
+    }
+    return true;
+  }
+
   function destroy() {
     if (destroyed) return;
     destroyed = true;
@@ -198,8 +291,18 @@ export function createWorldSocket({ onEvent, onMove, onStatusChange }) {
 
   return {
     playerId,
+    get username() {
+      return username;
+    },
+    get onUsernameResult() {
+      return usernameResultHandler;
+    },
+    set onUsernameResult(handler) {
+      usernameResultHandler = handler;
+    },
     connect,
     sendMove,
+    setUsername,
     destroy,
   };
 }
