@@ -207,12 +207,6 @@ html.sudo-document {
   font-size: 13px;
 }
 
-.sudo-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
 .sudo-sync-state {
   display: flex;
   align-items: center;
@@ -231,21 +225,6 @@ html.sudo-document {
 .sudo-sync-dot.is-error {
   background: #d16d75;
   box-shadow: 0 0 0 3px rgba(209, 109, 117, 0.12);
-}
-
-.sudo-refresh-button {
-  padding: 8px 11px;
-  border: 1px solid var(--sudo-line);
-  border-radius: 5px;
-  background: #23262a;
-  color: var(--sudo-ink);
-  cursor: pointer;
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.sudo-refresh-button:hover {
-  background: #2b2e33;
 }
 
 .sudo-metrics {
@@ -482,8 +461,8 @@ html.sudo-document {
     display: block;
   }
 
-  .sudo-header-actions {
-    justify-content: space-between;
+  .sudo-header > .sudo-sync-state {
+    justify-content: flex-start;
     margin-top: 20px;
   }
 

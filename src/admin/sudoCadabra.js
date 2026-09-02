@@ -1,7 +1,52 @@
 import { backendApiUrl } from "../config/clientConfig.js";
 import "./sudoCadabra.css";
 
-const REFRESH_INTERVAL_MS = 10_000;
+const SUDO_BASE_PATH = "/sudo-cadabra";
+
+const SUDO_PAGES = {
+  overview: {
+    key: "overview",
+    path: SUDO_BASE_PATH,
+    index: "01",
+    navLabel: "Overview",
+    eyebrow: "Operations / capacity",
+    title: "Sudo-cadabra",
+    subtitle: "A live view of the tiny cloud behind the worlds.",
+  },
+  lobbies: {
+    key: "lobbies",
+    path: `${SUDO_BASE_PATH}/lobbies`,
+    index: "02",
+    navLabel: "Lobbies",
+    eyebrow: "Monitor / lobby allocation",
+    title: "Lobbies",
+    subtitle: "See how players are distributed across the lobby instances.",
+  },
+  games: {
+    key: "games",
+    path: `${SUDO_BASE_PATH}/games-instances`,
+    index: "03",
+    navLabel: "Game instances",
+    eyebrow: "Monitor / world allocation",
+    title: "Game instances",
+    subtitle: "Inspect the live capacity of each game world.",
+  },
+  players: {
+    key: "players",
+    path: `${SUDO_BASE_PATH}/player-clocks`,
+    index: "04",
+    navLabel: "Player clocks",
+    eyebrow: "Monitor / eviction",
+    title: "Player clocks",
+    subtitle: "Track activity and idle timeouts for every connected player.",
+  },
+};
+
+function currentPage() {
+  const pathname = window.location.pathname.replace(/\/+$/, "") || "/";
+  return Object.values(SUDO_PAGES).find((page) => page.path === pathname)
+    ?? SUDO_PAGES.overview;
+}
 
 function formatNumber(value) {
   return new Intl.NumberFormat().format(value ?? 0);
@@ -79,9 +124,10 @@ function createTableRow(cells) {
   return row;
 }
 
-function mountLayout() {
+function mountLayout(page) {
   document.documentElement.classList.add("sudo-document");
   document.body.className = "sudo-page";
+  document.title = `${page.title} — Cubacadabra`;
   document.body.innerHTML = `
     <div class="sudo-shell">
       <aside class="sudo-sidebar">
@@ -96,22 +142,12 @@ function mountLayout() {
         <div class="sudo-sidebar-rule"></div>
         <p class="sudo-nav-label">Monitor</p>
         <nav class="sudo-nav" aria-label="Admin sections">
-          <a class="is-active" href="#overview" data-section="overview">
-            <span class="sudo-nav-index">01</span>
-            <span>Overview</span>
-          </a>
-          <a href="#lobbies" data-section="lobbies">
-            <span class="sudo-nav-index">02</span>
-            <span>Lobbies</span>
-          </a>
-          <a href="#games" data-section="games">
-            <span class="sudo-nav-index">03</span>
-            <span>Game instances</span>
-          </a>
-          <a href="#players" data-section="players">
-            <span class="sudo-nav-index">04</span>
-            <span>Player clocks</span>
-          </a>
+          ${Object.values(SUDO_PAGES).map((navPage) => `
+            <a class="${navPage.key === page.key ? "is-active" : ""}" href="${navPage.path}">
+              <span class="sudo-nav-index">${navPage.index}</span>
+              <span>${navPage.navLabel}</span>
+            </a>
+          `).join("")}
         </nav>
 
         <div class="sudo-sidebar-footer">
@@ -124,16 +160,13 @@ function mountLayout() {
         <div class="sudo-main-content">
         <header class="sudo-header">
           <div>
-            <p class="sudo-eyebrow">Operations / capacity</p>
-            <h1>Sudo-cadabra</h1>
-            <p class="sudo-subtitle">A live view of the tiny cloud behind the worlds.</p>
+            <p class="sudo-eyebrow">${page.eyebrow}</p>
+            <h1>${page.title}</h1>
+            <p class="sudo-subtitle">${page.subtitle}</p>
           </div>
-          <div class="sudo-header-actions">
-            <div class="sudo-sync-state">
-              <span class="sudo-sync-dot" id="sudo-sync-dot"></span>
-              <span id="sudo-sync-copy">Connecting to telemetry</span>
-            </div>
-            <button class="sudo-refresh-button" id="sudo-refresh" type="button">Refresh</button>
+          <div class="sudo-sync-state">
+            <span class="sudo-sync-dot" id="sudo-sync-dot"></span>
+            <span id="sudo-sync-copy">Connecting to telemetry</span>
           </div>
         </header>
 
@@ -261,6 +294,11 @@ function mountLayout() {
       </main>
     </div>
   `;
+
+  document.querySelectorAll("[data-panel]").forEach((panel) => {
+    if (panel.dataset.panel !== page.key) panel.remove();
+  });
+  if (page.key !== "overview") document.querySelector("#sudo-metrics")?.remove();
 }
 
 function allWorlds(payload) {
@@ -381,13 +419,6 @@ function renderPlayerClocks(payload) {
   document.querySelector("#sudo-player-empty").hidden = rows.length > 0;
 }
 
-function updateCountdowns() {
-  document.querySelectorAll("[data-timeout-at]").forEach((element) => {
-    const timeoutAt = Number(element.dataset.timeoutAt);
-    element.textContent = formatDuration(timeoutAt - Date.now());
-  });
-}
-
 function showError(message) {
   const error = document.querySelector("#sudo-error");
   error.textContent = message;
@@ -406,7 +437,7 @@ function setSyncState(message, state = "live") {
   document.querySelector("#sudo-sync-dot").className = `sudo-sync-dot is-${state}`;
 }
 
-async function loadStatus() {
+async function loadStatus(page) {
   setSyncState("Reading instance telemetry", "loading");
   try {
     const response = await fetch(backendApiUrl("/admin/status"), {
@@ -415,14 +446,22 @@ async function loadStatus() {
     });
     if (!response.ok) throw new Error(`Telemetry returned ${response.status}`);
     const payload = await response.json();
-    renderMetrics(payload);
-    renderInstanceLedger(payload);
-    renderCapacityTable("#sudo-lobby-table", [payload.lobby].filter(Boolean), true);
-    renderCapacityTable("#sudo-game-table", payload.games ?? [], false);
-    renderPlayerClocks(payload);
-    document.querySelector("#sudo-generated-at").textContent = `Server read ${formatDate(payload.generatedAt)}`;
-    document.querySelector("#sudo-timeout-note").textContent = `Idle timeout: ${formatDuration(payload.idleTimeoutMs)}`;
-    setSyncState(`Live · updated ${formatDate(Date.now())}`, "live");
+    if (page.key === "overview") {
+      renderMetrics(payload);
+      renderInstanceLedger(payload);
+      document.querySelector("#sudo-generated-at").textContent = `Server read ${formatDate(payload.generatedAt)}`;
+    }
+    if (page.key === "lobbies") {
+      renderCapacityTable("#sudo-lobby-table", [payload.lobby].filter(Boolean), true);
+    }
+    if (page.key === "games") {
+      renderCapacityTable("#sudo-game-table", payload.games ?? [], false);
+    }
+    if (page.key === "players") {
+      renderPlayerClocks(payload);
+      document.querySelector("#sudo-timeout-note").textContent = `Idle timeout: ${formatDuration(payload.idleTimeoutMs)}`;
+    }
+    setSyncState(`Loaded · ${formatDate(Date.now())}`, "live");
     clearError();
   } catch (error) {
     console.error(error);
@@ -431,21 +470,8 @@ async function loadStatus() {
   }
 }
 
-function bindNavigation() {
-  document.querySelectorAll(".sudo-nav a").forEach((link) => {
-    link.addEventListener("click", () => {
-      document.querySelectorAll(".sudo-nav a").forEach((item) => {
-        item.classList.toggle("is-active", item === link);
-      });
-    });
-  });
-}
-
 export function mountSudoCadabra() {
-  mountLayout();
-  bindNavigation();
-  document.querySelector("#sudo-refresh").addEventListener("click", loadStatus);
-  loadStatus();
-  window.setInterval(loadStatus, REFRESH_INTERVAL_MS);
-  window.setInterval(updateCountdowns, 1_000);
+  const page = currentPage();
+  mountLayout(page);
+  loadStatus(page);
 }
