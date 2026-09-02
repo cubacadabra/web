@@ -11,8 +11,7 @@
   --sudo-yellow: #d9a64e;
   min-width: 320px;
   min-height: 100%;
-  overflow-x: auto;
-  overflow-y: auto;
+  overflow: hidden;
   background:
     radial-gradient(circle at 80% 0%, rgba(237, 114, 91, 0.12), transparent 34rem),
     linear-gradient(135deg, rgba(55, 102, 96, 0.08), transparent 45%),
@@ -22,15 +21,14 @@
 }
 
 html.sudo-document {
-  overflow-x: auto;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .sudo-page .sudo-shell {
   display: grid;
   grid-template-columns: 224px minmax(0, 1fr);
-  min-width: 1154px;
-  min-height: 100vh;
+  height: 100vh;
+  min-height: 0;
 }
 
 .sudo-sidebar {
@@ -174,6 +172,13 @@ html.sudo-document {
 }
 
 .sudo-main {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  overflow: auto;
+}
+
+.sudo-main-content {
   width: 100%;
   min-width: 930px;
   max-width: 1800px;
@@ -321,10 +326,6 @@ html.sudo-document {
   text-align: right;
 }
 
-.sudo-table-wrap {
-  overflow-x: auto;
-}
-
 .sudo-table {
   width: 100%;
   min-width: 930px;
@@ -440,8 +441,8 @@ html.sudo-document {
 
 @media (max-width: 720px) {
   .sudo-page .sudo-shell {
-    display: block;
-    min-width: 930px;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
   }
 
   .sudo-sidebar {
@@ -478,8 +479,7 @@ html.sudo-document {
     border-left: 0;
   }
 
-  .sudo-main {
-    min-width: 930px;
+  .sudo-main-content {
     padding: 25px 14px 40px;
   }
 

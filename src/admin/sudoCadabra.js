@@ -121,6 +121,7 @@ function mountLayout() {
       </aside>
 
       <main class="sudo-main">
+        <div class="sudo-main-content">
         <header class="sudo-header">
           <div>
             <p class="sudo-eyebrow">Operations / capacity</p>
@@ -256,6 +257,7 @@ function mountLayout() {
         </section>
 
         <div class="sudo-error" id="sudo-error" hidden></div>
+        </div>
       </main>
     </div>
   `;
