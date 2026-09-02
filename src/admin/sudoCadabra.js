@@ -80,6 +80,7 @@ function createTableRow(cells) {
 }
 
 function mountLayout() {
+  document.documentElement.classList.add("sudo-document");
   document.body.className = "sudo-page";
   document.body.innerHTML = `
     <div class="sudo-shell">
