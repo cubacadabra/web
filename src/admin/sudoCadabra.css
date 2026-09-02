@@ -1,23 +1,23 @@
 .sudo-page {
   color-scheme: dark;
-  --sudo-bg: #0d1517;
-  --sudo-paper: #f4f1e8;
-  --sudo-ink: #e7f0e9;
-  --sudo-soft: rgba(231, 240, 233, 0.7);
-  --sudo-faint: rgba(231, 240, 233, 0.43);
-  --sudo-line: rgba(231, 240, 233, 0.14);
-  --sudo-accent: #ed725b;
-  --sudo-green: #6fc394;
-  --sudo-yellow: #d9a64e;
+  --sudo-bg: #111315;
+  --sudo-paper: #e7e9ec;
+  --sudo-ink: #e7e9ec;
+  --sudo-soft: #a1a6ad;
+  --sudo-faint: #71767d;
+  --sudo-line: rgba(255, 255, 255, 0.08);
+  --sudo-accent: #8b9cf6;
+  --sudo-green: #62b88a;
+  --sudo-yellow: #c9a15b;
+  --accent: var(--sudo-accent);
   min-width: 320px;
   min-height: 100%;
   overflow: hidden;
-  background:
-    radial-gradient(circle at 80% 0%, rgba(237, 114, 91, 0.12), transparent 34rem),
-    linear-gradient(135deg, rgba(55, 102, 96, 0.08), transparent 45%),
-    var(--sudo-bg);
+  background: var(--sudo-bg);
   color: var(--sudo-ink);
-  font-size: 11px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
 }
 
 html.sudo-document {
@@ -26,7 +26,7 @@ html.sudo-document {
 
 .sudo-page .sudo-shell {
   display: grid;
-  grid-template-columns: 224px minmax(0, 1fr);
+  grid-template-columns: 208px minmax(0, 1fr);
   height: 100vh;
   min-height: 0;
 }
@@ -37,15 +37,15 @@ html.sudo-document {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  padding: 28px 20px 20px;
+  padding: 24px 16px 18px;
   border-right: 1px solid var(--sudo-line);
-  background: rgba(18, 29, 31, 0.82);
+  background: #0e1012;
 }
 
 .sudo-brand {
   display: flex;
   align-items: center;
-  gap: 11px;
+  gap: 10px;
   color: var(--sudo-ink);
   text-decoration: none;
 }
@@ -53,12 +53,11 @@ html.sudo-document {
 .sudo-brand-mark {
   position: relative;
   display: grid;
-  width: 31px;
-  height: 31px;
+  width: 28px;
+  height: 28px;
   place-items: center;
-  border: 1px solid var(--sudo-ink);
-  border-radius: 9px;
-  transform: rotate(-8deg);
+  border: 1px solid #5f646b;
+  border-radius: 6px;
 }
 
 .sudo-brand-mark::before,
@@ -66,8 +65,8 @@ html.sudo-document {
 .sudo-brand-mark span {
   position: absolute;
   display: block;
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
   border-radius: 50%;
   background: var(--sudo-accent);
   content: "";
@@ -77,9 +76,9 @@ html.sudo-document {
 .sudo-brand-mark::after { transform: translate(6px, 6px); }
 
 .sudo-brand-mark span {
-  width: 7px;
-  height: 7px;
-  background: var(--sudo-ink);
+  width: 6px;
+  height: 6px;
+  background: #b7bbc1;
 }
 
 .sudo-brand strong,
@@ -88,22 +87,22 @@ html.sudo-document {
 }
 
 .sudo-brand strong {
-  font-size: 13px;
-  letter-spacing: -0.03em;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .sudo-brand small {
   margin-top: 3px;
   color: var(--sudo-faint);
-  font-size: 8px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0;
 }
 
 .sudo-sidebar-rule {
   height: 1px;
-  margin: 30px 0 24px;
+  margin: 24px 0 20px;
   background: var(--sudo-line);
 }
 
@@ -111,42 +110,41 @@ html.sudo-document {
 .sudo-eyebrow {
   margin: 0;
   color: var(--sudo-accent);
-  font-size: 8px;
-  font-weight: 850;
-  letter-spacing: 0.17em;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .sudo-nav {
   display: grid;
-  gap: 4px;
-  margin-top: 11px;
+  gap: 2px;
+  margin-top: 8px;
 }
 
 .sudo-nav a {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 9px;
-  border-left: 2px solid transparent;
+  gap: 9px;
+  padding: 9px 10px;
+  border-radius: 5px;
   color: var(--sudo-soft);
-  font-size: 10px;
-  font-weight: 750;
+  font-size: 12px;
+  font-weight: 500;
   text-decoration: none;
   transition: background 140ms ease, border-color 140ms ease, color 140ms ease;
 }
 
 .sudo-nav a:hover,
 .sudo-nav a.is-active {
-  border-left-color: var(--sudo-accent);
-  background: rgba(237, 114, 91, 0.1);
+  background: rgba(255, 255, 255, 0.06);
   color: var(--sudo-ink);
 }
 
 .sudo-nav-index {
   color: var(--sudo-faint);
   font-family: "SFMono-Regular", Consolas, monospace;
-  font-size: 9px;
+  font-size: 10px;
 }
 
 .sudo-sidebar-footer {
@@ -155,10 +153,9 @@ html.sudo-document {
   gap: 8px;
   margin-top: auto;
   color: var(--sudo-faint);
-  font-size: 8px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0;
 }
 
 .sudo-live-mark,
@@ -168,7 +165,7 @@ html.sudo-document {
   height: 7px;
   border-radius: 50%;
   background: var(--sudo-green);
-  box-shadow: 0 0 0 4px rgba(76, 152, 114, 0.13);
+  box-shadow: 0 0 0 3px rgba(98, 184, 138, 0.12);
 }
 
 .sudo-main {
@@ -179,10 +176,13 @@ html.sudo-document {
 }
 
 .sudo-main-content {
-  width: 100%;
-  min-width: 930px;
-  max-width: 1800px;
-  padding: 33px clamp(20px, 4vw, 62px) 60px;
+  --sudo-main-gutter: clamp(20px, 3vw, 40px);
+  width: max-content;
+  min-width: max(
+    100%,
+    calc(930px + var(--sudo-main-gutter) + var(--sudo-main-gutter))
+  );
+  padding: 28px var(--sudo-main-gutter) 48px;
 }
 
 .sudo-header {
@@ -190,21 +190,21 @@ html.sudo-document {
   align-items: flex-end;
   justify-content: space-between;
   gap: 24px;
-  margin-bottom: 31px;
+  margin-bottom: 24px;
 }
 
 .sudo-header h1 {
-  margin: 8px 0 4px;
-  font-size: clamp(26px, 3.4vw, 42px);
-  font-weight: 500;
-  letter-spacing: -0.07em;
-  line-height: 0.95;
+  margin: 6px 0 4px;
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.1;
 }
 
 .sudo-subtitle {
   margin: 0;
   color: var(--sudo-soft);
-  font-size: 11px;
+  font-size: 13px;
 }
 
 .sudo-header-actions {
@@ -218,89 +218,82 @@ html.sudo-document {
   align-items: center;
   gap: 9px;
   color: var(--sudo-soft);
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
+  font-size: 11px;
+  font-weight: 500;
   white-space: nowrap;
 }
 
 .sudo-sync-dot.is-loading {
   background: var(--sudo-yellow);
-  box-shadow: 0 0 0 4px rgba(197, 139, 49, 0.13);
+  box-shadow: 0 0 0 3px rgba(201, 161, 91, 0.12);
 }
 
 .sudo-sync-dot.is-error {
-  background: var(--sudo-accent);
-  box-shadow: 0 0 0 4px rgba(237, 114, 91, 0.13);
+  background: #d16d75;
+  box-shadow: 0 0 0 3px rgba(209, 109, 117, 0.12);
 }
 
 .sudo-refresh-button {
-  padding: 9px 12px;
-  border: 1px solid var(--sudo-ink);
+  padding: 8px 11px;
+  border: 1px solid var(--sudo-line);
   border-radius: 5px;
-  background: var(--sudo-ink);
-  color: var(--sudo-paper);
+  background: #23262a;
+  color: var(--sudo-ink);
   cursor: pointer;
-  font-size: 9px;
-  font-weight: 850;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .sudo-refresh-button:hover {
-  background: #356f6c;
+  background: #2b2e33;
 }
 
 .sudo-metrics {
   display: grid;
   grid-template-columns: repeat(4, minmax(145px, 1fr));
-  gap: 10px;
-  margin-bottom: 30px;
+  gap: 12px;
+  margin-bottom: 24px;
 }
 
 .sudo-metric {
-  min-height: 104px;
-  padding: 15px 16px 13px;
-  border: 1px solid var(--sudo-line);
-  border-top: 2px solid var(--sudo-ink);
-  background: rgba(24, 37, 39, 0.82);
+  min-height: 96px;
+  padding: 14px 15px;
+  border-radius: 7px;
+  background: #181a1d;
 }
-
-.sudo-metric-lobby { border-top-color: var(--sudo-accent); }
-.sudo-metric-game { border-top-color: var(--sudo-green); }
-.sudo-metric-warm { border-top-color: var(--sudo-yellow); }
-.sudo-metric-cool { border-top-color: #7198a0; }
 
 .sudo-metric-label,
 .sudo-metric-detail {
   display: block;
   color: var(--sudo-soft);
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
 .sudo-metric-value {
   display: block;
   margin: 11px 0 4px;
-  font-family: "SFMono-Regular", Consolas, monospace;
-  font-size: 23px;
+  font-size: 25px;
   font-weight: 500;
-  letter-spacing: -0.08em;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
 }
 
 .sudo-metric-detail {
   color: var(--sudo-faint);
-  font-size: 8px;
-  letter-spacing: 0.04em;
+  font-size: 10px;
+  letter-spacing: 0;
 }
 
 .sudo-panel {
   scroll-margin-top: 20px;
-  margin-top: 17px;
+  margin-top: 14px;
   border: 1px solid var(--sudo-line);
-  background: rgba(18, 29, 31, 0.84);
+  border-radius: 7px;
+  overflow: hidden;
+  background: #151719;
 }
 
 .sudo-panel-header {
@@ -308,21 +301,21 @@ html.sudo-document {
   align-items: flex-end;
   justify-content: space-between;
   gap: 20px;
-  padding: 18px 18px 15px;
+  padding: 16px 18px;
   border-bottom: 1px solid var(--sudo-line);
 }
 
 .sudo-panel h2 {
-  margin: 6px 0 0;
-  font-size: 17px;
-  font-weight: 550;
-  letter-spacing: -0.05em;
+  margin: 5px 0 0;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
 }
 
 .sudo-panel-note {
   color: var(--sudo-faint);
   font-family: "SFMono-Regular", Consolas, monospace;
-  font-size: 9px;
+  font-size: 11px;
   text-align: right;
 }
 
@@ -330,12 +323,12 @@ html.sudo-document {
   width: 100%;
   min-width: 930px;
   border-collapse: collapse;
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .sudo-table th,
 .sudo-table td {
-  padding: 10px 12px;
+  padding: 10px 14px;
   border-bottom: 1px solid var(--sudo-line);
   text-align: left;
   vertical-align: middle;
@@ -343,11 +336,11 @@ html.sudo-document {
 }
 
 .sudo-table th {
-  background: rgba(231, 240, 233, 0.045);
+  background: #1a1c1f;
   color: var(--sudo-faint);
-  font-size: 8px;
-  font-weight: 850;
-  letter-spacing: 0.1em;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
@@ -356,23 +349,23 @@ html.sudo-document {
 }
 
 .sudo-table tbody tr:hover {
-  background: rgba(237, 114, 91, 0.095);
+  background: rgba(255, 255, 255, 0.025);
 }
 
 .sudo-mono {
   font-family: "SFMono-Regular", Consolas, monospace;
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .sudo-muted {
   color: var(--sudo-soft);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .sudo-kind {
-  color: var(--sudo-accent);
-  font-size: 9px;
-  font-weight: 850;
+  color: var(--sudo-soft);
+  font-size: 10px;
+  font-weight: 600;
   text-transform: uppercase;
 }
 
@@ -381,9 +374,9 @@ html.sudo-document {
   align-items: center;
   gap: 6px;
   color: var(--sudo-soft);
-  font-size: 8px;
-  font-weight: 850;
-  letter-spacing: 0.08em;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
@@ -398,10 +391,10 @@ html.sudo-document {
 .sudo-status-active::before { background: var(--sudo-green); }
 .sudo-status-reserved::before { background: var(--sudo-yellow); }
 .sudo-status-unavailable::before,
-.sudo-status-expired::before { background: var(--sudo-accent); }
+.sudo-status-expired::before { background: #d16d75; }
 
 .sudo-time-left {
-  color: var(--sudo-accent);
+  color: #d98289;
   font-family: "SFMono-Regular", Consolas, monospace;
   font-weight: 750;
 }
@@ -409,17 +402,17 @@ html.sudo-document {
 .sudo-empty {
   padding: 20px 18px;
   color: var(--sudo-faint);
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .sudo-error {
   margin-top: 17px;
   padding: 12px 15px;
-  border-left: 3px solid var(--sudo-accent);
-  background: rgba(237, 114, 91, 0.14);
-  color: var(--sudo-accent);
-  font-size: 10px;
-  font-weight: 750;
+  border-left: 3px solid #d16d75;
+  background: rgba(209, 109, 117, 0.1);
+  color: #e49aa0;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .sudo-visually-hidden {
@@ -480,7 +473,9 @@ html.sudo-document {
   }
 
   .sudo-main-content {
-    padding: 25px 14px 40px;
+    --sudo-main-gutter: 14px;
+    padding-top: 22px;
+    padding-bottom: 36px;
   }
 
   .sudo-header {
