@@ -113,6 +113,21 @@ export function createRustEngine(exports) {
         zoomDelta,
       );
     },
+    setRemotePlayers(players) {
+      call("engine_set_remote_player_count", players.length);
+      players.forEach((player, index) => {
+        call(
+          "engine_set_remote_player",
+          index,
+          player.x,
+          player.y,
+          player.z,
+          player.yaw,
+          player.moving ? 1 : 0,
+          player.sprinting ? 1 : 0,
+        );
+      });
+    },
     step(delta) {
       call("engine_step", delta);
     },

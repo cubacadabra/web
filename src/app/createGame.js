@@ -22,12 +22,38 @@ export async function createGame() {
   const state = createGameState();
   state.runtime.worldId = gameDefinition.activeWorldId;
   let activeWorld = gameDefinition.worlds[gameDefinition.activeWorldId];
+  const remotePlayers = new Map();
   const hud = createHudController({ elements, state, gameDefinition: activeWorld });
   const worldSocket = createWorldSocket({
-    onEvent: hud.showWorldEvent,
+    onEvent: (event) => {
+      hud.showWorldEvent(event);
+      if (event.type === "player_leave") remotePlayers.delete(event.id);
+    },
+    onMove: (event) => {
+      if (event.isSelf) return;
+      remotePlayers.set(event.id, {
+        x: event.x,
+        y: event.y,
+        z: event.z,
+        yaw: event.yaw,
+        moving: event.moving,
+        sprinting: event.sprinting,
+      });
+    },
     onStatusChange: hud.setConnectionStatus,
   });
-  worldSocket.connect(state.runtime.worldId);
+
+  function syncRemotePlayers() {
+    engine.setRemotePlayers([...remotePlayers.values()]);
+  }
+
+  function connectWorld(worldId) {
+    remotePlayers.clear();
+    syncRemotePlayers();
+    worldSocket.connect(worldId);
+  }
+
+  connectWorld(state.runtime.worldId);
 
   const controls = bindControls({
     elements,
@@ -64,7 +90,7 @@ export async function createGame() {
     activeWorld = nextWorld;
     state.runtime.worldId = worldId;
     hud.setWorld(activeWorld);
-    worldSocket.connect(worldId);
+    connectWorld(worldId);
   }
 
   function render(delta) {
@@ -83,12 +109,21 @@ export async function createGame() {
     state.movement.lookX = 0;
     state.movement.lookY = 0;
     state.movement.zoomDelta = 0;
+    syncRemotePlayers();
     engine.step(step);
 
     const frame = engine.readFrame();
     syncActiveWorld(frame);
     state.runtime.engineFrame = frame;
     state.runtime.elapsed = frame.elapsed;
+    worldSocket.sendMove({
+      x: frame.player.position.x,
+      y: frame.player.position.y,
+      z: frame.player.position.z,
+      yaw: frame.player.yaw,
+      moving: frame.player.moving,
+      sprinting: frame.player.sprinting,
+    });
     if (state.runtime.worldId === "lobby") {
       hud.updateLobby({
         totalPlayers: frame.totalPlayers,

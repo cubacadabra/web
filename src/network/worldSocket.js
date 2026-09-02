@@ -32,12 +32,13 @@ function createSocketUrl(worldId, playerId) {
   return url;
 }
 
-export function createWorldSocket({ onEvent, onStatusChange }) {
+export function createWorldSocket({ onEvent, onMove, onStatusChange }) {
   const playerId = getPlayerId();
   let socket = null;
   let worldId = null;
   let reconnectTimer = 0;
   let reconnectAttempt = 0;
+  let lastMoveSentAt = Number.NEGATIVE_INFINITY;
   let generation = 0;
   let destroyed = false;
 
@@ -69,6 +70,7 @@ export function createWorldSocket({ onEvent, onStatusChange }) {
     nextSocket.addEventListener("open", () => {
       if (socket !== nextSocket || expectedGeneration !== generation) return;
       reconnectAttempt = 0;
+      lastMoveSentAt = Number.NEGATIVE_INFINITY;
       setStatus("connected");
     });
 
@@ -77,6 +79,19 @@ export function createWorldSocket({ onEvent, onStatusChange }) {
 
       try {
         const event = JSON.parse(message.data);
+        if (event?.type === "move") {
+          if (
+            typeof event.id !== "string"
+            || ![event.x, event.y, event.z, event.yaw].every(Number.isFinite)
+          ) {
+            return;
+          }
+          onMove?.({
+            ...event,
+            isSelf: event.id === playerId,
+          });
+          return;
+        }
         if (event?.type !== "player_join" && event?.type !== "player_leave") {
           return;
         }
@@ -124,7 +139,30 @@ export function createWorldSocket({ onEvent, onStatusChange }) {
     closeCurrentSocket();
     worldId = normalizedWorldId;
     reconnectAttempt = 0;
+    lastMoveSentAt = Number.NEGATIVE_INFINITY;
     openSocket(generation);
+  }
+
+  function sendMove({ x, y, z, yaw, moving, sprinting }) {
+    if (!socket || socket.readyState !== WebSocket.OPEN) return;
+    const now = performance.now();
+    if (now - lastMoveSentAt < 50) return;
+
+    const event = {
+      type: "move",
+      x,
+      y,
+      z,
+      yaw,
+      moving: Boolean(moving),
+      sprinting: Boolean(sprinting),
+    };
+    try {
+      socket.send(JSON.stringify(event));
+      lastMoveSentAt = now;
+    } catch {
+      // The close handler will schedule a reconnect if the socket is gone.
+    }
   }
 
   function destroy() {
@@ -140,6 +178,7 @@ export function createWorldSocket({ onEvent, onStatusChange }) {
   return {
     playerId,
     connect,
+    sendMove,
     destroy,
   };
 }
