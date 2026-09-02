@@ -3,6 +3,20 @@ import { backendConfig } from "../config/clientConfig.js";
 const PLAYER_ID_STORAGE_KEY = "cubacadabra.player-id";
 const RECONNECT_BASE_DELAY = 750;
 const RECONNECT_MAX_DELAY = 8_000;
+const MOVE_SEND_INTERVAL_MS = 1000 / 12;
+const MOVE_POSITION_EPSILON = 0.01;
+const MOVE_YAW_EPSILON = 0.01;
+
+function movesAreMeaningfullyDifferent(previousMove, nextMove) {
+  if (!previousMove) return true;
+
+  return previousMove.moving !== nextMove.moving
+    || previousMove.sprinting !== nextMove.sprinting
+    || Math.abs(previousMove.x - nextMove.x) > MOVE_POSITION_EPSILON
+    || Math.abs(previousMove.y - nextMove.y) > MOVE_POSITION_EPSILON
+    || Math.abs(previousMove.z - nextMove.z) > MOVE_POSITION_EPSILON
+    || Math.abs(previousMove.yaw - nextMove.yaw) > MOVE_YAW_EPSILON;
+}
 
 function createPlayerId() {
   const randomId = typeof crypto.randomUUID === "function"
@@ -39,6 +53,7 @@ export function createWorldSocket({ onEvent, onMove, onStatusChange }) {
   let reconnectTimer = 0;
   let reconnectAttempt = 0;
   let lastMoveSentAt = Number.NEGATIVE_INFINITY;
+  let lastSentMove = null;
   let generation = 0;
   let destroyed = false;
 
@@ -71,6 +86,7 @@ export function createWorldSocket({ onEvent, onMove, onStatusChange }) {
       if (socket !== nextSocket || expectedGeneration !== generation) return;
       reconnectAttempt = 0;
       lastMoveSentAt = Number.NEGATIVE_INFINITY;
+      lastSentMove = null;
       setStatus("connected");
     });
 
@@ -140,13 +156,12 @@ export function createWorldSocket({ onEvent, onMove, onStatusChange }) {
     worldId = normalizedWorldId;
     reconnectAttempt = 0;
     lastMoveSentAt = Number.NEGATIVE_INFINITY;
+    lastSentMove = null;
     openSocket(generation);
   }
 
   function sendMove({ x, y, z, yaw, moving, sprinting }) {
     if (!socket || socket.readyState !== WebSocket.OPEN) return;
-    const now = performance.now();
-    if (now - lastMoveSentAt < 50) return;
 
     const event = {
       type: "move",
@@ -157,9 +172,15 @@ export function createWorldSocket({ onEvent, onMove, onStatusChange }) {
       moving: Boolean(moving),
       sprinting: Boolean(sprinting),
     };
+    if (!movesAreMeaningfullyDifferent(lastSentMove, event)) return;
+
+    const now = performance.now();
+    if (now - lastMoveSentAt < MOVE_SEND_INTERVAL_MS) return;
+
     try {
       socket.send(JSON.stringify(event));
       lastMoveSentAt = now;
+      lastSentMove = event;
     } catch {
       // The close handler will schedule a reconnect if the socket is gone.
     }
