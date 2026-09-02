@@ -18,3 +18,12 @@ export const backendConfig = {
   webSocketUrl: import.meta.env.VITE_BACKEND_WS_URL
     || (import.meta.env.DEV ? localBackendUrl : productionBackendUrl),
 };
+
+export function backendApiUrl(path) {
+  const url = new URL(backendConfig.webSocketUrl);
+  url.protocol = url.protocol === "wss:" ? "https:" : "http:";
+  url.pathname = path;
+  url.search = "";
+  url.hash = "";
+  return url;
+}

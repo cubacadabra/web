@@ -1,0 +1,498 @@
+.sudo-page {
+  --sudo-bg: #e7eee9;
+  --sudo-paper: #f8f6ef;
+  --sudo-ink: #17383a;
+  --sudo-soft: rgba(23, 56, 58, 0.68);
+  --sudo-faint: rgba(23, 56, 58, 0.42);
+  --sudo-line: rgba(23, 56, 58, 0.15);
+  --sudo-accent: #ed725b;
+  --sudo-green: #4c9872;
+  --sudo-yellow: #c58b31;
+  min-width: 320px;
+  min-height: 100%;
+  overflow: auto;
+  background:
+    radial-gradient(circle at 80% 0%, rgba(237, 114, 91, 0.1), transparent 34rem),
+    var(--sudo-bg);
+  color: var(--sudo-ink);
+  font-size: 11px;
+}
+
+.sudo-page .sudo-shell {
+  display: grid;
+  grid-template-columns: 224px minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.sudo-sidebar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: 28px 20px 20px;
+  border-right: 1px solid var(--sudo-line);
+  background: rgba(248, 246, 239, 0.62);
+}
+
+.sudo-brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  color: var(--sudo-ink);
+  text-decoration: none;
+}
+
+.sudo-brand-mark {
+  position: relative;
+  display: grid;
+  width: 31px;
+  height: 31px;
+  place-items: center;
+  border: 1px solid var(--sudo-ink);
+  border-radius: 9px;
+  transform: rotate(-8deg);
+}
+
+.sudo-brand-mark::before,
+.sudo-brand-mark::after,
+.sudo-brand-mark span {
+  position: absolute;
+  display: block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--sudo-accent);
+  content: "";
+}
+
+.sudo-brand-mark::before { transform: translate(-6px, -6px); }
+.sudo-brand-mark::after { transform: translate(6px, 6px); }
+
+.sudo-brand-mark span {
+  width: 7px;
+  height: 7px;
+  background: var(--sudo-ink);
+}
+
+.sudo-brand strong,
+.sudo-brand small {
+  display: block;
+}
+
+.sudo-brand strong {
+  font-size: 13px;
+  letter-spacing: -0.03em;
+}
+
+.sudo-brand small {
+  margin-top: 3px;
+  color: var(--sudo-faint);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.sudo-sidebar-rule {
+  height: 1px;
+  margin: 30px 0 24px;
+  background: var(--sudo-line);
+}
+
+.sudo-nav-label,
+.sudo-eyebrow {
+  margin: 0;
+  color: var(--sudo-accent);
+  font-size: 8px;
+  font-weight: 850;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+}
+
+.sudo-nav {
+  display: grid;
+  gap: 4px;
+  margin-top: 11px;
+}
+
+.sudo-nav a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 9px;
+  border-left: 2px solid transparent;
+  color: var(--sudo-soft);
+  font-size: 10px;
+  font-weight: 750;
+  text-decoration: none;
+  transition: background 140ms ease, border-color 140ms ease, color 140ms ease;
+}
+
+.sudo-nav a:hover,
+.sudo-nav a.is-active {
+  border-left-color: var(--sudo-accent);
+  background: rgba(237, 114, 91, 0.1);
+  color: var(--sudo-ink);
+}
+
+.sudo-nav-index {
+  color: var(--sudo-faint);
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 9px;
+}
+
+.sudo-sidebar-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+  color: var(--sudo-faint);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sudo-live-mark,
+.sudo-sync-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--sudo-green);
+  box-shadow: 0 0 0 4px rgba(76, 152, 114, 0.13);
+}
+
+.sudo-main {
+  width: 100%;
+  max-width: 1800px;
+  padding: 33px clamp(20px, 4vw, 62px) 60px;
+}
+
+.sudo-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 31px;
+}
+
+.sudo-header h1 {
+  margin: 8px 0 4px;
+  font-size: clamp(26px, 3.4vw, 42px);
+  font-weight: 500;
+  letter-spacing: -0.07em;
+  line-height: 0.95;
+}
+
+.sudo-subtitle {
+  margin: 0;
+  color: var(--sudo-soft);
+  font-size: 11px;
+}
+
+.sudo-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.sudo-sync-state {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--sudo-soft);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.sudo-sync-dot.is-loading {
+  background: var(--sudo-yellow);
+  box-shadow: 0 0 0 4px rgba(197, 139, 49, 0.13);
+}
+
+.sudo-sync-dot.is-error {
+  background: var(--sudo-accent);
+  box-shadow: 0 0 0 4px rgba(237, 114, 91, 0.13);
+}
+
+.sudo-refresh-button {
+  padding: 9px 12px;
+  border: 1px solid var(--sudo-ink);
+  border-radius: 5px;
+  background: var(--sudo-ink);
+  color: var(--sudo-paper);
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sudo-refresh-button:hover {
+  background: #28595a;
+}
+
+.sudo-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(145px, 1fr));
+  gap: 10px;
+  margin-bottom: 30px;
+}
+
+.sudo-metric {
+  min-height: 104px;
+  padding: 15px 16px 13px;
+  border: 1px solid var(--sudo-line);
+  border-top: 2px solid var(--sudo-ink);
+  background: rgba(248, 246, 239, 0.72);
+}
+
+.sudo-metric-lobby { border-top-color: var(--sudo-accent); }
+.sudo-metric-game { border-top-color: var(--sudo-green); }
+.sudo-metric-warm { border-top-color: var(--sudo-yellow); }
+.sudo-metric-cool { border-top-color: #7198a0; }
+
+.sudo-metric-label,
+.sudo-metric-detail {
+  display: block;
+  color: var(--sudo-soft);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sudo-metric-value {
+  display: block;
+  margin: 11px 0 4px;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 23px;
+  font-weight: 500;
+  letter-spacing: -0.08em;
+}
+
+.sudo-metric-detail {
+  color: var(--sudo-faint);
+  font-size: 8px;
+  letter-spacing: 0.04em;
+}
+
+.sudo-panel {
+  scroll-margin-top: 20px;
+  margin-top: 17px;
+  border: 1px solid var(--sudo-line);
+  background: rgba(248, 246, 239, 0.67);
+}
+
+.sudo-panel-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 18px 15px;
+  border-bottom: 1px solid var(--sudo-line);
+}
+
+.sudo-panel h2 {
+  margin: 6px 0 0;
+  font-size: 17px;
+  font-weight: 550;
+  letter-spacing: -0.05em;
+}
+
+.sudo-panel-note {
+  color: var(--sudo-faint);
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 9px;
+  text-align: right;
+}
+
+.sudo-table-wrap {
+  overflow-x: auto;
+}
+
+.sudo-table {
+  width: 100%;
+  min-width: 930px;
+  border-collapse: collapse;
+  font-size: 10px;
+}
+
+.sudo-table th,
+.sudo-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--sudo-line);
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.sudo-table th {
+  background: rgba(23, 56, 58, 0.045);
+  color: var(--sudo-faint);
+  font-size: 8px;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.sudo-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.sudo-table tbody tr:hover {
+  background: rgba(237, 114, 91, 0.055);
+}
+
+.sudo-mono {
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 9px;
+}
+
+.sudo-muted {
+  color: var(--sudo-soft);
+  font-size: 9px;
+}
+
+.sudo-kind {
+  color: var(--sudo-accent);
+  font-size: 9px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.sudo-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--sudo-soft);
+  font-size: 8px;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sudo-status::before {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--sudo-faint);
+  content: "";
+}
+
+.sudo-status-active::before { background: var(--sudo-green); }
+.sudo-status-reserved::before { background: var(--sudo-yellow); }
+.sudo-status-unavailable::before,
+.sudo-status-expired::before { background: var(--sudo-accent); }
+
+.sudo-time-left {
+  color: var(--sudo-accent);
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-weight: 750;
+}
+
+.sudo-empty {
+  padding: 20px 18px;
+  color: var(--sudo-faint);
+  font-size: 10px;
+}
+
+.sudo-error {
+  margin-top: 17px;
+  padding: 12px 15px;
+  border-left: 3px solid var(--sudo-accent);
+  background: rgba(237, 114, 91, 0.1);
+  color: var(--sudo-accent);
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.sudo-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 1050px) {
+  .sudo-metrics {
+    grid-template-columns: repeat(2, minmax(145px, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .sudo-page .sudo-shell {
+    display: block;
+  }
+
+  .sudo-sidebar {
+    position: relative;
+    min-height: auto;
+    padding: 18px 16px 12px;
+    border-right: 0;
+    border-bottom: 1px solid var(--sudo-line);
+  }
+
+  .sudo-sidebar-rule,
+  .sudo-nav-label,
+  .sudo-sidebar-footer {
+    display: none;
+  }
+
+  .sudo-nav {
+    display: flex;
+    gap: 3px;
+    margin-top: 16px;
+    overflow-x: auto;
+  }
+
+  .sudo-nav a {
+    padding: 8px 7px;
+    border-bottom: 2px solid transparent;
+    border-left: 0;
+    white-space: nowrap;
+  }
+
+  .sudo-nav a:hover,
+  .sudo-nav a.is-active {
+    border-bottom-color: var(--sudo-accent);
+    border-left: 0;
+  }
+
+  .sudo-main {
+    padding: 25px 14px 40px;
+  }
+
+  .sudo-header {
+    display: block;
+  }
+
+  .sudo-header-actions {
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+
+  .sudo-panel-header {
+    display: block;
+  }
+
+  .sudo-panel-note {
+    display: block;
+    margin-top: 11px;
+    text-align: left;
+  }
+}
+
+@media (max-width: 430px) {
+  .sudo-metrics {
+    grid-template-columns: 1fr;
+  }
+}
