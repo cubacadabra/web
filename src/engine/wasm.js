@@ -102,6 +102,13 @@ export function createRustEngine(exports) {
         throw new Error("The game manifest could not be loaded by Rust.");
       }
     },
+    setUsername(username) {
+      const bytes = new TextEncoder().encode(username);
+      const pointer = call("engine_username_buffer_ptr", bytes.length);
+      if (!pointer && bytes.length) return false;
+      new Uint8Array(exports.memory.buffer, pointer, bytes.length).set(bytes);
+      return Boolean(call("engine_load_username_buffer"));
+    },
     setInput(forward, strafe, sprint, jump, lookX, lookY, zoomDelta) {
       call(
         "engine_set_input",

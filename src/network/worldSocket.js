@@ -91,6 +91,7 @@ export function createWorldSocket({ onEvent, onMove, onStatusChange }) {
   const playerId = getPlayerId();
   let username = getUsername(playerId);
   let pendingUsername = username;
+  let hidden = false;
   let usernameResultHandler = null;
   let socket = null;
   let worldId = null;
@@ -141,6 +142,11 @@ export function createWorldSocket({ onEvent, onMove, onStatusChange }) {
         } catch {
           // The close handler will schedule a reconnect if the socket is gone.
         }
+      }
+      try {
+        nextSocket.send(JSON.stringify({ type: "set_hidden", hidden }));
+      } catch {
+        // The close handler will schedule a reconnect if the socket is gone.
       }
     });
 
@@ -279,6 +285,18 @@ export function createWorldSocket({ onEvent, onMove, onStatusChange }) {
     return true;
   }
 
+  function setHidden(nextHidden) {
+    const normalizedHidden = Boolean(nextHidden);
+    if (hidden === normalizedHidden) return;
+    hidden = normalizedHidden;
+    if (!socket || socket.readyState !== WebSocket.OPEN) return;
+    try {
+      socket.send(JSON.stringify({ type: "set_hidden", hidden }));
+    } catch {
+      // The close handler will restore visibility state after reconnecting.
+    }
+  }
+
   function destroy() {
     if (destroyed) return;
     destroyed = true;
@@ -303,6 +321,7 @@ export function createWorldSocket({ onEvent, onMove, onStatusChange }) {
     connect,
     sendMove,
     setUsername,
+    setHidden,
     destroy,
   };
 }

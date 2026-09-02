@@ -43,18 +43,30 @@ export async function createGame() {
     },
     onStatusChange: hud.setConnectionStatus,
   });
-  const settingsRoom = createSettingsRoomController({ elements, state, worldSocket });
+  const settingsRoom = createSettingsRoomController({
+    elements,
+    state,
+    worldSocket,
+    engine,
+  });
+  let connectedWorldId = null;
 
   function syncRemotePlayers() {
-    engine.setRemotePlayers([...remotePlayers.values()]);
+    engine.setRemotePlayers(state.runtime.worldId === "settings"
+      ? []
+      : [...remotePlayers.values()]);
   }
 
   function connectWorld(worldId) {
+    const networkWorldId = worldId === "settings" ? "lobby" : worldId;
+    if (networkWorldId === connectedWorldId) return;
+    connectedWorldId = networkWorldId;
     remotePlayers.clear();
     syncRemotePlayers();
-    worldSocket.connect(worldId);
+    worldSocket.connect(networkWorldId);
   }
 
+  worldSocket.setHidden(state.runtime.worldId === "settings");
   connectWorld(state.runtime.worldId);
 
   const controls = bindControls({
@@ -71,6 +83,7 @@ export async function createGame() {
     onZoom: (amount) => {
       state.movement.zoomDelta += amount;
     },
+    onInteract: () => settingsRoom.interact(),
   });
 
   function resizeRenderer() {
@@ -91,21 +104,27 @@ export async function createGame() {
     const nextWorld = gameDefinition.worlds[worldId];
     activeWorld = nextWorld;
     state.runtime.worldId = worldId;
-    hud.setWorld(activeWorld);
+    worldSocket.setHidden(worldId === "settings");
+    hud.setWorld(activeWorld, {
+      lobby: worldId === "lobby",
+      immersive: worldId === "settings",
+    });
     connectWorld(worldId);
   }
 
   function render(delta) {
     const step = Math.min(delta, 0.05);
-    const movement = getMovementInput(state);
+    const movement = state.runtime.settingsOpen
+      ? { forward: 0, strafe: 0, sprinting: false }
+      : getMovementInput(state);
     engine.setInput(
       movement.forward,
       movement.strafe,
       movement.sprinting,
-      state.movement.jumpQueued,
-      state.movement.lookX,
-      state.movement.lookY,
-      state.movement.zoomDelta,
+      state.runtime.settingsOpen ? false : state.movement.jumpQueued,
+      state.runtime.settingsOpen ? 0 : state.movement.lookX,
+      state.runtime.settingsOpen ? 0 : state.movement.lookY,
+      state.runtime.settingsOpen ? 0 : state.movement.zoomDelta,
     );
     state.movement.jumpQueued = false;
     state.movement.lookX = 0;
@@ -119,14 +138,16 @@ export async function createGame() {
     settingsRoom.update(frame, state.runtime.worldId);
     state.runtime.engineFrame = frame;
     state.runtime.elapsed = frame.elapsed;
-    worldSocket.sendMove({
-      x: frame.player.position.x,
-      y: frame.player.position.y,
-      z: frame.player.position.z,
-      yaw: frame.player.yaw,
-      moving: frame.player.moving,
-      sprinting: frame.player.sprinting,
-    });
+    if (state.runtime.worldId !== "settings") {
+      worldSocket.sendMove({
+        x: frame.player.position.x,
+        y: frame.player.position.y,
+        z: frame.player.position.z,
+        yaw: frame.player.yaw,
+        moving: frame.player.moving,
+        sprinting: frame.player.sprinting,
+      });
+    }
     if (state.runtime.worldId === "lobby") {
       hud.updateLobby({
         totalPlayers: frame.totalPlayers,

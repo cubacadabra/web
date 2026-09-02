@@ -15,6 +15,9 @@ export function createGameState() {
       id: null,
       x: 0,
       y: 0,
+      startX: 0,
+      startY: 0,
+      moved: false,
     },
     joystickPointer: {
       active: false,

@@ -105,12 +105,13 @@ export function createHudController({ elements, state, gameDefinition }) {
     });
   }
 
-  function setWorld(nextWorld, { lobby = false } = {}) {
+  function setWorld(nextWorld, { lobby = false, immersive = false } = {}) {
     activeWorld = nextWorld;
     renderWorldDetails();
     renderLaunchPadRows();
     if (elements.lobbyStatus) elements.lobbyStatus.hidden = !lobby;
     elements.worldShell?.classList.toggle("is-session-world", !lobby);
+    elements.worldShell?.classList.toggle("is-immersive-settings", immersive);
     elements.worldShell?.classList.remove("is-countdown", "is-launch-complete");
   }
 

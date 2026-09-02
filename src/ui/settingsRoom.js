@@ -1,19 +1,22 @@
 const USERNAME_MAX_LENGTH = 24;
 
-export function createSettingsRoomController({ elements, state, worldSocket }) {
+export function createSettingsRoomController({ elements, state, worldSocket, engine }) {
   let isOpen = false;
-  let isDismissedUntilExit = false;
+  let roomState = 0;
   let activeUsername = worldSocket.username;
 
-  function setPanelOpen(nextOpen) {
+  function setOpen(nextOpen) {
     isOpen = nextOpen;
     state.runtime.settingsOpen = nextOpen;
     if (!elements.settingsRoomPanel) return;
-
     elements.settingsRoomPanel.hidden = !nextOpen;
     elements.settingsRoomPanel.setAttribute("aria-hidden", String(!nextOpen));
     if (nextOpen) {
-      elements.settingsUsernameOption?.focus({ preventScroll: true });
+      elements.settingsUsernameInput.value = activeUsername;
+      elements.settingsUsernameInput.focus({ preventScroll: true });
+      elements.settingsUsernameInput.select();
+    } else {
+      elements.canvas.focus({ preventScroll: true });
     }
   }
 
@@ -23,46 +26,26 @@ export function createSettingsRoomController({ elements, state, worldSocket }) {
     elements.settingsUsernameStatus.dataset.state = type;
   }
 
-  function renderUsername() {
-    if (elements.settingsUsernameValue) {
-      elements.settingsUsernameValue.textContent = activeUsername;
-    }
-    if (elements.settingsUsernameInput && document.activeElement !== elements.settingsUsernameInput) {
-      elements.settingsUsernameInput.value = activeUsername;
-    }
-  }
-
-  function openRoom() {
-    if (isOpen || isDismissedUntilExit) return;
-    renderUsername();
-    setStatus("Choose a name other players can find you by.");
-    setPanelOpen(true);
-  }
-
-  function leaveRoom() {
-    isDismissedUntilExit = true;
-    setPanelOpen(false);
-    elements.settingsUsernameOption?.classList.remove("is-selected");
-    elements.settingsUsernameForm?.setAttribute("hidden", "");
-  }
-
-  function selectUsername() {
-    if (!isOpen) return;
-    elements.settingsUsernameOption?.classList.add("is-selected");
-    if (elements.settingsUsernameForm) elements.settingsUsernameForm.hidden = false;
-    renderUsername();
-    elements.settingsUsernameInput?.focus({ preventScroll: true });
-    elements.settingsUsernameInput?.select();
+  function interact() {
+    if (roomState !== 2 || isOpen) return false;
+    setStatus("Choose a unique name using 2–24 letters, numbers, spaces, _ or -.");
+    setOpen(true);
+    return true;
   }
 
   function handleSubmit(event) {
     event.preventDefault();
-    const nextUsername = elements.settingsUsernameInput?.value.trim() ?? "";
-    if (nextUsername.length < 2 || nextUsername.length > USERNAME_MAX_LENGTH) {
-      setStatus(`Use 2–${USERNAME_MAX_LENGTH} characters.`, "error");
+    const nextUsername = elements.settingsUsernameInput?.value
+      .trim()
+      .replace(/\s+/g, " ") ?? "";
+    if (
+      nextUsername.length < 2
+      || nextUsername.length > USERNAME_MAX_LENGTH
+      || !/^[A-Za-z0-9 _-]+$/.test(nextUsername)
+    ) {
+      setStatus(`Use 2–${USERNAME_MAX_LENGTH} letters, numbers, spaces, _ or -.`, "error");
       return;
     }
-
     setStatus("Checking that name…", "pending");
     worldSocket.setUsername(nextUsername);
   }
@@ -70,8 +53,8 @@ export function createSettingsRoomController({ elements, state, worldSocket }) {
   function handleUsernameResult(event) {
     if (event.type === "username_updated") {
       activeUsername = event.username;
-      renderUsername();
-      setStatus("Saved. Your new name is live in this lobby.", "success");
+      engine.setUsername(activeUsername);
+      setOpen(false);
       return;
     }
     if (event.type === "username_error") {
@@ -81,40 +64,28 @@ export function createSettingsRoomController({ elements, state, worldSocket }) {
     }
   }
 
-  function update(frame, worldId) {
-    if (worldId !== "lobby" || !frame?.player?.position) {
-      if (isOpen) setPanelOpen(false);
-      return;
-    }
-
-    const roomState = frame.settingsRoomState ?? 0;
-    const inside = roomState === 2;
-    if (!inside) isDismissedUntilExit = false;
-
-    if (elements.settingsRoomHint) {
-      elements.settingsRoomHint.hidden = isOpen || roomState !== 1;
-    }
-    if (inside) openRoom();
-  }
-
   const listeners = [
-    [elements.settingsUsernameOption, "click", selectUsername],
     [elements.settingsUsernameForm, "submit", handleSubmit],
-    [elements.settingsLeaveButton, "click", leaveRoom],
+    [elements.settingsCancelButton, "click", () => setOpen(false)],
+    [elements.settingsCancelButtonSecondary, "click", () => setOpen(false)],
   ];
   listeners.forEach(([target, type, handler]) => target?.addEventListener(type, handler));
 
   worldSocket.onUsernameResult = handleUsernameResult;
-  renderUsername();
+  engine.setUsername(activeUsername);
 
   return {
-    update,
+    interact,
+    update(frame, worldId) {
+      roomState = worldId === "settings" ? (frame.settingsRoomState ?? 0) : 0;
+      if (roomState === 0 && isOpen) setOpen(false);
+    },
     destroy() {
       listeners.forEach(([target, type, handler]) => target?.removeEventListener(type, handler));
       if (worldSocket.onUsernameResult === handleUsernameResult) {
         worldSocket.onUsernameResult = null;
       }
-      setPanelOpen(false);
+      setOpen(false);
     },
   };
 }

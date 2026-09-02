@@ -28,6 +28,7 @@ export function bindControls({
   onLook,
   onZoom,
   onJump,
+  onInteract,
 }) {
   const {
     canvas,
@@ -73,12 +74,16 @@ export function bindControls({
   }
 
   function handlePointerDown(event) {
+    if (state.runtime.settingsOpen) return;
     if (event.pointerType === "mouse" && event.button !== 0) return;
 
     state.pointer.active = true;
     state.pointer.id = event.pointerId;
     state.pointer.x = event.clientX;
     state.pointer.y = event.clientY;
+    state.pointer.startX = event.clientX;
+    state.pointer.startY = event.clientY;
+    state.pointer.moved = false;
     canvas.focus({ preventScroll: true });
     canvas.setPointerCapture(event.pointerId);
     canvas.classList.add("is-looking");
@@ -90,14 +95,32 @@ export function bindControls({
 
     const deltaX = event.clientX - state.pointer.x;
     const deltaY = event.clientY - state.pointer.y;
+    if (Math.hypot(
+      event.clientX - state.pointer.startX,
+      event.clientY - state.pointer.startY,
+    ) > 6) state.pointer.moved = true;
     state.pointer.x = event.clientX;
     state.pointer.y = event.clientY;
     setViewFromInput(deltaX, deltaY);
   }
 
+  function handlePointerUp(event) {
+    const shouldInteract = state.pointer.active
+      && event.pointerId === state.pointer.id
+      && !state.pointer.moved;
+    stopPointerLook(event);
+    if (shouldInteract) onInteract?.();
+  }
+
   function handleKeyDown(event) {
     if (state.runtime.settingsOpen) return;
     if (isInteractiveTarget(event.target)) return;
+
+    if (event.code === "KeyE") {
+      event.preventDefault();
+      if (!event.repeat) onInteract?.();
+      return;
+    }
 
     if (event.code === "KeyO" || event.code === "KeyI") {
       event.preventDefault();
@@ -215,7 +238,7 @@ export function bindControls({
 
   listen(canvas, "pointerdown", handlePointerDown);
   listen(canvas, "pointermove", handlePointerMove);
-  listen(canvas, "pointerup", stopPointerLook);
+  listen(canvas, "pointerup", handlePointerUp);
   listen(canvas, "pointercancel", stopPointerLook);
   listen(canvas, "lostpointercapture", stopPointerLook);
   listen(canvas, "wheel", handleWheel, { passive: false });
