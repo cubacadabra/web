@@ -18,7 +18,52 @@ function getCardinalDirection(degrees) {
 
 export function createHudController({ elements, state, gameDefinition }) {
   let activeWorld = gameDefinition;
+  let worldEventTimer = 0;
+  let worldEventHideTimer = 0;
   const launchPadCountElements = [];
+
+  function playerLabel(playerId) {
+    const [platform] = playerId.split("-");
+    const platformLabel = platform === "ios"
+      ? "iOS"
+      : platform === "web"
+        ? "Web"
+        : "Player";
+    return `${platformLabel} player ${playerId.slice(-4).toUpperCase()}`;
+  }
+
+  function setConnectionStatus(status) {
+    const labels = {
+      connecting: "Connecting",
+      connected: "Cloud live",
+      reconnecting: "Reconnecting",
+      disconnected: "Offline",
+    };
+    const label = labels[status] ?? labels.disconnected;
+    if (elements.connectionStatus) elements.connectionStatus.textContent = label;
+    elements.worldStatus?.setAttribute("data-state", status);
+    elements.statusDot?.setAttribute("data-state", status);
+  }
+
+  function showWorldEvent(event) {
+    if (event.isSelf || !elements.worldEvent || !elements.worldEventCopy) return;
+
+    window.clearTimeout(worldEventTimer);
+    window.clearTimeout(worldEventHideTimer);
+    const action = event.type === "player_join" ? "joined the world" : "left the world";
+    elements.worldEventCopy.textContent = `${playerLabel(event.id)} ${action}`;
+    elements.worldEvent.hidden = false;
+    requestAnimationFrame(() => elements.worldEvent?.classList.add("is-visible"));
+
+    worldEventTimer = window.setTimeout(() => {
+      elements.worldEvent?.classList.remove("is-visible");
+      worldEventHideTimer = window.setTimeout(() => {
+        if (elements.worldEvent && !elements.worldEvent.classList.contains("is-visible")) {
+          elements.worldEvent.hidden = true;
+        }
+      }, 220);
+    }, 4_000);
+  }
 
   function renderWorldDetails() {
     const scene = activeWorld.scene ?? {};
@@ -192,8 +237,15 @@ export function createHudController({ elements, state, gameDefinition }) {
     }
   }
 
+  function destroy() {
+    window.clearTimeout(worldEventTimer);
+    window.clearTimeout(worldEventHideTimer);
+  }
+
   return {
     dismissHint,
+    setConnectionStatus,
+    showWorldEvent,
     setWorld,
     setCameraMode,
     updateMovementStatus,
@@ -202,5 +254,6 @@ export function createHudController({ elements, state, gameDefinition }) {
     updateCompass,
     markReady,
     markError,
+    destroy,
   };
 }

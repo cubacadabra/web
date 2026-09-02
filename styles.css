@@ -97,6 +97,7 @@ canvas:focus-visible {
 }
 
 .topbar,
+.world-event,
 .scene-intro,
 .look-hint,
 .compass,
@@ -339,6 +340,69 @@ canvas:focus-visible {
   border-radius: 50%;
   background: #639b68;
   box-shadow: 0 0 0 4px rgba(99, 155, 104, 0.16);
+}
+
+.status-dot[data-state="connecting"],
+.status-dot[data-state="reconnecting"] {
+  background: #e1b849;
+  box-shadow: 0 0 0 4px rgba(225, 184, 73, 0.17);
+  animation: status-pulse 1.4s ease-in-out infinite;
+}
+
+.status-dot[data-state="disconnected"] {
+  background: #b9655c;
+  box-shadow: 0 0 0 4px rgba(185, 101, 92, 0.17);
+}
+
+.world-event {
+  top: 88px;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(420px, calc(100vw - 36px));
+  min-height: 42px;
+  padding: 10px 15px;
+  border: 1px solid rgba(246, 241, 231, 0.4);
+  border-radius: 999px;
+  background: rgba(23, 56, 58, 0.78);
+  box-shadow: 0 14px 38px rgba(17, 41, 42, 0.18);
+  color: var(--paper);
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.025em;
+  line-height: 1.3;
+  pointer-events: none;
+  backdrop-filter: blur(14px);
+  opacity: 0;
+  transform: translate(-50%, -8px);
+  transition:
+    opacity 200ms ease,
+    transform 200ms ease;
+}
+
+.world-event.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.world-event[hidden] {
+  display: none;
+}
+
+.world-event-mark {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px rgba(237, 114, 91, 0.18);
+}
+
+@keyframes status-pulse {
+  50% {
+    opacity: 0.55;
+  }
 }
 
 .build-label {
@@ -892,6 +956,11 @@ canvas:focus-visible {
 
   .topbar-actions {
     gap: 0;
+  }
+
+  .world-event {
+    top: 78px;
+    font-size: 10px;
   }
 
   .reset-button {

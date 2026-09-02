@@ -41,9 +41,9 @@
         </a>
 
         <div class="topbar-actions">
-          <div class="world-status" aria-label="World status">
-            <span class="status-dot" aria-hidden="true"></span>
-            <span>Local world</span>
+          <div class="world-status" id="world-status" aria-label="Cloud connection status">
+            <span class="status-dot" id="status-dot" aria-hidden="true"></span>
+            <span id="connection-status">Connecting</span>
           </div>
           <span class="build-label">Preview 01</span>
           <span class="camera-mode" id="camera-mode">First person</span>
@@ -52,6 +52,11 @@
           </button>
         </div>
       </header>
+
+      <aside class="world-event" id="world-event" aria-live="polite" hidden>
+        <span class="world-event-mark" aria-hidden="true"></span>
+        <span id="world-event-copy"></span>
+      </aside>
 
       <aside class="lobby-status" id="lobby-status" aria-label="Lobby population and launch pads">
         <div class="lobby-status-header">

@@ -10,3 +10,7 @@ export const zoomConfig = {
 export const playerPresentationConfig = {
   eyeHeight: 3.4,
 };
+
+export const backendConfig = {
+  webSocketUrl: "wss://cubacadabra.andrew-f97.workers.dev",
+};

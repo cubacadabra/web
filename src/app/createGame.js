@@ -1,6 +1,7 @@
 import { createRustEngine } from "../engine/wasm.js";
 import { createRustRenderer } from "../engine/renderer.js";
 import { loadGamePackage } from "../game/loadGamePackage.js";
+import { createWorldSocket } from "../network/worldSocket.js";
 import { bindControls } from "../systems/controls.js";
 import { getMovementInput } from "../systems/player.js";
 import { createGameState } from "../state/gameState.js";
@@ -22,6 +23,11 @@ export async function createGame() {
   state.runtime.worldId = gameDefinition.activeWorldId;
   let activeWorld = gameDefinition.worlds[gameDefinition.activeWorldId];
   const hud = createHudController({ elements, state, gameDefinition: activeWorld });
+  const worldSocket = createWorldSocket({
+    onEvent: hud.showWorldEvent,
+    onStatusChange: hud.setConnectionStatus,
+  });
+  worldSocket.connect(state.runtime.worldId);
 
   const controls = bindControls({
     elements,
@@ -56,8 +62,9 @@ export async function createGame() {
     if (!worldId || worldId === state.runtime.worldId) return;
     const nextWorld = gameDefinition.worlds[worldId];
     activeWorld = nextWorld;
-    hud.setWorld(activeWorld);
     state.runtime.worldId = worldId;
+    hud.setWorld(activeWorld);
+    worldSocket.connect(worldId);
   }
 
   function render(delta) {
@@ -113,6 +120,8 @@ export async function createGame() {
     cancelAnimationFrame(animationFrame);
     resizeObserver.disconnect();
     controls.destroy();
+    worldSocket.destroy();
+    hud.destroy();
     renderer.destroy();
     engine.destroy();
     window.removeEventListener("pagehide", dispose);
