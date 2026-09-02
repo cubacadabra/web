@@ -75,6 +75,7 @@ export function createRustEngine(exports) {
       worldEventId: call("engine_world_event_id"),
       lastWorldSourcePad: call("engine_last_world_source_pad"),
       lastWorldDestination: call("engine_last_world_destination"),
+      settingsRoomState: call("engine_settings_room_state"),
     };
   }
 

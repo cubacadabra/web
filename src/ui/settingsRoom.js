@@ -1,21 +1,4 @@
-import { settingsRoomConfig } from "../config/settingsRoom.js";
-
 const USERNAME_MAX_LENGTH = 24;
-
-function isInsideRoom(position) {
-  const { minX, maxX, minZ, maxZ } = settingsRoomConfig.bounds;
-  return position.x >= minX
-    && position.x <= maxX
-    && position.z >= minZ
-    && position.z <= maxZ;
-}
-
-function isNearDoor(position) {
-  const doorX = (settingsRoomConfig.bounds.minX + settingsRoomConfig.bounds.maxX) / 2;
-  const doorZ = settingsRoomConfig.bounds.maxZ + 0.9;
-  return Math.hypot(position.x - doorX, position.z - doorZ)
-    <= settingsRoomConfig.proximityRadius;
-}
 
 export function createSettingsRoomController({ elements, state, worldSocket }) {
   let isOpen = false;
@@ -104,12 +87,12 @@ export function createSettingsRoomController({ elements, state, worldSocket }) {
       return;
     }
 
-    const position = frame.player.position;
-    const inside = isInsideRoom(position);
+    const roomState = frame.settingsRoomState ?? 0;
+    const inside = roomState === 2;
     if (!inside) isDismissedUntilExit = false;
 
     if (elements.settingsRoomHint) {
-      elements.settingsRoomHint.hidden = isOpen || !isNearDoor(position) || inside;
+      elements.settingsRoomHint.hidden = isOpen || roomState !== 1;
     }
     if (inside) openRoom();
   }

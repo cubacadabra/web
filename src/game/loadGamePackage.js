@@ -1,5 +1,3 @@
-import { addWebSettingsRoom } from "../config/settingsRoom.js";
-
 const GAME_PACKAGE_PATH = "games/first-game";
 
 function parseColor(value, fallback = 0xffffff) {
@@ -30,11 +28,9 @@ async function loadText(url) {
 
 export async function loadGamePackage() {
   const baseUrl = new URL(`${GAME_PACKAGE_PATH}/`, document.baseURI);
-  const { manifest: loadedManifest } = await loadManifest(
+  const { source: manifestSource, manifest } = await loadManifest(
     new URL("manifest.json", baseUrl),
   );
-  const manifest = addWebSettingsRoom(loadedManifest);
-  const manifestSource = JSON.stringify(manifest);
   const script = await loadText(new URL("game.luau", baseUrl));
 
   function normalizeWorld(world = {}) {
