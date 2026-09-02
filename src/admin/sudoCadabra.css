@@ -1,18 +1,20 @@
 .sudo-page {
-  --sudo-bg: #e7eee9;
-  --sudo-paper: #f8f6ef;
-  --sudo-ink: #17383a;
-  --sudo-soft: rgba(23, 56, 58, 0.68);
-  --sudo-faint: rgba(23, 56, 58, 0.42);
-  --sudo-line: rgba(23, 56, 58, 0.15);
+  color-scheme: dark;
+  --sudo-bg: #0d1517;
+  --sudo-paper: #f4f1e8;
+  --sudo-ink: #e7f0e9;
+  --sudo-soft: rgba(231, 240, 233, 0.7);
+  --sudo-faint: rgba(231, 240, 233, 0.43);
+  --sudo-line: rgba(231, 240, 233, 0.14);
   --sudo-accent: #ed725b;
-  --sudo-green: #4c9872;
-  --sudo-yellow: #c58b31;
+  --sudo-green: #6fc394;
+  --sudo-yellow: #d9a64e;
   min-width: 320px;
   min-height: 100%;
   overflow: auto;
   background:
-    radial-gradient(circle at 80% 0%, rgba(237, 114, 91, 0.1), transparent 34rem),
+    radial-gradient(circle at 80% 0%, rgba(237, 114, 91, 0.12), transparent 34rem),
+    linear-gradient(135deg, rgba(55, 102, 96, 0.08), transparent 45%),
     var(--sudo-bg);
   color: var(--sudo-ink);
   font-size: 11px;
@@ -32,7 +34,7 @@
   min-height: 100vh;
   padding: 28px 20px 20px;
   border-right: 1px solid var(--sudo-line);
-  background: rgba(248, 246, 239, 0.62);
+  background: rgba(18, 29, 31, 0.82);
 }
 
 .sudo-brand {
@@ -233,7 +235,7 @@
 }
 
 .sudo-refresh-button:hover {
-  background: #28595a;
+  background: #356f6c;
 }
 
 .sudo-metrics {
@@ -248,7 +250,7 @@
   padding: 15px 16px 13px;
   border: 1px solid var(--sudo-line);
   border-top: 2px solid var(--sudo-ink);
-  background: rgba(248, 246, 239, 0.72);
+  background: rgba(24, 37, 39, 0.82);
 }
 
 .sudo-metric-lobby { border-top-color: var(--sudo-accent); }
@@ -285,7 +287,7 @@
   scroll-margin-top: 20px;
   margin-top: 17px;
   border: 1px solid var(--sudo-line);
-  background: rgba(248, 246, 239, 0.67);
+  background: rgba(18, 29, 31, 0.84);
 }
 
 .sudo-panel-header {
@@ -332,7 +334,7 @@
 }
 
 .sudo-table th {
-  background: rgba(23, 56, 58, 0.045);
+  background: rgba(231, 240, 233, 0.045);
   color: var(--sudo-faint);
   font-size: 8px;
   font-weight: 850;
@@ -345,7 +347,7 @@
 }
 
 .sudo-table tbody tr:hover {
-  background: rgba(237, 114, 91, 0.055);
+  background: rgba(237, 114, 91, 0.095);
 }
 
 .sudo-mono {
@@ -405,7 +407,7 @@
   margin-top: 17px;
   padding: 12px 15px;
   border-left: 3px solid var(--sudo-accent);
-  background: rgba(237, 114, 91, 0.1);
+  background: rgba(237, 114, 91, 0.14);
   color: var(--sudo-accent);
   font-size: 10px;
   font-weight: 750;
