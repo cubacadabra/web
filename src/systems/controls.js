@@ -39,6 +39,13 @@ export function bindControls({
     zoomOutButton,
     zoomInButton,
   } = elements;
+  const removeListeners = [];
+
+  function listen(target, type, handler, options) {
+    if (!target) return;
+    target.addEventListener(type, handler, options);
+    removeListeners.push(() => target.removeEventListener(type, handler, options));
+  }
 
   function adjustZoom(amount) {
     onZoom?.(amount);
@@ -148,12 +155,7 @@ export function bindControls({
     runToggle.classList.toggle("is-active", state.movement.mobileSprint);
   }
 
-  canvas.addEventListener("pointerdown", handlePointerDown);
-  canvas.addEventListener("pointermove", handlePointerMove);
-  canvas.addEventListener("pointerup", stopPointerLook);
-  canvas.addEventListener("pointercancel", stopPointerLook);
-  canvas.addEventListener("lostpointercapture", stopPointerLook);
-  canvas.addEventListener("wheel", (event) => {
+  function handleWheel(event) {
     if (
       Math.abs(event.deltaY) >= Math.abs(event.deltaX) &&
       Math.abs(event.deltaY) > 0.5
@@ -168,47 +170,79 @@ export function bindControls({
       setViewFromInput(event.deltaX * 0.6);
       onDismissHint();
     }
-  }, { passive: false });
+  }
 
-  window.addEventListener("keydown", handleKeyDown);
-  window.addEventListener("keyup", (event) => state.keys.delete(event.code));
-  window.addEventListener("blur", () => {
+  function handleKeyUp(event) {
+    state.keys.delete(event.code);
+  }
+
+  function handleBlur() {
     state.keys.clear();
     state.movement.jumpQueued = false;
     resetJoystick();
-  });
+  }
 
-  joystickElement?.addEventListener("pointerdown", (event) => {
+  function handleJoystickDown(event) {
     event.preventDefault();
     state.joystickPointer.active = true;
     state.joystickPointer.id = event.pointerId;
     joystickElement.setPointerCapture(event.pointerId);
     updateJoystick(event);
-  });
-  joystickElement?.addEventListener("pointermove", (event) => {
+  }
+
+  function handleJoystickMove(event) {
     if (
       !state.joystickPointer.active ||
       event.pointerId !== state.joystickPointer.id
     ) return;
     event.preventDefault();
     updateJoystick(event);
-  });
-  joystickElement?.addEventListener("pointerup", resetJoystick);
-  joystickElement?.addEventListener("pointercancel", resetJoystick);
-  joystickElement?.addEventListener("lostpointercapture", resetJoystick);
+  }
 
-  runToggle?.addEventListener("click", handleRunToggle);
-  jumpButton?.addEventListener("pointerdown", (event) => {
+  function handleJumpPointer(event) {
     event.preventDefault();
     queueJump();
-  });
-  jumpButton?.addEventListener("click", queueJump);
-  resetButton?.addEventListener("click", () => {
+  }
+
+  function handleReset() {
     onResetView();
     canvas.focus({ preventScroll: true });
-  });
-  zoomOutButton?.addEventListener("click", () => adjustZoom(zoomConfig.step));
-  zoomInButton?.addEventListener("click", () => adjustZoom(-zoomConfig.step));
+  }
 
-  return { resetJoystick };
+  const handleZoomOut = () => adjustZoom(zoomConfig.step);
+  const handleZoomIn = () => adjustZoom(-zoomConfig.step);
+
+  listen(canvas, "pointerdown", handlePointerDown);
+  listen(canvas, "pointermove", handlePointerMove);
+  listen(canvas, "pointerup", stopPointerLook);
+  listen(canvas, "pointercancel", stopPointerLook);
+  listen(canvas, "lostpointercapture", stopPointerLook);
+  listen(canvas, "wheel", handleWheel, { passive: false });
+
+  listen(window, "keydown", handleKeyDown);
+  listen(window, "keyup", handleKeyUp);
+  listen(window, "blur", handleBlur);
+
+  listen(joystickElement, "pointerdown", handleJoystickDown);
+  listen(joystickElement, "pointermove", handleJoystickMove);
+  listen(joystickElement, "pointerup", resetJoystick);
+  listen(joystickElement, "pointercancel", resetJoystick);
+  listen(joystickElement, "lostpointercapture", resetJoystick);
+
+  listen(runToggle, "click", handleRunToggle);
+  listen(jumpButton, "pointerdown", handleJumpPointer);
+  listen(jumpButton, "click", queueJump);
+  listen(resetButton, "click", handleReset);
+  listen(zoomOutButton, "click", handleZoomOut);
+  listen(zoomInButton, "click", handleZoomIn);
+
+  return {
+    resetJoystick,
+    destroy() {
+      removeListeners.splice(0).forEach((remove) => remove());
+      stopPointerLook();
+      resetJoystick();
+      state.keys.clear();
+    },
+  };
 }

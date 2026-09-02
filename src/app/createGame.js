@@ -13,20 +13,17 @@ export async function createGame() {
   const isTouchDevice =
     typeof navigator !== "undefined" && navigator.maxTouchPoints > 0;
   elements.worldShell?.classList.toggle("is-touch-device", isTouchDevice);
-  const engine = await createRustEngine();
+  const renderer = await createRustRenderer({ canvas: elements.canvas });
+  const engine = createRustEngine(renderer.wasmExports);
+  engine.loadGamePackage(gameDefinition.manifestSource);
   engine.loadGameScript(gameDefinition.script);
-  const runtimeWorldIds = Object.keys(gameDefinition.worlds);
-  engine.configureWorlds(
-    runtimeWorldIds.map((id) => ({ id, definition: gameDefinition.worlds[id] })),
-    gameDefinition.activeWorldId,
-  );
+  const runtimeWorldIds = gameDefinition.runtimeWorldIds;
   const state = createGameState();
   state.runtime.worldId = gameDefinition.activeWorldId;
-  const renderer = await createRustRenderer({ canvas: elements.canvas });
   let activeWorld = gameDefinition.worlds[gameDefinition.activeWorldId];
   const hud = createHudController({ elements, state, gameDefinition: activeWorld });
 
-  bindControls({
+  const controls = bindControls({
     elements,
     state,
     onDismissHint: hud.dismissHint,
@@ -96,19 +93,34 @@ export async function createGame() {
     hud.setCameraMode(frame.camera.distance > 0.75);
     hud.updateMovementStatus(frame);
     hud.updateCompass(frame);
-    renderer.render(activeWorld, frame);
+    renderer.render(engine.rendererHandle());
   }
 
+  let disposed = false;
+  let animationFrame = 0;
   let previousTime = performance.now();
   function animate(currentTime) {
+    if (disposed) return;
     const delta = Math.min((currentTime - previousTime) / 1000, 0.05);
     previousTime = currentTime;
     render(delta);
-    requestAnimationFrame(animate);
+    animationFrame = requestAnimationFrame(animate);
+  }
+
+  function dispose() {
+    if (disposed) return;
+    disposed = true;
+    cancelAnimationFrame(animationFrame);
+    resizeObserver.disconnect();
+    controls.destroy();
+    renderer.destroy();
+    engine.destroy();
+    window.removeEventListener("pagehide", dispose);
   }
 
   hud.markReady();
-  requestAnimationFrame(animate);
+  animationFrame = requestAnimationFrame(animate);
 
-  window.addEventListener("pagehide", () => engine.destroy(), { once: true });
+  window.addEventListener("pagehide", dispose, { once: true });
+  return { dispose };
 }

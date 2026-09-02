@@ -1,35 +1,4 @@
-const WASM_PATH = "wasm/cubacadabra_engine.wasm";
-
-async function loadWasm() {
-  const url = new URL(WASM_PATH, document.baseURI);
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`The Cubacadabra engine could not be loaded (${response.status}).`);
-  }
-
-  if (WebAssembly.instantiateStreaming) {
-    try {
-      return (await WebAssembly.instantiateStreaming(response, {})).instance;
-    } catch (error) {
-      // Some development servers serve .wasm with an incorrect MIME type.
-      // The array-buffer path keeps local development resilient.
-      if (response.bodyUsed) {
-        const fallbackResponse = await fetch(url);
-        return (await WebAssembly.instantiate(
-          await fallbackResponse.arrayBuffer(),
-          {},
-        )).instance;
-      }
-      throw error;
-    }
-  }
-
-  return (await WebAssembly.instantiate(await response.arrayBuffer(), {})).instance;
-}
-
-export async function createRustEngine() {
-  const instance = await loadWasm();
-  const { exports } = instance;
+export function createRustEngine(exports) {
   const handle = exports.engine_create();
   if (!handle) throw new Error("The Cubacadabra engine could not be created.");
 
@@ -121,6 +90,17 @@ export async function createRustEngine() {
         throw new Error("The game script could not be compiled.");
       }
     },
+    loadGamePackage(source) {
+      const bytes = new TextEncoder().encode(source);
+      const pointer = call("engine_package_buffer_ptr", bytes.length);
+      if (!pointer && bytes.length) {
+        throw new Error("The game package buffer could not be allocated.");
+      }
+      new Uint8Array(exports.memory.buffer, pointer, bytes.length).set(bytes);
+      if (!call("engine_load_package_buffer")) {
+        throw new Error("The game manifest could not be loaded by Rust.");
+      }
+    },
     setInput(forward, strafe, sprint, jump, lookX, lookY, zoomDelta) {
       call(
         "engine_set_input",
@@ -133,60 +113,6 @@ export async function createRustEngine() {
         zoomDelta,
       );
     },
-    configureWorlds(worldEntries, startWorldId) {
-      const worldIndices = new Map(
-        worldEntries.map(({ id }, index) => [id, index]),
-      );
-      call("engine_set_world_count", worldEntries.length);
-      worldEntries.forEach(({ definition }, worldIndex) => {
-        const spawn = definition.world?.spawn ?? [0, 0, 0];
-        call("engine_set_world_spawn", worldIndex, spawn[0], spawn[1], spawn[2]);
-
-        const pads = definition.launchPads ?? [];
-        call("engine_set_world_launch_pad_count", worldIndex, pads.length);
-        pads.forEach((pad, padIndex) => {
-          const z = pad.position.length > 2 ? pad.position[2] : pad.position[1];
-          call(
-            "engine_set_world_launch_pad",
-            worldIndex,
-            padIndex,
-            pad.position[0],
-            z,
-            pad.radius,
-            pad.countdown,
-          );
-          const destinationId = pad.destinationWorld ??
-            definition.launch?.destinationWorld;
-          call(
-            "engine_set_world_launch_destination",
-            worldIndex,
-            padIndex,
-            worldIndices.get(destinationId) ?? -1,
-          );
-        });
-
-        const blocks = definition.blocks ?? [];
-        call("engine_set_world_obstacle_count", worldIndex, blocks.length);
-        blocks.forEach((block, blockIndex) => {
-          call(
-            "engine_set_world_obstacle",
-            worldIndex,
-            blockIndex,
-            block.position[0],
-            block.position[1],
-            block.position[2],
-            block.size[0],
-            block.size[1],
-            block.size[2],
-          );
-        });
-      });
-
-      const startWorldIndex = worldIndices.get(startWorldId);
-      if (startWorldIndex === undefined || !call("engine_start_world", startWorldIndex)) {
-        throw new Error(`The engine could not start world "${startWorldId}".`);
-      }
-    },
     step(delta) {
       call("engine_step", delta);
     },
@@ -194,6 +120,9 @@ export async function createRustEngine() {
       call("engine_reset_view");
     },
     readFrame,
+    rendererHandle() {
+      return handle;
+    },
     destroy() {
       call("engine_destroy");
     },

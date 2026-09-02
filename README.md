@@ -22,11 +22,11 @@ cargo install wasm-bindgen-cli
 npm run dev
 ```
 
-The build produces two Rust/WASM artifacts under `public/wasm`: the simulation
-ABI and the shared `wgpu` renderer. Rebuild them after changing Rust with:
+The build produces one Rust/WASM runtime under `public/wasm/renderer`. It owns
+the simulation, manifest parsing, and shared `wgpu` renderer. Rebuild it after
+changing Rust with:
 
 ```sh
-npm run build:wasm
 npm run build:renderer
 ```
 
@@ -43,7 +43,7 @@ the Rust renderer; only their surface setup is platform-specific.
 - `src/config` holds browser input tuning
 - `src/game` loads the external game package at runtime
 - `src/state` owns the mutable game state
-- `src/engine` loads the Rust/WebAssembly simulation and renderer boundaries
+- `src/engine` loads the unified Rust/WebAssembly runtime boundary
 - `src/systems` contains browser input adapters
 - `src/ui` contains DOM access and HUD updates
 
@@ -52,17 +52,18 @@ the Rust renderer; only their surface setup is platform-specific.
 The first reusable platform pattern is the launch pad. The game package
 defines pad content in `../first-game/manifest.json`—position, label, color,
 radius, and countdown duration. The browser registers those pads with Rust,
-which owns occupancy, countdown cancellation, and the launch event. The
-JavaScript client only loads the package, forwards content to the engine, and
-formats the returned state.
+which owns occupancy, countdown cancellation, and the launch event. Rust parses
+the package once for both simulation and rendering; JavaScript fetches the
+files, forwards input, and formats returned HUD state.
 
 This is the direction for Cubacadabra games: keep deterministic simulation,
 physics, reusable multiplayer patterns, and world rendering in a
 platform-neutral Rust runtime; keep game-specific rules in the external Luau
 package; and keep each client thin. The browser uses the generated
-`WebRenderer` binding over a canvas, while iOS uses the same renderer through
-the C ABI and a `CAMetalLayer`. Android can use the same Rust renderer through
-its future native surface adapter.
+`WebRenderer` binding over a canvas and synchronizes it directly from the Rust
+engine, while iOS uses the same engine-to-renderer path through the C ABI and a
+`CAMetalLayer`. Android can use the same Rust renderer through its future native
+surface adapter.
 
 ## Controls
 

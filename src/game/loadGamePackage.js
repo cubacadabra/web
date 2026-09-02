@@ -9,12 +9,13 @@ function parseColor(value, fallback = 0xffffff) {
   return Number.parseInt(normalized, 16);
 }
 
-async function loadJson(url) {
+async function loadManifest(url) {
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`The game manifest could not be loaded (${response.status}).`);
   }
-  return response.json();
+  const source = await response.text();
+  return { source, manifest: JSON.parse(source) };
 }
 
 async function loadText(url) {
@@ -27,7 +28,9 @@ async function loadText(url) {
 
 export async function loadGamePackage() {
   const baseUrl = new URL(`${GAME_PACKAGE_PATH}/`, document.baseURI);
-  const manifest = await loadJson(new URL("manifest.json", baseUrl));
+  const { source: manifestSource, manifest } = await loadManifest(
+    new URL("manifest.json", baseUrl),
+  );
   const script = await loadText(new URL("game.luau", baseUrl));
 
   function normalizeWorld(world = {}) {
@@ -52,9 +55,12 @@ export async function loadGamePackage() {
     };
   }
 
+  const nestedWorlds = Object.entries(manifest.worlds ?? {}).sort(([left], [right]) => (
+    left.localeCompare(right)
+  ));
   const worlds = Object.fromEntries([
     ["lobby", normalizeWorld(manifest)],
-    ...Object.entries(manifest.worlds ?? {}).map(([id, world]) => [
+    ...nestedWorlds.map(([id, world]) => [
       id,
       normalizeWorld(world),
     ]),
@@ -67,8 +73,10 @@ export async function loadGamePackage() {
 
   return {
     ...manifest,
+    manifestSource,
     script,
     worlds,
+    runtimeWorldIds: Object.keys(worlds),
     activeWorldId: startWorld,
   };
 }
