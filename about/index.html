@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="/styles.css" />
     <title>About cubacadabra</title>
   </head>
-  <body class="about-page">
+  <body class="about-page" data-about-route="overview">
     <div class="about-shell">
       <header class="about-topbar">
         <a class="brand" href="/" aria-label="cubacadabra home">
@@ -37,23 +37,23 @@
           </div>
 
           <nav class="about-menu" aria-label="About sections">
-            <a class="is-active" href="#overview" aria-current="location">
+            <a class="is-active" href="/about/" aria-current="location">
               <span>Overview</span>
               <span class="about-menu-arrow" aria-hidden="true">↗</span>
             </a>
 
             <div class="about-menu-group">
               <p>Our thinking</p>
-              <a href="#why-another-platform"><span>Why another platform?</span></a>
-              <a href="#opportunity"><span>The opportunity</span></a>
-              <a href="#open-by-design"><span>Open by design</span></a>
-              <a href="#hard-part"><span>The hard part</span></a>
+              <a href="/about/why-another-platform/"><span>Why another platform?</span></a>
+              <a href="/about/opportunity/"><span>The opportunity</span></a>
+              <a href="/about/open-by-design/"><span>Open by design</span></a>
+              <a href="/about/hard-part/"><span>The hard part</span></a>
             </div>
 
             <div class="about-menu-group">
               <p>The people and the work</p>
-              <a href="#constituencies"><span>Three constituencies</span></a>
-              <a href="#where-we-are"><span>Where we are now</span></a>
+              <a href="/about/constituencies/"><span>Three constituencies</span></a>
+              <a href="/about/where-we-are/"><span>Where we are now</span></a>
             </div>
           </nav>
 
@@ -276,28 +276,6 @@
       </footer>
     </div>
 
-    <script>
-      const aboutSections = document.querySelectorAll('.about-section, .about-overview');
-      const aboutLinks = document.querySelectorAll('.about-menu a[href^="#"]');
-
-      const setActiveAboutLink = (id) => {
-        aboutLinks.forEach((link) => {
-          const isActive = link.getAttribute('href') === `#${id}`;
-          link.classList.toggle('is-active', isActive);
-          if (isActive) link.setAttribute('aria-current', 'location');
-          else link.removeAttribute('aria-current');
-        });
-      };
-
-      const aboutObserver = new IntersectionObserver((entries) => {
-        const visibleSection = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (visibleSection) setActiveAboutLink(visibleSection.target.id);
-      }, { rootMargin: '-18% 0px -68% 0px', threshold: [0, 0.25, 0.6] });
-
-      aboutSections.forEach((section) => aboutObserver.observe(section));
-      aboutLinks.forEach((link) => link.addEventListener('click', () => setActiveAboutLink(link.hash.slice(1))));
-    </script>
+    <script type="module" src="./about-page.js"></script>
   </body>
 </html>

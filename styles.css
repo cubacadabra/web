@@ -1617,6 +1617,37 @@ canvas:focus-visible {
 }
 
 /* About page */
+.about-route-loading,
+.about-route-error {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 32px;
+  color: var(--about-soft, #a1a6ad);
+  font-size: 14px;
+  text-align: center;
+}
+
+.about-route-error h1,
+.about-route-error p,
+.about-route-error a {
+  grid-column: 1;
+}
+
+.about-route-error h1 {
+  margin: 0;
+  color: var(--about-ink, #e7e9ec);
+}
+
+.about-route-error p {
+  margin: 14px 0 0;
+}
+
+.about-route-error a {
+  margin-top: 20px;
+  color: var(--about-accent, #8b9cf6);
+}
+
 .about-document,
 .about-document body {
   min-height: 100%;
