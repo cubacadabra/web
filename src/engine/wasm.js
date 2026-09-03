@@ -139,6 +139,9 @@ export function createRustEngine(exports) {
     startWorld(index) {
       return Boolean(call("engine_start_world", index));
     },
+    reconcilePlayer(position, yaw) {
+      call("engine_reconcile_player", position.x, position.y, position.z, yaw);
+    },
     setBuildBlocks(blocks) {
       call("engine_set_build_block_count", blocks.length);
       blocks.forEach((block, index) => {

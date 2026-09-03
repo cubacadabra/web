@@ -34,7 +34,12 @@ export async function createGame() {
       if (event.type === "player_leave") remotePlayers.delete(event.id);
     },
     onMove: (event) => {
-      if (event.isSelf) return;
+      if (event.isSelf) {
+        if (event.corrected) {
+          engine.reconcilePlayer({ x: event.x, y: event.y, z: event.z }, event.yaw);
+        }
+        return;
+      }
       remotePlayers.set(event.id, {
         x: event.x,
         y: event.y,
