@@ -185,10 +185,10 @@
                   <p class="about-code-label">Feature split</p>
                   <h3>Native scripting, portable rendering.</h3>
                   <ul class="about-code-list">
-                    <li>Native targets use <code>mlua</code> with vendored Luau for the game lifecycle host.</li>
-                    <li>WASM uses browser bindings and <code>wgpu</code> WebGPU/WebGL dependencies instead of native window handles.</li>
+                    <li>Native targets use <code>mlua</code> with vendored Luau; the browser uses the pure-Rust <code>luaur-rt</code> Luau host.</li>
+                    <li>WASM uses the same lifecycle host plus browser bindings and <code>wgpu</code> WebGPU/WebGL dependencies instead of native window handles.</li>
                     <li>iOS passes a Metal layer; Android passes an <code>ANativeWindow</code>; the browser passes an HTML canvas.</li>
-                    <li>The current browser build forwards the script across the seam, but the dedicated Luau-WASM runtime is still future work.</li>
+                    <li>Native and browser Rust engines execute the same lifecycle callbacks through target-specific Luau runtimes.</li>
                   </ul>
                 </article>
               </div>
@@ -325,7 +325,7 @@
                   <ul class="about-code-list">
                     <li><code>web/scripts/sync_first_game.sh</code> copies the manifest, script, and optional assets into <code>public/games/first-game/</code>.</li>
                     <li>iOS and Android fetch the same URLs; iOS also bundles a safe fallback and caches a validated manifest for the next launch.</li>
-                    <li>Native Rust can execute the Luau lifecycle today; browser scripting remains a forward-compatible seam until Luau-WASM support lands.</li>
+                    <li>Native and browser Rust engines execute the same lifecycle callbacks through target-specific Luau runtimes.</li>
                     <li>Platform behavior belongs in the runtime or host API. Keep package rules portable and free of client-specific imports.</li>
                   </ul>
                 </article>

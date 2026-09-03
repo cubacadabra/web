@@ -2,8 +2,9 @@
 
 This repository is the browser client: vanilla JavaScript owns the page, HUD,
 input, and networking adapter, while Rust compiled to WebAssembly owns game
-simulation and the shared `wgpu` renderer. The browser also serves the
-`first-game` package as static files so the iOS app can load the same content.
+simulation, the Luau host, and the shared `wgpu` renderer. The browser also
+serves the `first-game` package as static files so the native apps can load the
+same content.
 
 The five repositories work together as follows:
 
