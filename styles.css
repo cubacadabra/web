@@ -2378,15 +2378,16 @@ canvas:focus-visible {
 }
 
 .about-page {
-  color-scheme: light;
-  --about-bg: #fbfbfa;
-  --about-sidebar-bg: #f5f5f3;
-  --about-ink: #202124;
-  --about-soft: #686b72;
-  --about-faint: #92949a;
-  --about-line: #e7e7e3;
-  --about-accent: #df6955;
-  --about-accent-wash: rgba(223, 105, 85, 0.09);
+  color-scheme: dark;
+  --about-bg: #111315;
+  --about-sidebar-bg: #17191c;
+  --about-ink: #e7e9ec;
+  --about-soft: #a1a6ad;
+  --about-faint: #7f858d;
+  --about-line: rgba(255, 255, 255, 0.1);
+  --about-accent: #8b9cf6;
+  --about-logo-accent: #ed725b;
+  --about-accent-wash: rgba(139, 156, 246, 0.1);
   background: var(--about-bg);
   color: var(--about-ink);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -2398,18 +2399,20 @@ canvas:focus-visible {
 }
 
 .about-page .brand-mark {
-  border-color: var(--about-accent);
+  border-color: var(--about-logo-accent);
 }
 
 .about-page .brand-mark::after,
 .about-page .brand-mark span {
-  background: var(--about-accent);
+  background: var(--about-logo-accent);
 }
 
 .about-shell {
   min-height: 100vh;
   overflow: visible;
-  background: var(--about-bg);
+  background:
+    radial-gradient(circle at 86% 0%, rgba(139, 156, 246, 0.1), transparent 26rem),
+    var(--about-bg);
 }
 
 .about-shell::before {
@@ -2427,7 +2430,7 @@ canvas:focus-visible {
   min-height: 68px;
   padding: 0 clamp(20px, 4vw, 56px);
   border-bottom: 1px solid var(--about-line);
-  background: rgba(251, 251, 250, 0.9);
+  background: rgba(17, 19, 21, 0.9);
   pointer-events: auto;
   backdrop-filter: blur(16px);
 }
@@ -2516,7 +2519,7 @@ canvas:focus-visible {
 }
 
 .about-menu a:hover {
-  background: #ededeb;
+  background: rgba(255, 255, 255, 0.06);
   color: var(--about-ink);
 }
 
@@ -2717,7 +2720,7 @@ canvas:focus-visible {
 }
 
 .repository-list a:hover {
-  border-color: rgba(223, 105, 85, 0.45);
+  border-color: rgba(139, 156, 246, 0.6);
   background: var(--about-accent-wash);
   color: var(--about-ink);
 }
