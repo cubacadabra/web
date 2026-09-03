@@ -1625,7 +1625,24 @@ canvas:focus-visible {
 }
 
 .about-page {
-  background: var(--paper);
+  color-scheme: dark;
+  --about-bg: #111315;
+  --about-ink: #e7e9ec;
+  --about-soft: #a1a6ad;
+  --about-faint: #71767d;
+  --about-line: rgba(255, 255, 255, 0.08);
+  --about-accent: #8b9cf6;
+  --ink: var(--about-ink);
+  --ink-soft: var(--about-soft);
+  --ink-faint: var(--about-faint);
+  --paper: var(--about-ink);
+  --line: var(--about-line);
+  --accent: var(--about-accent);
+  --accent-deep: var(--about-accent);
+  background: var(--about-bg);
+  color: var(--about-ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 .about-shell {
@@ -1633,8 +1650,8 @@ canvas:focus-visible {
   min-height: 100vh;
   overflow: hidden;
   background:
-    radial-gradient(circle at 80% 12%, rgba(237, 114, 91, 0.12), transparent 25rem),
-    linear-gradient(135deg, #f6f1e7 0%, #eef0e4 100%);
+    radial-gradient(circle at 80% 12%, rgba(139, 156, 246, 0.12), transparent 25rem),
+    linear-gradient(135deg, #111315 0%, #171a1d 100%);
 }
 
 .about-shell::before {
@@ -1643,7 +1660,7 @@ canvas:focus-visible {
   right: 9%;
   width: 28rem;
   height: 28rem;
-  border: 1px solid rgba(23, 56, 58, 0.08);
+  border: 1px solid var(--about-line);
   border-radius: 50%;
   content: "";
   transform: translateY(-44%);
