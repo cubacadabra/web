@@ -1680,6 +1680,35 @@ canvas:focus-visible {
   position: absolute;
 }
 
+.about-nav,
+.about-legal-links {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.about-nav {
+  pointer-events: auto;
+}
+
+.about-nav a,
+.about-legal-links a {
+  padding: 12px 0;
+  color: var(--about-soft);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: color 180ms ease;
+}
+
+.about-nav a:hover,
+.about-legal-links a:hover {
+  color: var(--about-accent);
+}
+
 .about-content {
   position: relative;
   width: min(1080px, calc(100% - 64px));
@@ -1785,6 +1814,10 @@ canvas:focus-visible {
   text-transform: uppercase;
 }
 
+.about-legal-links {
+  margin-left: auto;
+}
+
 @media (max-width: 720px) {
   .about-content {
     width: min(calc(100% - 36px), 560px);
@@ -1820,6 +1853,11 @@ canvas:focus-visible {
     right: 18px;
     bottom: 18px;
     left: 18px;
+  }
+
+  .about-nav,
+  .about-legal-links {
+    gap: 14px;
   }
 }
 
