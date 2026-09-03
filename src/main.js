@@ -1,8 +1,8 @@
-import "../styles.css";
-
 const route = window.location.pathname.replace(/\/+$/, "") || "/";
 
-if (route === "/sudo-cadabra" || route.startsWith("/sudo-cadabra/")) {
+if (route === "/about") {
+  window.location.replace("/about/");
+} else if (route === "/sudo-cadabra" || route.startsWith("/sudo-cadabra/")) {
   import("./admin/sudoCadabra.js")
     .then(({ mountSudoCadabra }) => mountSudoCadabra())
     .catch((error) => {
