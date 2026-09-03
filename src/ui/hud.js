@@ -20,6 +20,7 @@ export function createHudController({ elements, state, gameDefinition }) {
   let activeWorld = gameDefinition;
   let worldEventTimer = 0;
   let worldEventHideTimer = 0;
+  let authoritativeLaunch = null;
   const launchPadCountElements = [];
 
   function playerLabel(playerId, username = "") {
@@ -86,15 +87,17 @@ export function createHudController({ elements, state, gameDefinition }) {
     launchPadCountElements.length = 0;
     (activeWorld.launchPads ?? []).forEach((pad) => {
       const row = document.createElement("div");
-      row.className = "meeting-row";
+      row.className = `meeting-row${pad.enabled === false ? " is-coming-soon" : ""}`;
 
       const swatch = document.createElement("span");
       swatch.className = "meeting-swatch";
       swatch.setAttribute("aria-hidden", "true");
-      swatch.style.backgroundColor = `#${pad.color.toString(16).padStart(6, "0")}`;
+      swatch.style.backgroundColor = pad.enabled === false
+        ? "rgba(23, 56, 58, 0.26)"
+        : `#${pad.color.toString(16).padStart(6, "0")}`;
 
       const label = document.createElement("span");
-      label.textContent = pad.label;
+      label.textContent = pad.enabled === false ? `${pad.label} · COMING SOON` : pad.label;
 
       const count = document.createElement("strong");
       count.textContent = "00";
@@ -180,6 +183,18 @@ export function createHudController({ elements, state, gameDefinition }) {
   }
 
   function updateLaunchStatus(frame) {
+    if (authoritativeLaunch && activeWorld.scene?.title === "Lobby") {
+      const seconds = authoritativeLaunch.startsAt
+        ? Math.max(0, Math.ceil((authoritativeLaunch.startsAt - (Date.now() - authoritativeLaunch.clockOffset)) / 1000))
+        : 0;
+      elements.worldShell?.classList.toggle("is-countdown", Boolean(authoritativeLaunch.startsAt));
+      elements.worldShell?.classList.remove("is-launch-complete");
+      if (elements.launchCountdown) elements.launchCountdown.textContent = authoritativeLaunch.startsAt ? `${seconds}s` : "—";
+      if (elements.launchCopy) elements.launchCopy.textContent = authoritativeLaunch.startsAt
+        ? `BUILD TOGETHER launches in ${seconds}s`
+        : "Stand on the coral gate to join the next build";
+      return;
+    }
     const { launchPads: padStates = [], playerLaunchPad = -1 } = frame;
     const activeIndex = playerLaunchPad >= 0
       ? playerLaunchPad
@@ -258,6 +273,13 @@ export function createHudController({ elements, state, gameDefinition }) {
     updateMovementStatus,
     updateLobby,
     updateLaunchStatus,
+    updateExperience(event) {
+      if (event.kind !== "lobby" || !event.launch) return;
+      authoritativeLaunch = {
+        startsAt: Number.isFinite(event.launch.startsAt) ? event.launch.startsAt : null,
+        clockOffset: Date.now() - (Number.isFinite(event.serverNow) ? event.serverNow : Date.now()),
+      };
+    },
     updateCompass,
     markReady,
     markError,

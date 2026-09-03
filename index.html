@@ -160,6 +160,27 @@
         </div>
       </aside>
 
+      <aside class="build-panel" id="build-panel" aria-live="polite" hidden>
+        <div class="build-panel-kicker" id="build-phase-label">BUILD ROUND</div>
+        <h2 id="build-prompt">Waiting for your prompt…</h2>
+        <p class="build-round-meta" id="build-round-meta">Build together · 06:00</p>
+        <div class="build-toolbar" aria-label="Build tools">
+          <button class="build-tool is-active" data-build-tool="place" type="button">Place</button>
+          <button class="build-tool" data-build-tool="rotate" type="button">Rotate</button>
+          <button class="build-tool" data-build-tool="remove" type="button">Remove</button>
+          <button class="build-tool" data-build-tool="recolor" type="button">Recolor</button>
+        </div>
+        <div class="build-options">
+          <button id="build-shape" type="button">Cube</button>
+          <button id="build-color" type="button"><span aria-hidden="true"></span> Coral</button>
+        </div>
+        <p class="build-status" id="build-status">Place a block in front of you.</p>
+        <div class="build-actions">
+          <button class="build-save-button" id="build-save" type="button">Save &amp; tour</button>
+          <button class="build-return-button" id="build-return" type="button" hidden>Return to lobby</button>
+        </div>
+      </aside>
+
       <section class="scene-intro" aria-labelledby="scene-title">
         <p class="eyebrow" id="scene-eyebrow">cubacadabra</p>
         <h1 id="scene-title">Lobby</h1>

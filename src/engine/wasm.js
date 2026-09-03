@@ -136,6 +136,26 @@ export function createRustEngine(exports) {
         );
       });
     },
+    startWorld(index) {
+      return Boolean(call("engine_start_world", index));
+    },
+    setBuildBlocks(blocks) {
+      call("engine_set_build_block_count", blocks.length);
+      blocks.forEach((block, index) => {
+        call(
+          "engine_set_build_block",
+          index,
+          block.x,
+          block.y,
+          block.z,
+          block.width,
+          block.height,
+          block.depth,
+          block.color,
+          block.rotation ?? 0,
+        );
+      });
+    },
     step(delta) {
       call("engine_step", delta);
     },

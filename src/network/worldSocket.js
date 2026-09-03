@@ -87,7 +87,7 @@ function createSocketUrl(worldId, playerId) {
   return url;
 }
 
-export function createWorldSocket({ onEvent, onMove, onStatusChange }) {
+export function createWorldSocket({ onEvent, onMove, onExperience, onStatusChange }) {
   const playerId = getPlayerId();
   let username = getUsername(playerId);
   let pendingUsername = username;
@@ -166,6 +166,10 @@ export function createWorldSocket({ onEvent, onMove, onStatusChange }) {
             ...event,
             isSelf: event.id === playerId,
           });
+          return;
+        }
+        if (event?.type === "experience_state" || event?.type === "experience_launch") {
+          onExperience?.(event);
           return;
         }
         if (
@@ -297,6 +301,16 @@ export function createWorldSocket({ onEvent, onMove, onStatusChange }) {
     }
   }
 
+  function sendExperience(type, payload = {}) {
+    if (!socket || socket.readyState !== WebSocket.OPEN) return false;
+    try {
+      socket.send(JSON.stringify({ type, ...payload }));
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   function destroy() {
     if (destroyed) return;
     destroyed = true;
@@ -322,6 +336,7 @@ export function createWorldSocket({ onEvent, onMove, onStatusChange }) {
     sendMove,
     setUsername,
     setHidden,
+    sendExperience,
     destroy,
   };
 }

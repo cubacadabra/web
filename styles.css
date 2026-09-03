@@ -190,6 +190,117 @@ canvas:focus-visible {
   box-shadow: 0 0 0 3px rgba(23, 56, 58, 0.08);
 }
 
+.meeting-row.is-coming-soon {
+  color: var(--ink-faint);
+  opacity: 0.62;
+}
+
+.meeting-row.is-coming-soon .meeting-swatch {
+  background: rgba(23, 56, 58, 0.26);
+  box-shadow: none;
+}
+
+.build-panel {
+  position: absolute;
+  z-index: 3;
+  right: 32px;
+  bottom: 36px;
+  width: min(348px, calc(100vw - 64px));
+  padding: 18px 20px 20px;
+  color: var(--ink);
+  background: rgba(246, 241, 231, 0.9);
+  border-left: 3px solid var(--accent);
+  box-shadow: 0 18px 45px rgba(17, 44, 44, 0.16);
+  backdrop-filter: blur(16px);
+}
+
+.build-panel-kicker,
+.build-round-meta {
+  color: var(--ink-faint);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.build-panel h2 {
+  max-width: 290px;
+  margin: 7px 0 5px;
+  font-size: 20px;
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+}
+
+.build-round-meta { margin: 0; }
+
+.build-toolbar,
+.build-options,
+.build-actions {
+  display: flex;
+  gap: 7px;
+  margin-top: 15px;
+}
+
+.build-tool,
+.build-options button,
+.build-save-button,
+.build-return-button {
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid rgba(23, 56, 58, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.38);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.build-tool.is-active,
+.build-save-button {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: white;
+}
+
+.build-options button { flex: 1; text-align: left; }
+
+.build-options button span {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-right: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  vertical-align: -1px;
+}
+
+.build-status {
+  min-height: 30px;
+  margin: 13px 0 0;
+  color: var(--ink-soft);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.build-actions button { flex: 1; }
+
+.build-return-button { background: transparent; }
+
+@media (max-width: 720px) {
+  .build-panel {
+    right: 16px;
+    bottom: 18px;
+    width: calc(100vw - 32px);
+    padding: 15px 16px 16px;
+  }
+
+  .build-toolbar { gap: 5px; margin-top: 12px; }
+  .build-tool { flex: 1; padding: 0 7px; font-size: 9px; }
+}
+
 .meeting-swatch-coral {
   background: var(--accent);
 }

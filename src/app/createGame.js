@@ -6,6 +6,7 @@ import { bindControls } from "../systems/controls.js";
 import { getMovementInput } from "../systems/player.js";
 import { createGameState } from "../state/gameState.js";
 import { createSettingsRoomController } from "../ui/settingsRoom.js";
+import { createBuildModeController } from "../ui/buildMode.js";
 import { getDomElements } from "../ui/dom.js";
 import { createHudController } from "../ui/hud.js";
 
@@ -24,6 +25,8 @@ export async function createGame() {
   state.runtime.worldId = gameDefinition.activeWorldId;
   let activeWorld = gameDefinition.worlds[gameDefinition.activeWorldId];
   const remotePlayers = new Map();
+  let pendingSessionWorldId = null;
+  let buildMode = null;
   const hud = createHudController({ elements, state, gameDefinition: activeWorld });
   const worldSocket = createWorldSocket({
     onEvent: (event) => {
@@ -41,6 +44,19 @@ export async function createGame() {
         sprinting: event.sprinting,
       });
     },
+    onExperience: (event) => {
+      if (event.type === "experience_state") {
+        hud.updateExperience(event);
+        buildMode?.handleState(event);
+        return;
+      }
+      if (event.type === "experience_launch") {
+        if (!event.playerIds?.includes(worldSocket.playerId)) return;
+        pendingSessionWorldId = event.sessionWorldId;
+        const sessionIndex = runtimeWorldIds.indexOf("real-game");
+        if (sessionIndex >= 0) engine.startWorld(sessionIndex);
+      }
+    },
     onStatusChange: hud.setConnectionStatus,
   });
   const settingsRoom = createSettingsRoomController({
@@ -48,6 +64,17 @@ export async function createGame() {
     state,
     worldSocket,
     engine,
+  });
+  buildMode = createBuildModeController({
+    elements,
+    state,
+    worldSocket,
+    engine,
+    onReturn: () => {
+      pendingSessionWorldId = null;
+      const lobbyIndex = runtimeWorldIds.indexOf("lobby");
+      if (lobbyIndex >= 0) engine.startWorld(lobbyIndex);
+    },
   });
   let connectedWorldId = null;
 
@@ -58,7 +85,11 @@ export async function createGame() {
   }
 
   function connectWorld(worldId) {
-    const networkWorldId = worldId === "settings" ? "lobby" : worldId;
+    const networkWorldId = worldId === "settings"
+      ? "lobby"
+      : worldId === "real-game" && pendingSessionWorldId
+        ? pendingSessionWorldId
+        : worldId;
     if (networkWorldId === connectedWorldId) return;
     connectedWorldId = networkWorldId;
     remotePlayers.clear();
@@ -156,6 +187,7 @@ export async function createGame() {
       });
     }
     hud.updateLaunchStatus(frame);
+    buildMode.update(frame);
     hud.setCameraMode(frame.camera.distance > 0.75);
     hud.updateMovementStatus(frame);
     hud.updateCompass(frame);
@@ -182,6 +214,7 @@ export async function createGame() {
     worldSocket.destroy();
     hud.destroy();
     settingsRoom.destroy();
+    buildMode.destroy();
     renderer.destroy();
     engine.destroy();
     window.removeEventListener("pagehide", dispose);
