@@ -3234,11 +3234,20 @@ canvas:focus-visible {
   color: var(--about-accent);
 }
 
+.about-shell > .about-footer {
+  width: min(1380px, calc(100% - 128px));
+  margin: 0 auto;
+}
+
 @media (max-width: 960px) {
   .about-shell > .about-content {
     width: min(calc(100% - 64px), 720px);
     padding-top: 132px;
     padding-bottom: 110px;
+  }
+
+  .about-shell > .about-footer {
+    width: min(calc(100% - 64px), 720px);
   }
 }
 
@@ -3247,6 +3256,10 @@ canvas:focus-visible {
     width: min(calc(100% - 36px), 560px);
     padding-top: 70px;
     padding-bottom: 80px;
+  }
+
+  .about-shell > .about-footer {
+    width: min(calc(100% - 36px), 560px);
   }
 
   .about-shell > .about-content .about-sections {
