@@ -1849,7 +1849,8 @@ canvas:focus-visible {
 .about-section-block {
   display: grid;
   grid-template-columns: minmax(280px, 0.78fr) minmax(0, 1.22fr);
-  gap: clamp(56px, 9vw, 150px);
+  column-gap: clamp(56px, 9vw, 150px);
+  row-gap: 52px;
   padding: 122px 0 126px;
   border-top: 1px solid var(--about-line);
 }
@@ -1862,6 +1863,14 @@ canvas:focus-visible {
   font-weight: 750;
   letter-spacing: -0.065em;
   line-height: 0.96;
+}
+
+.about-section-side-copy {
+  max-width: 360px;
+  margin: 40px 0 0;
+  color: var(--about-faint);
+  font-size: 13px;
+  line-height: 1.58;
 }
 
 .about-label {
@@ -1951,7 +1960,7 @@ canvas:focus-visible {
   grid-column: 2;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 42px 34px;
-  margin-top: 64px;
+  margin-top: 0;
 }
 
 .about-problem-item {
@@ -2013,7 +2022,7 @@ canvas:focus-visible {
   grid-column: 2;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 34px;
-  margin-top: 62px;
+  margin-top: 0;
 }
 
 .about-boundary {
@@ -2061,7 +2070,7 @@ canvas:focus-visible {
 .about-callout {
   grid-column: 2;
   max-width: 650px;
-  margin: 54px 0 0;
+  margin: 26px 0 0;
   padding-left: 22px;
   border-left: 2px solid var(--about-accent);
   color: var(--about-ink);
