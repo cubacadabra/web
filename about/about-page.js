@@ -35,22 +35,25 @@ const setActiveMenuItem = (route) => {
 
 const showRouteSection = (route) => {
   const overview = document.querySelector(".about-overview");
-  const sections = document.querySelectorAll(".about-section");
+  const sections = [...document.querySelectorAll(".about-section")];
 
-  if (overview) overview.hidden = route !== "overview";
-  sections.forEach((section) => {
-    section.hidden = route !== section.id;
-  });
+  if (route === "overview") {
+    sections.forEach((section) => section.remove());
+    return;
+  }
 
-  if (route !== "overview") {
-    const section = document.getElementById(route);
-    const title = ABOUT_ROUTE_TITLES[route];
-    if (section && title && !section.querySelector(".about-route-breadcrumb")) {
-      const breadcrumb = document.createElement("p");
-      breadcrumb.className = "about-breadcrumb about-route-breadcrumb";
-      breadcrumb.innerHTML = `<span>About</span><span aria-hidden="true">/</span><span>${title}</span>`;
-      section.prepend(breadcrumb);
-    }
+  overview?.remove();
+  sections
+    .filter((section) => section.id !== route)
+    .forEach((section) => section.remove());
+
+  const section = document.getElementById(route);
+  const title = ABOUT_ROUTE_TITLES[route];
+  if (section && title && !section.querySelector(".about-route-breadcrumb")) {
+    const breadcrumb = document.createElement("p");
+    breadcrumb.className = "about-breadcrumb about-route-breadcrumb";
+    breadcrumb.innerHTML = `<span>About</span><span aria-hidden="true">/</span><span>${title}</span>`;
+    section.prepend(breadcrumb);
   }
 };
 
