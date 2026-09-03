@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title description">
-  <title id="title">Cubacadabra — World 01</title>
+  <title id="title">cubacadabra — World 01</title>
   <desc id="description">A tiny, readable 3D world built with vanilla JavaScript.</desc>
   <defs>
     <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
@@ -34,7 +34,7 @@
       <rect x="12" y="12" width="40" height="40" rx="10" stroke-width="6"/>
       <path d="M32 22v20M22 32h20" stroke-width="5"/>
     </g>
-    <text x="92" y="33" fill="#17383a" font-family="Avenir Next, Avenir, Segoe UI, Helvetica, Arial, sans-serif" font-size="25" font-weight="800" letter-spacing="4">CUBACADABRA</text>
+    <text x="92" y="33" fill="#17383a" font-family="Avenir Next, Avenir, Segoe UI, Helvetica, Arial, sans-serif" font-size="25" font-weight="800" letter-spacing="4">cubacadabra</text>
     <text x="94" y="60" fill="#17383a" fill-opacity="0.65" font-family="Avenir Next, Avenir, Segoe UI, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="2.2">A TINY WORLD, IN PROGRESS</text>
   </g>
 

@@ -1,4 +1,4 @@
-# Cubacadabra web client
+# cubacadabra web client
 
 This repository is the browser client: vanilla JavaScript owns the page, HUD,
 input, and networking adapter, while Rust compiled to WebAssembly owns game

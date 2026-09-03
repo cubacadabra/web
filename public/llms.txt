@@ -1,0 +1,38 @@
+# cubacadabra
+
+> cubacadabra is an open-source, creator-first 3D multiplayer world in progress. The browser client is a small JavaScript shell around a shared Rust and WebAssembly runtime.
+
+## Start here
+
+- [Play World 01](https://cubacadabra.com/): Explore the current tiny shared world in a web browser.
+- [About cubacadabra](https://cubacadabra.com/about/): Project purpose, architecture, open-source plans, and current status.
+- [Where we are now](https://cubacadabra.com/about/where-we-are/): What exists today and what remains future work.
+
+## Project
+
+- [Why another platform?](https://cubacadabra.com/about/why-another-platform/): The case for a new creator-first platform.
+- [The opportunity](https://cubacadabra.com/about/opportunity/): The opportunity for a safer, more open online world.
+- [Open by design](https://cubacadabra.com/about/open-by-design/): How openness shapes the engine, tools, and creator relationship.
+- [The hard part](https://cubacadabra.com/about/hard-part/): The trust, people, and operational work required to build the platform.
+- [Three constituencies](https://cubacadabra.com/about/constituencies/): The creators, players, and parents the project is designed to serve.
+
+## Open source
+
+- [Web client](https://cubacadabra.com/about/open-source/web/): Vanilla JavaScript browser shell, input, HUD, networking, and WebAssembly adapters.
+- [Rust engine](https://cubacadabra.com/about/open-source/rust/): Shared simulation, world rules, snapshots, scripting hooks, and rendering boundary.
+- [iOS app](https://cubacadabra.com/about/open-source/ios-app/): Native iOS client integration with the shared engine.
+- [Android app](https://cubacadabra.com/about/open-source/android-app/): Native Android client integration with the shared engine.
+- [First-game package](https://cubacadabra.com/about/open-source/first-game/): Portable world content and game rules shared across clients.
+- [GitHub organization](https://github.com/cubacadabra): Public source repositories.
+
+## Policies
+
+- [Terms of Use](https://cubacadabra.com/terms/): Rules for using the service.
+- [Privacy Policy](https://cubacadabra.com/privacy/): Information collection and privacy practices.
+
+## Technical facts
+
+- The web project is intentionally JavaScript-only and does not use a frontend framework.
+- Rust compiled to WebAssembly owns simulation and the shared primitive renderer; JavaScript owns browser presentation, input, loading, and networking adapters.
+- The current browser experience is a small lobby and open baseplate called World 01.
+- The project is early. Future plans described on the site are plans, not shipped features.

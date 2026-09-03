@@ -5,21 +5,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Cubacadabra is a tiny 3D world powered by a Rust simulation and rendered in the browser."
+      content="cubacadabra is a tiny open-source 3D multiplayer world powered by a Rust simulation and rendered in the browser."
     />
+    <meta name="author" content="cubacadabra" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="theme-color" content="#e8e4cd" />
+    <link rel="canonical" href="https://cubacadabra.com/" />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Cubacadabra — World 01" />
+    <meta property="og:site_name" content="cubacadabra" />
+    <meta property="og:url" content="https://cubacadabra.com/" />
+    <meta property="og:title" content="cubacadabra — World 01" />
     <meta
       property="og:description"
-      content="A tiny 3D world powered by a Rust simulation and rendered in the browser."
+      content="A tiny open-source 3D multiplayer world powered by a Rust simulation and rendered in the browser."
     />
-    <meta property="og:image" content="./og-image.png" />
+    <meta property="og:image" content="https://cubacadabra.com/og-image.png" />
+    <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Cubacadabra World 01 — Empty baseplate" />
+    <meta property="og:image:alt" content="cubacadabra World 01 — Empty baseplate" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="cubacadabra — World 01" />
+    <meta name="twitter:description" content="A tiny open-source 3D multiplayer world powered by a Rust simulation and rendered in the browser." />
+    <meta name="twitter:image" content="https://cubacadabra.com/og-image.png" />
+    <meta name="twitter:image:alt" content="cubacadabra World 01 — Empty baseplate" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://cubacadabra.com/#website",
+            "url": "https://cubacadabra.com/",
+            "name": "cubacadabra",
+            "description": "A tiny open-source 3D multiplayer world for creators and players."
+          },
+          {
+            "@type": "Organization",
+            "@id": "https://cubacadabra.com/#organization",
+            "name": "cubacadabra",
+            "url": "https://cubacadabra.com/",
+            "logo": "https://cubacadabra.com/favicon.svg",
+            "sameAs": ["https://github.com/cubacadabra"]
+          },
+          {
+            "@type": "VideoGame",
+            "name": "cubacadabra World 01",
+            "url": "https://cubacadabra.com/",
+            "description": "A tiny open-source 3D multiplayer world you can explore in the browser.",
+            "gamePlatform": "Web browser",
+            "genre": ["Sandbox", "Multiplayer"]
+          }
+        ]
+      }
+    </script>
     <link rel="stylesheet" href="/styles.css" />
-    <title>Cubacadabra — World 01</title>
+    <title>cubacadabra — World 01</title>
   </head>
   <body>
     <main class="world-shell" id="world-shell">
@@ -27,16 +69,16 @@
         id="world-canvas"
         class="world-canvas"
         tabindex="0"
-        aria-label="Cubacadabra world. Drag to look. Use WASD or arrow keys to move, Shift to run, and Space to jump. Touch devices have on-screen controls."
+        aria-label="cubacadabra world. Drag to look. Use WASD or arrow keys to move, Shift to run, and Space to jump. Touch devices have on-screen controls."
       ></canvas>
 
       <div class="atmosphere" aria-hidden="true"></div>
 
       <header class="topbar">
-        <a class="brand" href="/about" aria-label="About Cubacadabra">
+        <a class="brand" href="/about" aria-label="About cubacadabra">
           <span class="brand-mark" aria-hidden="true"><span></span></span>
           <span class="brand-copy">
-            <span class="brand-name">Cubacadabra</span>
+            <span class="brand-name">cubacadabra</span>
             <span class="brand-caption">A tiny world, in progress</span>
           </span>
         </a>
