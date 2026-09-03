@@ -2464,6 +2464,11 @@ canvas:focus-visible {
   font-weight: 750;
 }
 
+.about-nav a.is-current {
+  color: var(--about-ink);
+  font-weight: 800;
+}
+
 .about-layout {
   display: grid;
   grid-template-columns: 232px minmax(0, 860px);
@@ -2988,6 +2993,10 @@ canvas:focus-visible {
   color: var(--about-accent);
 }
 
+.about-footer .about-legal-links {
+  margin-left: auto;
+}
+
 @media (max-width: 980px) {
   .about-layout {
     grid-template-columns: 190px minmax(0, 1fr);
@@ -3235,8 +3244,13 @@ canvas:focus-visible {
 }
 
 .about-shell > .about-footer {
+  position: absolute;
+  right: auto;
+  bottom: 24px;
+  left: 50%;
   width: min(1380px, calc(100% - 128px));
   margin: 0 auto;
+  transform: translateX(-50%);
 }
 
 @media (max-width: 960px) {
@@ -3259,7 +3273,11 @@ canvas:focus-visible {
   }
 
   .about-shell > .about-footer {
+    position: static;
+    left: auto;
     width: min(calc(100% - 36px), 560px);
+    margin: 0 auto;
+    transform: none;
   }
 
   .about-shell > .about-content .about-sections {
