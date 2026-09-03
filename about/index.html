@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="cubacadabra is an open-source project in progress, building toward a better Roblox for creators, children, and parents."
+      content="Learn why cubacadabra is being built, what it could become, and where the project is today."
     />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="stylesheet" href="/styles.css" />
@@ -13,7 +13,7 @@
   </head>
   <body class="about-page">
     <div class="about-shell">
-      <header class="topbar about-topbar">
+      <header class="about-topbar">
         <a class="brand" href="/" aria-label="cubacadabra home">
           <span class="brand-mark" aria-hidden="true"><span></span></span>
           <span class="brand-copy">
@@ -22,16 +22,50 @@
           </span>
         </a>
 
-        <nav class="about-nav" aria-label="Legal pages">
+        <nav class="about-topbar-nav" aria-label="Site navigation">
+          <a class="is-current" href="/about/" aria-current="page">About</a>
           <a href="/terms/">Terms</a>
           <a href="/privacy/">Privacy</a>
         </nav>
       </header>
 
-      <main class="about-content">
-        <section class="about-hero" aria-labelledby="about-title">
-          <div class="about-hero-copy">
-            <p class="eyebrow">About cubacadabra</p>
+      <div class="about-layout">
+        <aside class="about-sidebar">
+          <div class="about-sidebar-heading">
+            <span>About cubacadabra</span>
+            <span class="about-sidebar-status">Future plans</span>
+          </div>
+
+          <nav class="about-menu" aria-label="About sections">
+            <a class="is-active" href="#overview" aria-current="location">
+              <span>Overview</span>
+              <span class="about-menu-arrow" aria-hidden="true">↗</span>
+            </a>
+
+            <div class="about-menu-group">
+              <p>Our thinking</p>
+              <a href="#why-another-platform"><span>Why another platform?</span></a>
+              <a href="#opportunity"><span>The opportunity</span></a>
+              <a href="#open-by-design"><span>Open by design</span></a>
+              <a href="#hard-part"><span>The hard part</span></a>
+            </div>
+
+            <div class="about-menu-group">
+              <p>The people and the work</p>
+              <a href="#constituencies"><span>Three constituencies</span></a>
+              <a href="#where-we-are"><span>Where we are now</span></a>
+            </div>
+          </nav>
+
+          <a class="about-sidebar-home" href="/">
+            <span aria-hidden="true">←</span>
+            <span>Return to the first world</span>
+          </a>
+        </aside>
+
+        <main class="about-content">
+          <section id="overview" class="about-overview" aria-labelledby="about-title">
+            <p class="about-breadcrumb"><span>About</span><span aria-hidden="true">/</span><span>Overview</span></p>
             <h1 id="about-title">🪄 Cube-ba-ca-dab-bra</h1>
             <p class="about-lede">
               cubacadabra is an open-source project in progress. Our long-term
@@ -41,347 +75,231 @@
 
             <p class="about-note">
               <span class="about-note-mark" aria-hidden="true">!</span>
-              This is a future plan, not a finished product. None of the ideas
-              on this page are done yet.
+              <span>This is a future plan, not a finished product. None of the ideas
+              on this page are done yet.</span>
             </p>
 
-            <a class="about-back-link about-hero-link" href="/">
-              <span>Visit the first world</span>
-              <span aria-hidden="true">↗</span>
-            </a>
-          </div>
+            <p class="about-overview-cue">The case for building it <span aria-hidden="true">↓</span></p>
 
-          <aside class="about-hero-rail" aria-labelledby="open-source-title">
-            <div class="about-rail-meta">
-              <span>Open source, in public</span>
-              <span>Future plan</span>
-            </div>
-            <h2 id="open-source-title">Five repos. One open platform.</h2>
-            <p>
-              We plan to open-source most of cubacadabra: the engine, clients,
-              creator tooling, world formats, and more.
-            </p>
-            <ul class="repository-list" aria-label="Planned open-source repositories">
-              <li><a href="https://github.com/cubacadabra/web" target="_blank" rel="noreferrer"><span>web</span><span aria-hidden="true">↗</span></a></li>
-              <li><a href="https://github.com/cubacadabra/rust" target="_blank" rel="noreferrer"><span>rust</span><span aria-hidden="true">↗</span></a></li>
-              <li><a href="https://github.com/cubacadabra/ios_app" target="_blank" rel="noreferrer"><span>ios_app</span><span aria-hidden="true">↗</span></a></li>
-              <li><a href="https://github.com/cubacadabra/android_app" target="_blank" rel="noreferrer"><span>android_app</span><span aria-hidden="true">↗</span></a></li>
-              <li><a href="https://github.com/cubacadabra/first_game" target="_blank" rel="noreferrer"><span>first_game</span><span aria-hidden="true">↗</span></a></li>
-            </ul>
-            <a
-              class="about-repositories-link"
-              href="https://github.com/orgs/cubacadabra/repositories"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <span>See all repositories</span>
-              <span aria-hidden="true">↗</span>
-            </a>
-            <p class="about-rail-foot">The code is early. The direction is the point.</p>
-          </aside>
-        </section>
+            <div class="about-overview-rule" aria-hidden="true"></div>
 
-        <p class="about-scroll-cue"><span aria-hidden="true">↓</span> The case for building it</p>
-
-        <section class="about-section-block about-problem-section" aria-labelledby="problem-title">
-          <div class="about-section-heading">
-            <p class="about-label">01 / Why build another platform?</p>
-            <h2 id="problem-title">Roblox has the network. That is exactly why it is hard to change.</h2>
-            <p class="about-section-side-copy">
-              We do not need to win by having everything on day one. We need to
-              be meaningfully better for the first small group that is willing
-              to move.
-            </p>
-          </div>
-          <div class="about-section-intro">
-            <p>
-              The goal is not to attack Roblox for existing or pretend that a
-              new platform can instantly replace a world with millions of
-              players, creators, friends, games, and years of accumulated
-              content.
-            </p>
-            <p>
-              The opportunity is to be more opinionated from the beginning. A
-              new platform does not have to preserve every compromise made to
-              serve kids, teens, adults, developers, brands, investors, and an
-              enormous legacy system all at once.
-            </p>
-          </div>
-          <div class="about-problem-list">
-            <article class="about-problem-item">
-              <span class="about-index">01</span>
-              <h3>Scale becomes baggage.</h3>
-              <p>
-                Incumbents carry legacy architecture, aging UX decisions, and
-                systems that are difficult to replace without disrupting the
-                ecosystem already built on top of them. A new platform can set
-                better defaults before the compromises harden.
-              </p>
-            </article>
-            <article class="about-problem-item">
-              <span class="about-index">02</span>
-              <h3>Creators become tenants.</h3>
-              <p>
-                When your game only exists inside someone else’s walled garden,
-                the platform owns too much of the relationship. Discovery,
-                economics, identity, and access can feel opaque or arbitrary.
-              </p>
-            </article>
-            <article class="about-problem-item">
-              <span class="about-index">03</span>
-              <h3>Safety gets bolted on.</h3>
-              <p>
-                Moderation controversies and unrestricted stranger contact are
-                not problems that a nicer warning screen can solve. Social
-                architecture, age boundaries, reporting, and appeals need to
-                be part of the system’s design.
-              </p>
-            </article>
-            <article class="about-problem-item">
-              <span class="about-index">04</span>
-              <h3>One product serves everyone.</h3>
-              <p>
-                A platform that must satisfy children, parents, professional
-                developers, casual players, brands, and investors will always
-                make tradeoffs. cubacadabra can choose a clearer center of
-                gravity: creators first, with families in mind.
-              </p>
-            </article>
-          </div>
-        </section>
-
-        <section class="about-section-block about-solution-section" aria-labelledby="solution-title">
-          <div class="about-section-heading">
-            <p class="about-label">02 / The opportunity</p>
-            <h2 id="solution-title">The answer is not a prettier clone.</h2>
-            <p class="about-section-side-copy">
-              Safety gets a family’s attention. A better relationship with the
-              people who build the worlds gives them a reason to stay.
-            </p>
-          </div>
-          <div class="about-section-intro">
-            <p>
-              “Roblox but safer” is an important starting point, but safety is
-              primarily a reason for parents to approve. The stronger idea is a
-              platform where several advantages reinforce each other.
-            </p>
-            <p>
-              Kids get fun worlds and friends. Parents get substantially safer
-              social architecture. Creators get tools, ownership, economics,
-              and a relationship that treats them like developers building an
-              ecosystem—not tenants renting space in someone else’s mall.
-            </p>
-          </div>
-          <div class="about-principles">
-            <article class="about-principle">
-              <span class="about-index">A</span>
+            <div class="about-repositories">
               <div>
-                <h3>Trust and safety by design</h3>
+                <p class="about-kicker">Open source, in public</p>
+                <h2>Five repos. One open platform.</h2>
+              </div>
+              <div>
+                <p class="about-overview-copy">
+                  We plan to open-source most of cubacadabra: the engine, clients,
+                  creator tooling, world formats, and more.
+                </p>
+                <ul class="repository-list" aria-label="Planned open-source repositories">
+                  <li><a href="https://github.com/cubacadabra/web" target="_blank" rel="noreferrer"><span>web</span><span aria-hidden="true">↗</span></a></li>
+                  <li><a href="https://github.com/cubacadabra/rust" target="_blank" rel="noreferrer"><span>rust</span><span aria-hidden="true">↗</span></a></li>
+                  <li><a href="https://github.com/cubacadabra/ios_app" target="_blank" rel="noreferrer"><span>ios_app</span><span aria-hidden="true">↗</span></a></li>
+                  <li><a href="https://github.com/cubacadabra/android_app" target="_blank" rel="noreferrer"><span>android_app</span><span aria-hidden="true">↗</span></a></li>
+                  <li><a href="https://github.com/cubacadabra/first_game" target="_blank" rel="noreferrer"><span>first_game</span><span aria-hidden="true">↗</span></a></li>
+                </ul>
+                <a class="about-inline-link" href="https://github.com/orgs/cubacadabra/repositories" target="_blank" rel="noreferrer">
+                  <span>See all repositories</span><span aria-hidden="true">↗</span>
+                </a>
+                <p class="about-repository-foot">The code is early. The direction is the point.</p>
+              </div>
+            </div>
+          </section>
+
+          <section id="why-another-platform" class="about-section" aria-labelledby="problem-title">
+            <div class="about-section-header">
+              <p class="about-kicker">01 / Why build another platform?</p>
+              <h2 id="problem-title">Roblox has the network. That is exactly why it is hard to change.</h2>
+              <p class="about-section-side-copy">
+                We do not need to win by having everything on day one. We need to
+                be meaningfully better for the first small group that is willing
+                to move.
+              </p>
+            </div>
+            <div class="about-section-body">
+              <div class="about-prose">
                 <p>
-                  Tighter age separation, no unrestricted adult-to-child
-                  contact, transparent moderation metrics, strong community
-                  reporting, safety research, and real appeals are future
-                  design goals—not features we claim to have today.
+                  The goal is not to attack Roblox for existing or pretend that a
+                  new platform can instantly replace a world with millions of
+                  players, creators, friends, games, and years of accumulated
+                  content.
+                </p>
+                <p>
+                  The opportunity is to be more opinionated from the beginning. A
+                  new platform does not have to preserve every compromise made to
+                  serve kids, teens, adults, developers, brands, investors, and an
+                  enormous legacy system all at once.
                 </p>
               </div>
-            </article>
-            <article class="about-principle">
-              <span class="about-index">B</span>
-              <div>
-                <h3>A better creator deal</h3>
+              <div class="about-item-grid">
+                <article class="about-item">
+                  <span class="about-index">01</span>
+                  <h3>Scale becomes baggage.</h3>
+                  <p>Incumbents carry legacy architecture, aging UX decisions, and systems that are difficult to replace without disrupting the ecosystem already built on top of them. A new platform can set better defaults before the compromises harden.</p>
+                </article>
+                <article class="about-item">
+                  <span class="about-index">02</span>
+                  <h3>Creators become tenants.</h3>
+                  <p>When your game only exists inside someone else’s walled garden, the platform owns too much of the relationship. Discovery, economics, identity, and access can feel opaque or arbitrary.</p>
+                </article>
+                <article class="about-item">
+                  <span class="about-index">03</span>
+                  <h3>Safety gets bolted on.</h3>
+                  <p>Moderation controversies and unrestricted stranger contact are not problems that a nicer warning screen can solve. Social architecture, age boundaries, reporting, and appeals need to be part of the system’s design.</p>
+                </article>
+                <article class="about-item">
+                  <span class="about-index">04</span>
+                  <h3>One product serves everyone.</h3>
+                  <p>A platform that must satisfy children, parents, professional developers, casual players, brands, and investors will always make tradeoffs. cubacadabra can choose a clearer center of gravity: creators first, with families in mind.</p>
+                </article>
+              </div>
+            </div>
+          </section>
+
+          <section id="opportunity" class="about-section" aria-labelledby="solution-title">
+            <div class="about-section-header">
+              <p class="about-kicker">02 / The opportunity</p>
+              <h2 id="solution-title">The answer is not a prettier clone.</h2>
+              <p class="about-section-side-copy">
+                Safety gets a family’s attention. A better relationship with the
+                people who build the worlds gives them a reason to stay.
+              </p>
+            </div>
+            <div class="about-section-body">
+              <div class="about-prose">
                 <p>
-                  We want simpler revenue share, clearer economics, fewer
-                  arbitrary platform taxes, easier cash-out, and transparent
-                  discovery. The creator should understand how the platform
-                  works and what they can expect from it.
+                  “Roblox but safer” is an important starting point, but safety is
+                  primarily a reason for parents to approve. The stronger idea is a
+                  platform where several advantages reinforce each other.
+                </p>
+                <p>
+                  Kids get fun worlds and friends. Parents get substantially safer
+                  social architecture. Creators get tools, ownership, economics,
+                  and a relationship that treats them like developers building an
+                  ecosystem—not tenants renting space in someone else’s mall.
                 </p>
               </div>
-            </article>
-            <article class="about-principle">
-              <span class="about-index">C</span>
-              <div>
-                <h3>A better developer experience</h3>
+              <div class="about-principles">
+                <article class="about-principle"><span class="about-index">A</span><div><h3>Trust and safety by design</h3><p>Tighter age separation, no unrestricted adult-to-child contact, transparent moderation metrics, strong community reporting, safety research, and real appeals are future design goals—not features we claim to have today.</p></div></article>
+                <article class="about-principle"><span class="about-index">B</span><div><h3>A better creator deal</h3><p>We want simpler revenue share, clearer economics, fewer arbitrary platform taxes, easier cash-out, and transparent discovery. The creator should understand how the platform works and what they can expect from it.</p></div></article>
+                <article class="about-principle"><span class="about-index">C</span><div><h3>A better developer experience</h3><p>Modern rendering, native scripting and development workflows, proper package management, reproducible builds, local servers, sane debugging, and documented formats and APIs can make building feel like development again.</p></div></article>
+                <article class="about-principle"><span class="about-index">D</span><div><h3>More room to build</h3><p>Native clients, better performance, richer physics and networking, portable assets and worlds, and fewer historical constraints could give creators a higher technical ceiling.</p></div></article>
+              </div>
+            </div>
+          </section>
+
+          <section id="open-by-design" class="about-section" aria-labelledby="open-title">
+            <div class="about-section-header">
+              <p class="about-kicker">03 / Open by design</p>
+              <h2 id="open-title">Your cubacadabra game should not be trapped inside cubacadabra.</h2>
+              <p class="about-section-side-copy">Creator-first should describe the architecture, not just the marketing.</p>
+            </div>
+            <div class="about-section-body">
+              <div class="about-prose">
                 <p>
-                  Modern rendering, native scripting and development workflows,
-                  proper package management, reproducible builds, local
-                  servers, sane debugging, and documented formats and APIs can
-                  make building feel like development again.
+                  Openness is not just a philosophy here. It can be part of the
+                  competitive strategy. If creators can inspect the engine,
+                  understand networking, use documented file formats and scripting
+                  APIs, and submit fixes, the relationship changes from “trust our
+                  black box” to “help shape the tools you depend on.”
+                </p>
+                <p>
+                  If the runtime and formats are open, a creator also has more
+                  confidence that their work will remain usable if the company ever
+                  changes direction. That is a real answer to platform risk: the
+                  work does not simply disappear behind a proprietary executable.
                 </p>
               </div>
-            </article>
-            <article class="about-principle">
-              <span class="about-index">D</span>
-              <div>
-                <h3>More room to build</h3>
-                <p>
-                  Native clients, better performance, richer physics and
-                  networking, portable assets and worlds, and fewer historical
-                  constraints could give creators a higher technical ceiling.
-                </p>
+              <div class="about-open-grid">
+                <div class="about-boundary"><p class="about-boundary-label">Open where openness helps</p><ul><li>Rust engine and common runtime</li><li>Web, iOS, and Android clients</li><li>SDKs, Luau bindings, and creator tools</li><li>World and asset formats</li><li>Protocol definitions and local servers</li><li>Sample games and public documentation</li></ul></div>
+                <div class="about-boundary"><p class="about-boundary-label">Private where secrecy protects</p><ul><li>Production safety models and abuse heuristics</li><li>Anti-cheat detection and ban-evasion signals</li><li>Fraud rules, payment risk, and private operations</li><li>Moderator and law-enforcement tooling</li><li>Credentials, secrets, and infrastructure details</li></ul></div>
               </div>
-            </article>
-          </div>
-        </section>
-
-        <section class="about-section-block about-open-section" aria-labelledby="open-title">
-          <div class="about-section-heading">
-            <p class="about-label">03 / Open by design</p>
-            <h2 id="open-title">Your cubacadabra game should not be trapped inside cubacadabra.</h2>
-            <p class="about-section-side-copy">
-              Creator-first should describe the architecture, not just the
-              marketing.
-            </p>
-          </div>
-          <div class="about-section-intro">
-            <p>
-              Openness is not just a philosophy here. It can be part of the
-              competitive strategy. If creators can inspect the engine,
-              understand networking, use documented file formats and scripting
-              APIs, and submit fixes, the relationship changes from “trust our
-              black box” to “help shape the tools you depend on.”
-            </p>
-            <p>
-              If the runtime and formats are open, a creator also has more
-              confidence that their work will remain usable if the company ever
-              changes direction. That is a real answer to platform risk: the
-              work does not simply disappear behind a proprietary executable.
-            </p>
-          </div>
-          <div class="about-open-grid">
-            <div class="about-boundary">
-              <p class="about-boundary-label">Open where openness helps</p>
-              <ul>
-                <li>Rust engine and common runtime</li>
-                <li>Web, iOS, and Android clients</li>
-                <li>SDKs, Luau bindings, and creator tools</li>
-                <li>World and asset formats</li>
-                <li>Protocol definitions and local servers</li>
-                <li>Sample games and public documentation</li>
-              </ul>
+              <p class="about-callout">Open anything where openness benefits creators, interoperability, trust, or contribution. Keep private anything where secrecy materially raises the cost of abuse.</p>
             </div>
-            <div class="about-boundary">
-              <p class="about-boundary-label">Private where secrecy protects</p>
-              <ul>
-                <li>Production safety models and abuse heuristics</li>
-                <li>Anti-cheat detection and ban-evasion signals</li>
-                <li>Fraud rules, payment risk, and private operations</li>
-                <li>Moderator and law-enforcement tooling</li>
-                <li>Credentials, secrets, and infrastructure details</li>
-              </ul>
+          </section>
+
+          <section id="hard-part" class="about-section" aria-labelledby="moat-title">
+            <div class="about-section-header">
+              <p class="about-kicker">04 / The hard part</p>
+              <h2 id="moat-title">The source code is not the moat.</h2>
+              <p class="about-section-side-copy">Openness makes the foundation more useful. Trust, people, and great worlds are what make a platform worth choosing.</p>
             </div>
-          </div>
-          <p class="about-callout">
-            Open anything where openness benefits creators, interoperability,
-            trust, or contribution. Keep private anything where secrecy
-            materially raises the cost of abuse.
-          </p>
-        </section>
-
-        <section class="about-section-block about-moat-section" aria-labelledby="moat-title">
-          <div class="about-section-heading">
-            <p class="about-label">04 / The hard part</p>
-            <h2 id="moat-title">The source code is not the moat.</h2>
-            <p class="about-section-side-copy">
-              Openness makes the foundation more useful. Trust, people, and
-              great worlds are what make a platform worth choosing.
-            </p>
-          </div>
-          <div class="about-quote-wrap">
-            <blockquote>
-              “Even though Roblox has everybody, this is so much better for
-              what I do that I’m moving.”
-            </blockquote>
-            <p>
-              Roblox’s network effect is real. An open renderer or a better
-              local server does not create millions of players overnight. The
-              moat we eventually have to earn is players, creators, friends,
-              games, a world catalog, trust, moderation operations, discovery
-              data, and an economy that people actually want to participate in.
-            </p>
-            <p>
-              Someone could fork the code and call it CubeBlox. They would not
-              automatically get cubacadabra’s players, popular games, creator
-              relationships, reputation, or safety operation. If the code is
-              good enough that people want to fork it, that is evidence that it
-              became useful.
-            </p>
-          </div>
-        </section>
-
-        <section class="about-section-block about-people-section" aria-labelledby="people-title">
-          <div class="about-section-heading">
-            <p class="about-label">05 / Three constituencies</p>
-            <h2 id="people-title">Different reasons to choose the same world.</h2>
-            <p class="about-section-side-copy">
-              The best outcome is not asking one audience to compromise for
-              another. It is giving each audience a reason to prefer the same
-              place.
-            </p>
-          </div>
-          <div class="about-people-grid">
-            <article class="about-person">
-              <span class="about-person-number">01</span>
-              <h3>Kids and players</h3>
-              <p>Fun worlds, expressive play, friends, and reasons to come back.</p>
-            </article>
-            <article class="about-person">
-              <span class="about-person-number">02</span>
-              <h3>Parents</h3>
-              <p>A social environment designed to be substantially safer and easier to understand.</p>
-            </article>
-            <article class="about-person">
-              <span class="about-person-number">03</span>
-              <h3>Creators</h3>
-              <p>A platform that treats the people making the worlds much better.</p>
-            </article>
-          </div>
-        </section>
-
-        <section class="about-section-block about-reality-section" aria-labelledby="reality-title">
-          <div class="about-section-heading">
-            <p class="about-label">06 / Where we are now</p>
-            <h2 id="reality-title">Early enough to change the rules.</h2>
-            <p class="about-section-side-copy">
-              The project is small enough to be honest, ambitious, and still
-              able to make foundational choices carefully.
-            </p>
-          </div>
-          <div class="about-reality-copy">
-            <p>
-              Today, cubacadabra is still a tiny shared world in progress: a
-              small lobby, an open baseplate, and the beginning of a common
-              runtime. The platform described above is future work. The
-              economics, safety architecture, creator tooling, portable
-              formats, mobile clients, and broader ecosystem are not done.
-            </p>
-            <p>
-              That is also the reason to make the direction explicit now. The
-              choices made early can determine whether creators feel like
-              participants or tenants, whether families can understand the
-              social system, and whether the code becomes a wall or a foundation.
-            </p>
-            <div class="about-final-links">
-              <a class="about-back-link" href="/">
-                <span>Return to the first world</span>
-                <span aria-hidden="true">↗</span>
-              </a>
-              <a class="about-repositories-link" href="https://github.com/orgs/cubacadabra/repositories" target="_blank" rel="noreferrer">
-                <span>Follow the work on GitHub</span>
-                <span aria-hidden="true">↗</span>
-              </a>
+            <div class="about-section-body">
+              <div class="about-quote-wrap">
+                <blockquote>“Even though Roblox has everybody, this is so much better for what I do that I’m moving.”</blockquote>
+                <p>Roblox’s network effect is real. An open renderer or a better local server does not create millions of players overnight. The moat we eventually have to earn is players, creators, friends, games, a world catalog, trust, moderation operations, discovery data, and an economy that people actually want to participate in.</p>
+                <p>Someone could fork the code and call it CubeBlox. They would not automatically get cubacadabra’s players, popular games, creator relationships, reputation, or safety operation. If the code is good enough that people want to fork it, that is evidence that it became useful.</p>
+              </div>
             </div>
-          </div>
-        </section>
-      </main>
+          </section>
 
-      <footer class="about-footer" aria-label="cubacadabra status">
-        <span class="meta-line" aria-hidden="true"></span>
-        <span>Project · Future plans</span>
-        <nav class="about-legal-links" aria-label="Legal pages">
-          <a href="/terms/">Terms</a>
-          <a href="/privacy/">Privacy</a>
-        </nav>
-      </footer>
+          <section id="constituencies" class="about-section" aria-labelledby="people-title">
+            <div class="about-section-header">
+              <p class="about-kicker">05 / Three constituencies</p>
+              <h2 id="people-title">Different reasons to choose the same world.</h2>
+              <p class="about-section-side-copy">The best outcome is not asking one audience to compromise for another. It is giving each audience a reason to prefer the same place.</p>
+            </div>
+            <div class="about-section-body">
+              <div class="about-people-grid">
+                <article class="about-person"><span class="about-index">01</span><h3>Kids and players</h3><p>Fun worlds, expressive play, friends, and reasons to come back.</p></article>
+                <article class="about-person"><span class="about-index">02</span><h3>Parents</h3><p>A social environment designed to be substantially safer and easier to understand.</p></article>
+                <article class="about-person"><span class="about-index">03</span><h3>Creators</h3><p>A platform that treats the people making the worlds much better.</p></article>
+              </div>
+            </div>
+          </section>
+
+          <section id="where-we-are" class="about-section about-last-section" aria-labelledby="reality-title">
+            <div class="about-section-header">
+              <p class="about-kicker">06 / Where we are now</p>
+              <h2 id="reality-title">Early enough to change the rules.</h2>
+              <p class="about-section-side-copy">The project is small enough to be honest, ambitious, and still able to make foundational choices carefully.</p>
+            </div>
+            <div class="about-section-body">
+              <div class="about-prose">
+                <p>Today, cubacadabra is still a tiny shared world in progress: a small lobby, an open baseplate, and the beginning of a common runtime. The platform described above is future work. The economics, safety architecture, creator tooling, portable formats, mobile clients, and broader ecosystem are not done.</p>
+                <p>That is also the reason to make the direction explicit now. The choices made early can determine whether creators feel like participants or tenants, whether families can understand the social system, and whether the code becomes a wall or a foundation.</p>
+              </div>
+              <div class="about-final-links">
+                <a class="about-primary-link" href="/"><span>Return to the first world</span><span aria-hidden="true">↗</span></a>
+                <a class="about-inline-link" href="https://github.com/orgs/cubacadabra/repositories" target="_blank" rel="noreferrer"><span>Follow the work on GitHub</span><span aria-hidden="true">↗</span></a>
+              </div>
+            </div>
+          </section>
+
+          <footer class="about-footer" aria-label="cubacadabra status">
+            <span>Project · Future plans</span>
+            <span aria-hidden="true">·</span>
+            <a href="/terms/">Terms</a>
+            <a href="/privacy/">Privacy</a>
+          </footer>
+        </main>
+      </div>
     </div>
+
+    <script>
+      const aboutSections = document.querySelectorAll('.about-section, .about-overview');
+      const aboutLinks = document.querySelectorAll('.about-menu a[href^="#"]');
+
+      const setActiveAboutLink = (id) => {
+        aboutLinks.forEach((link) => {
+          const isActive = link.getAttribute('href') === `#${id}`;
+          link.classList.toggle('is-active', isActive);
+          if (isActive) link.setAttribute('aria-current', 'location');
+          else link.removeAttribute('aria-current');
+        });
+      };
+
+      const aboutObserver = new IntersectionObserver((entries) => {
+        const visibleSection = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (visibleSection) setActiveAboutLink(visibleSection.target.id);
+      }, { rootMargin: '-18% 0px -68% 0px', threshold: [0, 0.25, 0.6] });
+
+      aboutSections.forEach((section) => aboutObserver.observe(section));
+      aboutLinks.forEach((link) => link.addEventListener('click', () => setActiveAboutLink(link.hash.slice(1))));
+    </script>
   </body>
 </html>
