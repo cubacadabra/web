@@ -127,11 +127,11 @@ function createTableRow(cells) {
 function mountLayout(page) {
   document.documentElement.classList.add("sudo-document");
   document.body.className = "sudo-page";
-  document.title = `${page.title} — Cubacadabra`;
+  document.title = `${page.title} — cubacadabra`;
   document.body.innerHTML = `
     <div class="sudo-shell">
       <aside class="sudo-sidebar">
-        <a class="sudo-brand" href="/" aria-label="Back to Cubacadabra">
+        <a class="sudo-brand" href="/" aria-label="Back to cubacadabra">
           <span class="sudo-brand-mark" aria-hidden="true"><span></span></span>
           <span>
             <strong>sudo-cadabra</strong>

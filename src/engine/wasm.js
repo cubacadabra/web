@@ -1,6 +1,6 @@
 export function createRustEngine(exports) {
   const handle = exports.engine_create();
-  if (!handle) throw new Error("The Cubacadabra engine could not be created.");
+  if (!handle) throw new Error("The cubacadabra engine could not be created.");
 
   function call(name, ...args) {
     return exports[name](handle, ...args);
