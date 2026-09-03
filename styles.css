@@ -2439,7 +2439,10 @@ canvas:focus-visible {
 }
 
 .about-shell {
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
+  min-height: 100svh;
   overflow: visible;
   background:
     radial-gradient(circle at 86% 0%, rgba(139, 156, 246, 0.1), transparent 26rem),
@@ -2531,6 +2534,7 @@ canvas:focus-visible {
   gap: clamp(54px, 8vw, 116px);
   width: min(1210px, calc(100% - 64px));
   margin: 0 auto;
+  flex: 1 0 auto;
 }
 
 .about-sidebar {
@@ -3274,6 +3278,7 @@ canvas:focus-visible {
 
 /* Legal pages share the about palette, but keep their single-column reading gutter. */
 .about-shell > .about-content {
+  flex: 1 0 auto;
   width: min(1380px, calc(100% - 128px));
   margin: 0 auto;
   padding: 150px 0 132px;
@@ -3346,13 +3351,13 @@ canvas:focus-visible {
 }
 
 .about-shell > .about-footer {
-  position: absolute;
+  position: static;
   right: auto;
-  bottom: 24px;
-  left: 50%;
+  bottom: auto;
+  left: auto;
   width: min(1380px, calc(100% - 128px));
-  margin: 0 auto;
-  transform: translateX(-50%);
+  margin: auto auto 0;
+  transform: none;
 }
 
 @media (max-width: 960px) {
