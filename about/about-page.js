@@ -1,11 +1,16 @@
-const ABOUT_ROUTE_TITLES = {
-  overview: "Overview",
-  "why-another-platform": "Why another platform?",
-  opportunity: "The opportunity",
-  "open-by-design": "Open by design",
-  "hard-part": "The hard part",
-  constituencies: "Three constituencies",
-  "where-we-are": "Where we are now",
+const ABOUT_ROUTES = {
+  overview: { title: "Overview", path: "/about/" },
+  "open-source-web": { title: "web", path: "/about/open-source/web/" },
+  "open-source-rust": { title: "rust", path: "/about/open-source/rust/" },
+  "open-source-ios-app": { title: "ios_app", path: "/about/open-source/ios-app/" },
+  "open-source-android-app": { title: "android_app", path: "/about/open-source/android-app/" },
+  "open-source-first-game": { title: "first_game", path: "/about/open-source/first-game/" },
+  "why-another-platform": { title: "Why another platform?", path: "/about/why-another-platform/" },
+  opportunity: { title: "The opportunity", path: "/about/opportunity/" },
+  "open-by-design": { title: "Open by design", path: "/about/open-by-design/" },
+  "hard-part": { title: "The hard part", path: "/about/hard-part/" },
+  constituencies: { title: "Three constituencies", path: "/about/constituencies/" },
+  "where-we-are": { title: "Where we are now", path: "/about/where-we-are/" },
 };
 
 const normalizePath = (path) => {
@@ -15,15 +20,11 @@ const normalizePath = (path) => {
 
 const routeFromPath = () => {
   const path = normalizePath(window.location.pathname);
-  const aboutPrefix = "/about";
-  const route = path.startsWith(`${aboutPrefix}/`)
-    ? path.slice(`${aboutPrefix}/`.length)
-    : "";
-  return ABOUT_ROUTE_TITLES[route] ? route : "overview";
+  return Object.entries(ABOUT_ROUTES).find(([, route]) => normalizePath(route.path) === path)?.[0] || "overview";
 };
 
 const setActiveMenuItem = (route) => {
-  const currentPath = route === "overview" ? "/about" : `/about/${route}`;
+  const currentPath = normalizePath(ABOUT_ROUTES[route].path);
 
   document.querySelectorAll(".about-menu a").forEach((link) => {
     const isCurrent = normalizePath(new URL(link.href).pathname) === currentPath;
@@ -48,7 +49,7 @@ const showRouteSection = (route) => {
     .forEach((section) => section.remove());
 
   const section = document.getElementById(route);
-  const title = ABOUT_ROUTE_TITLES[route];
+  const title = ABOUT_ROUTES[route].title;
   const content = document.querySelector(".about-content");
   if (content && section && title && !content.querySelector(".about-route-breadcrumb")) {
     const breadcrumb = document.createElement("p");
@@ -64,7 +65,7 @@ const initializeAboutPage = (route) => {
   document.body.dataset.aboutRoute = route;
 
   if (route !== "overview") {
-    document.title = `${ABOUT_ROUTE_TITLES[route]} · About cubacadabra`;
+    document.title = `${ABOUT_ROUTES[route].title} · About cubacadabra`;
   }
 };
 

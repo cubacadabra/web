@@ -1,6 +1,11 @@
 import { defineConfig } from "vite";
 
 const aboutRoutes = [
+  "open-source/web",
+  "open-source/rust",
+  "open-source/ios-app",
+  "open-source/android-app",
+  "open-source/first-game",
   "why-another-platform",
   "opportunity",
   "open-by-design",
@@ -44,6 +49,11 @@ export default defineConfig({
       input: {
         main: new URL("./index.html", import.meta.url).pathname,
         about: new URL("./about/index.html", import.meta.url).pathname,
+        aboutOpenSourceWeb: new URL("./about/open-source/web/index.html", import.meta.url).pathname,
+        aboutOpenSourceRust: new URL("./about/open-source/rust/index.html", import.meta.url).pathname,
+        aboutOpenSourceIosApp: new URL("./about/open-source/ios-app/index.html", import.meta.url).pathname,
+        aboutOpenSourceAndroidApp: new URL("./about/open-source/android-app/index.html", import.meta.url).pathname,
+        aboutOpenSourceFirstGame: new URL("./about/open-source/first-game/index.html", import.meta.url).pathname,
         aboutWhyAnotherPlatform: new URL("./about/why-another-platform/index.html", import.meta.url).pathname,
         aboutOpportunity: new URL("./about/opportunity/index.html", import.meta.url).pathname,
         aboutOpenByDesign: new URL("./about/open-by-design/index.html", import.meta.url).pathname,

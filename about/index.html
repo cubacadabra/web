@@ -42,6 +42,15 @@
               <span class="about-menu-arrow" aria-hidden="true">↗</span>
             </a>
 
+            <div class="about-menu-group about-menu-group-open-source">
+              <p>Open Source</p>
+              <a href="/about/open-source/web/"><span>web</span></a>
+              <a href="/about/open-source/rust/"><span>rust</span></a>
+              <a href="/about/open-source/ios-app/"><span>ios_app</span></a>
+              <a href="/about/open-source/android-app/"><span>android_app</span></a>
+              <a href="/about/open-source/first-game/"><span>first_game</span></a>
+            </div>
+
             <div class="about-menu-group">
               <p>Our thinking</p>
               <a href="/about/why-another-platform/"><span>Why another platform?</span></a>
@@ -100,6 +109,240 @@
                   <span>See all repositories</span><span aria-hidden="true">↗</span>
                 </a>
                 <p class="about-repository-foot">The code is early. The direction is the point.</p>
+              </div>
+            </div>
+          </section>
+
+          <section id="open-source-web" class="about-section about-code-section" aria-labelledby="open-source-web-title">
+            <div class="about-section-header">
+              <p class="about-kicker">01 / Open Source / web</p>
+              <h2 id="open-source-web-title">The browser client keeps the platform playable.</h2>
+              <p class="about-section-side-copy">Vanilla JavaScript owns the shell and the adapters. Rust and WebAssembly own the simulation and frame.</p>
+            </div>
+            <div class="about-section-body">
+              <div class="about-code-intro">
+                <p>The <code>web</code> repository is the browser client and the static host for the current game package. It deliberately stays small: the DOM, input, HUD, loading, and WebSocket connection live in JavaScript, while the platform runtime is loaded as generated WebAssembly.</p>
+                <p>The useful mental model is a frame loop with explicit seams. <code>createGame()</code> loads the package, creates the Rust engine and renderer, wires the socket and controls, then advances the engine on every <code>requestAnimationFrame</code>. The browser reads a frame snapshot, updates the HUD, sends local movement, and asks the renderer to draw.</p>
+              </div>
+
+              <dl class="about-code-map">
+                <div><dt>Entry point</dt><dd><code>src/main.js</code> → <code>src/app/createGame.js</code></dd></div>
+                <div><dt>Package host</dt><dd><code>/games/first-game/</code>, populated from the sibling <code>first-game</code> repo</dd></div>
+                <div><dt>Runtime boundary</dt><dd><code>src/engine/wasm.js</code> writes buffers and reads the flat Rust snapshot</dd></div>
+                <div><dt>Network boundary</dt><dd><code>src/network/worldSocket.js</code> joins <code>/world/:worldId</code> and publishes changed movement at 12 Hz</dd></div>
+              </dl>
+
+              <div class="about-code-columns">
+                <article class="about-code-block">
+                  <p class="about-code-label">The runtime loop</p>
+                  <h3>One authoritative local tick.</h3>
+                  <ol class="about-code-flow">
+                    <li><span>01</span><p>Read keyboard, pointer, wheel, or touch input into mutable game state.</p></li>
+                    <li><span>02</span><p>Pass movement, camera deltas, jump, and remote player transforms into Rust.</p></li>
+                    <li><span>03</span><p>Step simulation, follow world transitions, and read the player, pads, agents, and camera snapshot.</p></li>
+                    <li><span>04</span><p>Update DOM presentation and sync the <code>wgpu</code> renderer for the frame.</p></li>
+                  </ol>
+                </article>
+                <article class="about-code-block">
+                  <p class="about-code-label">Developer workflow</p>
+                  <h3>Build the seams, not a framework.</h3>
+                  <ul class="about-code-list">
+                    <li><code>npm run dev</code> syncs the game package and builds the browser renderer before Vite starts.</li>
+                    <li><code>npm run build:renderer</code> invokes the Rust WASM build and <code>wasm-bindgen</code> output step.</li>
+                    <li>Change content in <code>../first-game</code>; change simulation in <code>../rust</code>; keep this repo for browser behavior.</li>
+                    <li>The browser currently preserves the game-script seam, but does not run the native Luau host in WASM yet.</li>
+                  </ul>
+                </article>
+              </div>
+
+              <p class="about-callout">A browser bug should be traceable to one of three places: input and presentation here, the shared engine, or the package and network contract. That separation is the main feature of this repository.</p>
+              <div class="about-final-links">
+                <a class="about-primary-link" href="https://github.com/cubacadabra/web" target="_blank" rel="noreferrer"><span>Open web on GitHub</span><span aria-hidden="true">↗</span></a>
+                <a class="about-inline-link" href="/about/open-source/rust/"><span>Next: rust</span><span aria-hidden="true">→</span></a>
+              </div>
+            </div>
+          </section>
+
+          <section id="open-source-rust" class="about-section about-code-section" aria-labelledby="open-source-rust-title">
+            <div class="about-section-header">
+              <p class="about-kicker">02 / Open Source / rust</p>
+              <h2 id="open-source-rust-title">The common runtime is a Rust engine with native and WASM faces.</h2>
+              <p class="about-section-side-copy">Simulation, world rules, scripting hooks, snapshots, and primitive rendering live below every client.</p>
+            </div>
+            <div class="about-section-body">
+              <div class="about-code-intro">
+                <p>The <code>rust</code> repository is the platform-neutral core. It owns the player controller, collision against axis-aligned blocks, camera state, launch-pad countdowns, portals, world transitions, remote-player presentation, and the frame data clients need to draw.</p>
+                <p>It is compiled three ways from the same crate: as a Rust library for checks, a static library for iOS, and a <code>cdylib</code> wrapped for Android and the browser. The client never needs to know how the engine stores a player or resolves a collision; it sends inputs and consumes the stable ABI.</p>
+              </div>
+
+              <dl class="about-code-map">
+                <div><dt>Core type</dt><dd><code>src/engine.rs</code> → <code>Engine</code>, with capped remote players and world state</dd></div>
+                <div><dt>Package model</dt><dd><code>src/game_package.rs</code> uses <code>serde</code> and camelCase JSON defaults</dd></div>
+                <div><dt>Rendering</dt><dd><code>wgpu</code> plus WGSL produces the shared primitive renderer for Metal, Vulkan/GLES, and WebGPU/WebGL</dd></div>
+                <div><dt>Public seam</dt><dd><code>src/ffi.rs</code> exposes C-compatible lifecycle calls, buffers, snapshots, and renderer methods</dd></div>
+              </dl>
+
+              <div class="about-code-columns">
+                <article class="about-code-block">
+                  <p class="about-code-label">Simulation contract</p>
+                  <h3>Input in. Snapshot out.</h3>
+                  <p>The engine clamps each step to 50 ms, ticks the game script, smooths camera motion, updates the player and portals, advances remote walk cycles, updates launch pads, and writes a fixed-stride float snapshot. The snapshot contains the local player first, followed by agent records; metadata accessors expose pads, camera, world, and settings state.</p>
+                  <p>Remote players are supplied by a client because the Rust crate does not open sockets. This keeps network policy and identity platform-specific while keeping their rendered representation consistent.</p>
+                </article>
+                <article class="about-code-block">
+                  <p class="about-code-label">Feature split</p>
+                  <h3>Native scripting, portable rendering.</h3>
+                  <ul class="about-code-list">
+                    <li>Native targets use <code>mlua</code> with vendored Luau for the game lifecycle host.</li>
+                    <li>WASM uses browser bindings and <code>wgpu</code> WebGPU/WebGL dependencies instead of native window handles.</li>
+                    <li>iOS passes a Metal layer; Android passes an <code>ANativeWindow</code>; the browser passes an HTML canvas.</li>
+                    <li>The current browser build forwards the script across the seam, but the dedicated Luau-WASM runtime is still future work.</li>
+                  </ul>
+                </article>
+              </div>
+
+              <p class="about-callout">When changing the engine, verify the three consumers together: the C header and native adapters, the generated WASM binding, and the snapshot layout. A field added to one side is an ABI change, even if the Rust code compiles.</p>
+              <div class="about-final-links">
+                <a class="about-primary-link" href="https://github.com/cubacadabra/rust" target="_blank" rel="noreferrer"><span>Open rust on GitHub</span><span aria-hidden="true">↗</span></a>
+                <a class="about-inline-link" href="/about/open-source/ios-app/"><span>Next: ios_app</span><span aria-hidden="true">→</span></a>
+              </div>
+            </div>
+          </section>
+
+          <section id="open-source-ios-app" class="about-section about-code-section" aria-labelledby="open-source-ios-app-title">
+            <div class="about-section-header">
+              <p class="about-kicker">03 / Open Source / ios_app</p>
+              <h2 id="open-source-ios-app-title">iOS is a SwiftUI client wrapped around the same engine.</h2>
+              <p class="about-section-side-copy">Swift owns lifecycle, touch, identity, and platform presentation. Rust still owns the world.</p>
+            </div>
+            <div class="about-section-body">
+              <div class="about-code-intro">
+                <p>The <code>ios_app</code> repository is intentionally an adapter rather than a second game implementation. SwiftUI drives loading and screen state, <code>GameViewModel</code> owns the engine lifecycle and 60 Hz tick, and the app sends the same package data and world-socket messages as the browser.</p>
+                <p>The app can start with a bundled manifest and script, use a cached manifest on the next launch, and refresh declarative content from the web host for a later launch. Executable rules remain bundled; this gives content some update room without downloading arbitrary native behavior.</p>
+              </div>
+
+              <dl class="about-code-map">
+                <div><dt>App state</dt><dd><code>ContentView.swift</code> → <code>GameViewModel</code> with published loading, frame, world, socket, identity, and moderation state</dd></div>
+                <div><dt>Package loader</dt><dd><code>GamePackage.swift</code> decodes the manifest, validates the start world, and manages bundled/cached content</dd></div>
+                <div><dt>Engine bridge</dt><dd><code>EngineBridge.swift</code> copies UTF-8 buffers into the C ABI and decodes the float snapshot into Swift value types</dd></div>
+                <div><dt>Metal surface</dt><dd><code>RustGameSurface.swift</code> hosts an <code>MTKView</code>; its delegate syncs and draws the Rust renderer</dd></div>
+              </dl>
+
+              <div class="about-code-columns">
+                <article class="about-code-block">
+                  <p class="about-code-label">Frame and lifecycle</p>
+                  <h3>Swift owns the clock.</h3>
+                  <p>A Combine timer ticks the view model at 60 Hz when the game is presented. The view model guards the first tick, clamps the delta, pauses movement while the username editor is open, passes remote players into Rust, steps the engine, follows the active world index, sends movement, and publishes the next frame for SwiftUI.</p>
+                  <p>The <code>MTKViewDelegate</code> owns the platform render cadence. It creates the renderer from the view's <code>CAMetalLayer</code>, resizes it when drawable dimensions change, syncs the engine, draws, and tears it down with the view.</p>
+                </article>
+                <article class="about-code-block">
+                  <p class="about-code-label">Networking and configuration</p>
+                  <h3>Native identity, shared protocol.</h3>
+                  <ul class="about-code-list">
+                    <li><code>WorldSocketClient</code> uses <code>URLSessionWebSocketTask</code>, sends movement only when meaningfully changed and no faster than 12 Hz, and reconnects with bounded backoff.</li>
+                    <li>Player IDs and usernames persist in <code>UserDefaults</code>; settings-room visibility is sent separately from movement.</li>
+                    <li>Debug builds default to localhost; Release builds default to the deployed package and Worker, with environment overrides for LAN testing.</li>
+                    <li>The Xcode build phase compiles the sibling Rust crate for the selected simulator or device target and links the static library.</li>
+                  </ul>
+                </article>
+              </div>
+
+              <p class="about-callout">The native integration is intentionally boring at the boundary: copy bytes in, call the engine, decode a known snapshot, and let SwiftUI handle platform UX. That makes iOS-specific work safer to review.</p>
+              <div class="about-final-links">
+                <a class="about-primary-link" href="https://github.com/cubacadabra/ios_app" target="_blank" rel="noreferrer"><span>Open ios_app on GitHub</span><span aria-hidden="true">↗</span></a>
+                <a class="about-inline-link" href="/about/open-source/android-app/"><span>Next: android_app</span><span aria-hidden="true">→</span></a>
+              </div>
+            </div>
+          </section>
+
+          <section id="open-source-android-app" class="about-section about-code-section" aria-labelledby="open-source-android-app-title">
+            <div class="about-section-header">
+              <p class="about-kicker">04 / Open Source / android_app</p>
+              <h2 id="open-source-android-app-title">Android brings the same runtime through Compose and JNI.</h2>
+              <p class="about-section-side-copy">Kotlin owns state and touch. A small native shim turns an Android surface into the Rust renderer's window.</p>
+            </div>
+            <div class="about-section-body">
+              <div class="about-code-intro">
+                <p>The <code>android_app</code> repository is the Kotlin/Jetpack Compose port of the iOS client. <code>GameViewModel</code> is the single state holder: it loads and validates the package, creates the native engine, ticks simulation, owns the socket, and exposes a <code>StateFlow</code> for the Compose UI.</p>
+                <p>Android's platform-specific complexity is concentrated in the build and surface bridge. Gradle builds Rust for the selected ABIs, CMake links a JNI shim, and the shim keeps an <code>ANativeWindow</code> alive long enough for <code>wgpu</code> to create and destroy its surface safely.</p>
+              </div>
+
+              <dl class="about-code-map">
+                <div><dt>App state</dt><dd><code>game/GameViewModel.kt</code> owns loading, ticking, world transitions, remote players, username, and renderer handles</dd></div>
+                <div><dt>Compose loop</dt><dd><code>GameScreen</code> uses <code>LaunchedEffect</code> and <code>withFrameNanos</code> for tick → draw, while UI state stays declarative</dd></div>
+                <div><dt>Native bridge</dt><dd><code>nativebridge/NativeEngine.kt</code> declares the small JNI API backed by <code>jni_bridge.c</code></dd></div>
+                <div><dt>Build targets</dt><dd>Gradle builds Rust <code>cdylib</code>s for <code>arm64-v8a</code> and <code>x86_64</code>, then packages generated <code>jniLibs</code></dd></div>
+              </dl>
+
+              <div class="about-code-columns">
+                <article class="about-code-block">
+                  <p class="about-code-label">Surface lifetime</p>
+                  <h3>Keep the window valid until the renderer is gone.</h3>
+                  <p>The Compose screen embeds a native <code>SurfaceView</code>. Surface callbacks create the renderer, forward size changes, and destroy it when the surface disappears. The JNI layer owns the native holder and calls the same engine renderer functions as iOS, while Rust maps the retained window to an Android raw-window handle.</p>
+                  <p>This ordering matters: destroying or replacing the surface before the renderer releases its swapchain can create platform-specific GPU failures. The callback is the lifecycle authority.</p>
+                </article>
+                <article class="about-code-block">
+                  <p class="about-code-label">Kotlin and networking</p>
+                  <h3>One data source, no unnecessary layers.</h3>
+                  <ul class="about-code-list">
+                    <li>The package loader fetches <code>manifest.json</code> and <code>game.luau</code> over HTTP, parses JSON explicitly, and validates the start world.</li>
+                    <li><code>WorldSocketClient</code> uses OkHttp, persists Android identity, sends the shared movement and username messages, and reconnects with bounded backoff.</li>
+                    <li>Gradle properties override package and backend URLs for a device on the dev LAN; Release uses deployed endpoints.</li>
+                    <li>The JNI frame read returns Rust's snapshot plus metadata for counts, world, camera, and launch-pad state, which Kotlin decodes into value types.</li>
+                  </ul>
+                </article>
+              </div>
+
+              <p class="about-callout">If an Android rendering issue appears, inspect the full chain—Gradle ABI output, CMake library loading, JNI surface lifetime, and Rust <code>wgpu</code> backend—before changing Compose code.</p>
+              <div class="about-final-links">
+                <a class="about-primary-link" href="https://github.com/cubacadabra/android_app" target="_blank" rel="noreferrer"><span>Open android_app on GitHub</span><span aria-hidden="true">↗</span></a>
+                <a class="about-inline-link" href="/about/open-source/first-game/"><span>Next: first_game</span><span aria-hidden="true">→</span></a>
+              </div>
+            </div>
+          </section>
+
+          <section id="open-source-first-game" class="about-section about-code-section" aria-labelledby="open-source-first-game-title">
+            <div class="about-section-header">
+              <p class="about-kicker">05 / Open Source / first_game</p>
+              <h2 id="open-source-first-game-title">The first game is a portable package, not a client fork.</h2>
+              <p class="about-section-side-copy">JSON describes worlds. Luau supplies game-specific rules. Every client consumes the same package.</p>
+            </div>
+            <div class="about-section-body">
+              <div class="about-code-intro">
+                <p>The <code>first-game</code> repository is content and rules only. It has no browser, Swift, Kotlin, Rust, or server code. That constraint is what lets the same lobby and session travel across the web, iOS, and Android clients.</p>
+                <p><code>manifest.json</code> describes presentation-independent world data: palette, bounds, spawn points, clouds, blocks, portals, launch pads, settings room, avatars, and the runtime world map. <code>game.luau</code> is intentionally small today; the host calls its lifecycle hooks while platform services continue to own movement, collision, launching, and routing.</p>
+              </div>
+
+              <dl class="about-code-map">
+                <div><dt>Package schema</dt><dd><code>manifest.json</code> with <code>startWorld: "lobby"</code>, a launch route, and nested <code>worlds</code></dd></div>
+                <div><dt>Lobby</dt><dd>Three colored launch pads, shared 8-second countdowns, a settings portal, and a max-player hint of 18</dd></div>
+                <div><dt>Session</dt><dd><code>real-game</code> becomes “The Clearing” after the launch and removes the lobby pads</dd></div>
+                <div><dt>Rules</dt><dd><code>game.luau</code> exports <code>on_start(api)</code> and <code>on_tick(api, delta)</code>; the host API is the portability boundary</dd></div>
+              </dl>
+
+              <div class="about-code-columns">
+                <article class="about-code-block">
+                  <p class="about-code-label">Data model</p>
+                  <h3>Content stays declarative.</h3>
+                  <p>Top-level fields define the lobby. The nested <code>worlds</code> map defines additional scenes with their own palette, grid, spawn, blocks, portals, and signs. Clients synthesize the lobby world from the top-level values and sort runtime world IDs so a world transition can be represented as a stable engine index.</p>
+                  <p>Keep fields compatible with all three loaders: the browser normalizer in <code>web/src/game/</code>, <code>GamePackage.swift</code>, and Android's explicit JSON parser. A schema change is a cross-repository change.</p>
+                </article>
+                <article class="about-code-block">
+                  <p class="about-code-label">Rules and delivery</p>
+                  <h3>Ship data through the web host.</h3>
+                  <ul class="about-code-list">
+                    <li><code>web/scripts/sync_first_game.sh</code> copies the manifest, script, and optional assets into <code>public/games/first-game/</code>.</li>
+                    <li>iOS and Android fetch the same URLs; iOS also bundles a safe fallback and caches a validated manifest for the next launch.</li>
+                    <li>Native Rust can execute the Luau lifecycle today; browser scripting remains a forward-compatible seam until Luau-WASM support lands.</li>
+                    <li>Platform behavior belongs in the runtime or host API. Keep package rules portable and free of client-specific imports.</li>
+                  </ul>
+                </article>
+              </div>
+
+              <p class="about-callout">This repository is the test of the architecture: if a world or rule needs a platform-specific rewrite, the boundary is in the wrong place—or the package contract needs to become more explicit.</p>
+              <div class="about-final-links">
+                <a class="about-primary-link" href="https://github.com/cubacadabra/first_game" target="_blank" rel="noreferrer"><span>Open first_game on GitHub</span><span aria-hidden="true">↗</span></a>
+                <a class="about-inline-link" href="/about/open-source/web/"><span>Back to web</span><span aria-hidden="true">↺</span></a>
               </div>
             </div>
           </section>
