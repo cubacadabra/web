@@ -2464,6 +2464,31 @@ canvas:focus-visible {
   font-weight: 750;
 }
 
+.about-nav {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-left: auto;
+  pointer-events: auto;
+}
+
+.about-nav a {
+  padding: 12px 0;
+  color: var(--about-soft);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: normal;
+  line-height: 1.2;
+  text-decoration: none;
+  text-transform: none;
+  transition: color 180ms ease;
+}
+
+.about-nav a:hover,
+.about-nav a.is-current {
+  color: var(--about-ink);
+}
+
 .about-nav a.is-current {
   color: var(--about-ink);
   font-weight: 800;
