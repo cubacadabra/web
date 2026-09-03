@@ -1738,6 +1738,30 @@ canvas:focus-visible {
   line-height: 1.42;
 }
 
+.about-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: 470px;
+  margin: 25px 0 0;
+  color: var(--about-ink);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.about-note-mark {
+  display: grid;
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  place-items: center;
+  border: 1px solid var(--about-accent);
+  border-radius: 50%;
+  color: var(--about-accent);
+  font-size: 11px;
+  font-weight: 800;
+}
+
 .about-sections {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1776,6 +1800,76 @@ canvas:focus-visible {
   color: var(--ink-soft);
   font-size: 13px;
   line-height: 1.55;
+}
+
+.about-section-wide {
+  grid-column: 1 / -1;
+  max-width: 820px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+}
+
+.about-repositories-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--about-accent);
+  color: var(--about-ink);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: gap 180ms ease, color 180ms ease;
+}
+
+.about-repositories-link:hover {
+  gap: 17px;
+  color: var(--about-accent);
+}
+
+.repository-list {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin: 28px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.repository-list a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 11px;
+  border: 1px solid var(--about-line);
+  color: var(--about-soft);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+  text-decoration: none;
+  transition: border-color 180ms ease, color 180ms ease, background 180ms ease;
+}
+
+.repository-list a:hover {
+  border-color: rgba(139, 156, 246, 0.6);
+  background: rgba(139, 156, 246, 0.08);
+  color: var(--about-ink);
+}
+
+.repository-list a span:last-child {
+  color: var(--about-faint);
+  font-family: inherit;
+}
+
+.about-open-source-note {
+  max-width: 620px;
+  margin-top: 18px !important;
+  color: var(--about-faint) !important;
+  font-size: 11px !important;
 }
 
 .about-back-link {
@@ -1835,6 +1929,10 @@ canvas:focus-visible {
     font-size: 16px;
   }
 
+  .about-note {
+    margin-top: 20px;
+  }
+
   .about-sections {
     grid-template-columns: 1fr;
     gap: 42px;
@@ -1843,6 +1941,15 @@ canvas:focus-visible {
 
   .about-section {
     max-width: 430px;
+  }
+
+  .about-section-wide {
+    grid-column: auto;
+    padding-top: 22px;
+  }
+
+  .repository-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .about-back-link {
@@ -1858,6 +1965,12 @@ canvas:focus-visible {
   .about-nav,
   .about-legal-links {
     gap: 14px;
+  }
+}
+
+@media (max-width: 420px) {
+  .repository-list {
+    grid-template-columns: 1fr;
   }
 }
 
