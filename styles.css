@@ -3160,3 +3160,100 @@ canvas:focus-visible {
     gap: 14px;
   }
 }
+
+/* Legal pages share the about palette, but keep their single-column reading gutter. */
+.about-shell > .about-content {
+  width: min(1380px, calc(100% - 128px));
+  margin: 0 auto;
+  padding: 150px 0 132px;
+}
+
+.about-shell > .about-content .about-meta {
+  margin: 20px 0 0;
+  color: var(--about-faint);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.about-shell > .about-content .about-sections {
+  margin-top: 76px;
+}
+
+.about-shell > .about-content .about-section {
+  display: block;
+  padding: 42px 0 48px;
+  border-top: 1px solid var(--about-line);
+}
+
+.about-shell > .about-content .about-section .about-label {
+  margin-bottom: 17px;
+}
+
+.about-shell > .about-content .about-section h2 {
+  max-width: 680px;
+  margin: 0 0 19px;
+  color: var(--about-ink);
+  font-size: clamp(26px, 3vw, 38px);
+  font-weight: 750;
+  letter-spacing: -0.06em;
+  line-height: 1.05;
+}
+
+.about-shell > .about-content .about-section p:not(.about-label),
+.about-shell > .about-content .about-section li {
+  max-width: 760px;
+  color: var(--about-soft);
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.about-shell > .about-content .about-section p:not(.about-label) {
+  margin: 0;
+}
+
+.about-shell > .about-content .about-section p:not(.about-label) + p:not(.about-label) {
+  margin-top: 19px;
+}
+
+.about-shell > .about-content .about-section ul {
+  max-width: 760px;
+  margin: 0 0 19px;
+  padding-left: 22px;
+}
+
+.about-shell > .about-content .about-section li + li {
+  margin-top: 9px;
+}
+
+.about-shell > .about-content .about-section strong,
+.about-shell > .about-content .about-section a {
+  color: var(--about-ink);
+}
+
+.about-shell > .about-content .about-section a:hover {
+  color: var(--about-accent);
+}
+
+@media (max-width: 960px) {
+  .about-shell > .about-content {
+    width: min(calc(100% - 64px), 720px);
+    padding-top: 132px;
+    padding-bottom: 110px;
+  }
+}
+
+@media (max-width: 720px) {
+  .about-shell > .about-content {
+    width: min(calc(100% - 36px), 560px);
+    padding-top: 70px;
+    padding-bottom: 80px;
+  }
+
+  .about-shell > .about-content .about-sections {
+    margin-top: 55px;
+  }
+
+  .about-shell > .about-content .about-section {
+    padding: 34px 0 40px;
+  }
+}
