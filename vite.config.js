@@ -62,6 +62,7 @@ export default defineConfig({
         aboutWhereWeAre: new URL("./about/where-we-are/index.html", import.meta.url).pathname,
         terms: new URL("./terms/index.html", import.meta.url).pathname,
         privacy: new URL("./privacy/index.html", import.meta.url).pathname,
+        login: new URL("./login/index.html", import.meta.url).pathname,
       },
     },
   },
