@@ -2829,6 +2829,27 @@ canvas:focus-visible {
   border-top: 1px solid var(--about-line);
 }
 
+/* A section page gets the breadcrumb above the section grid, so its title and
+   supporting content share the same reading plane instead of being offset by
+   the breadcrumb itself. */
+.about-page[data-about-route]:not([data-about-route="overview"]) .about-content {
+  padding-top: 42px;
+}
+
+.about-page[data-about-route]:not([data-about-route="overview"]) .about-route-breadcrumb {
+  margin-bottom: 0;
+}
+
+.about-page[data-about-route]:not([data-about-route="overview"]) .about-section {
+  grid-template-columns: minmax(260px, 0.9fr) minmax(0, 1.1fr);
+  gap: clamp(44px, 5vw, 72px);
+  padding-top: 54px;
+}
+
+.about-page[data-about-route]:not([data-about-route="overview"]) .about-section-header h2 {
+  max-width: 380px;
+}
+
 .about-section-header h2 {
   max-width: 300px;
   margin: 18px 0 0;
@@ -3155,6 +3176,12 @@ canvas:focus-visible {
   .about-repositories,
   .about-section {
     grid-template-columns: 1fr;
+  }
+
+  .about-page[data-about-route]:not([data-about-route="overview"]) .about-section {
+    grid-template-columns: 1fr;
+    gap: 35px;
+    padding-top: 55px;
   }
 
   .about-repositories {

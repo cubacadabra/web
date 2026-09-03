@@ -49,11 +49,12 @@ const showRouteSection = (route) => {
 
   const section = document.getElementById(route);
   const title = ABOUT_ROUTE_TITLES[route];
-  if (section && title && !section.querySelector(".about-route-breadcrumb")) {
+  const content = document.querySelector(".about-content");
+  if (content && section && title && !content.querySelector(".about-route-breadcrumb")) {
     const breadcrumb = document.createElement("p");
     breadcrumb.className = "about-breadcrumb about-route-breadcrumb";
     breadcrumb.innerHTML = `<span>About</span><span aria-hidden="true">/</span><span>${title}</span>`;
-    section.prepend(breadcrumb);
+    content.insertBefore(breadcrumb, section);
   }
 };
 
