@@ -1632,6 +1632,7 @@ canvas:focus-visible {
   --about-faint: #71767d;
   --about-line: rgba(255, 255, 255, 0.08);
   --about-accent: #8b9cf6;
+  --about-logo-accent: #ed725b;
   --ink: var(--about-ink);
   --ink-soft: var(--about-soft);
   --ink-faint: var(--about-faint);
@@ -1643,6 +1644,15 @@ canvas:focus-visible {
   color: var(--about-ink);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+.about-page .brand-mark {
+  border-color: var(--about-logo-accent);
+}
+
+.about-page .brand-mark::after,
+.about-page .brand-mark span {
+  background: var(--about-logo-accent);
 }
 
 .about-shell {
@@ -1687,7 +1697,7 @@ canvas:focus-visible {
   color: var(--ink);
   font-size: clamp(48px, 8vw, 104px);
   font-weight: 750;
-  letter-spacing: -0.085em;
+  letter-spacing: -0.045em;
   line-height: 0.92;
 }
 
