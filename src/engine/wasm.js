@@ -139,6 +139,9 @@ export function createRustEngine(exports) {
     uiHitTest(x, y) {
       return Boolean(call("engine_ui_hit_test", x, y));
     },
+    uiExternalLinkHitTest(x, y) {
+      return Boolean(call("engine_ui_external_link_hit_test", x, y));
+    },
     pollUIEvent() {
       if (!call("engine_ui_poll_event")) return null;
       const pointer = call("engine_ui_event_ptr");

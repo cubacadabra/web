@@ -10,6 +10,8 @@ import { createBuildModeController } from "../ui/buildMode.js";
 import { getDomElements } from "../ui/dom.js";
 import { createHudController } from "../ui/hud.js";
 
+const ABOUT_URL = "https://cubacadabra.com/about/";
+
 export async function createGame() {
   const elements = getDomElements();
   const gameDefinition = await loadGamePackage();
@@ -91,6 +93,9 @@ export async function createGame() {
         state.movement.jumpQueued = true;
       } else if (event.action === "player.run" && event.phase === "activate") {
         state.movement.mobileSprint = !state.movement.mobileSprint;
+      } else if (event.action === "shared.about.open" && event.phase === "activate") {
+        // The web pointer-up handler opens this synchronously to preserve
+        // browser user activation and avoid popup blockers.
       } else {
         buildMode?.handleUiEvent(event);
       }
@@ -138,6 +143,8 @@ export async function createGame() {
     onInteract: () => settingsRoom.interact(),
     onUiPointer: (pointerId, phase, x, y) => engine.uiPointer(pointerId, phase, x, y),
     onUiHitTest: (x, y) => engine.uiHitTest(x, y),
+    onUiExternalLinkHitTest: (x, y) => engine.uiExternalLinkHitTest(x, y),
+    onOpenExternalLink: () => window.open(ABOUT_URL, "_blank", "noopener,noreferrer"),
     onBuildKeyboard: (event) => buildMode?.handleKeyboard(event),
   });
 

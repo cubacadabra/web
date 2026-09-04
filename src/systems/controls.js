@@ -30,6 +30,8 @@ export function bindControls({
   onInteract,
   onUiPointer,
   onUiHitTest,
+  onUiExternalLinkHitTest,
+  onOpenExternalLink,
   onBuildKeyboard,
 }) {
   const { canvas } = elements;
@@ -167,10 +169,13 @@ export function bindControls({
 
   function handlePointerUp(event) {
     if (uiPointers.delete(event.pointerId)) {
+      const point = pointInCanvas(event);
+      const externalLink = onUiExternalLinkHitTest?.(point.x, point.y);
       event.preventDefault();
       sendUiPointer(event, 2);
       stopCameraPointer(event.pointerId);
       updateCursor(event);
+      if (externalLink) onOpenExternalLink?.();
       return;
     }
     const shouldInteract = state.pointer.active
