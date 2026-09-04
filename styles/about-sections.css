@@ -1,0 +1,444 @@
+/* About section pages and shared legal-page layout foundations. */
+
+/* A section page gets the breadcrumb above the section grid, so its title and
+   supporting content share the same reading plane instead of being offset by
+   the breadcrumb itself. */
+.about-page[data-about-route]:not([data-about-route="overview"]) .about-content {
+  padding-top: 42px;
+}
+
+.about-page[data-about-route]:not([data-about-route="overview"]) .about-route-breadcrumb {
+  margin-bottom: 0;
+}
+
+.about-page[data-about-route]:not([data-about-route="overview"]) .about-section {
+  grid-template-columns: minmax(260px, 0.9fr) minmax(0, 1.1fr);
+  gap: clamp(44px, 5vw, 72px);
+  padding-top: 54px;
+}
+
+.about-page[data-about-route]:not([data-about-route="overview"]) .about-section-header h2 {
+  max-width: 380px;
+}
+
+.about-section-header h2 {
+  max-width: 300px;
+  margin: 18px 0 0;
+  color: var(--about-ink);
+  font-size: clamp(28px, 3vw, 38px);
+  font-weight: 750;
+  letter-spacing: -0.06em;
+  line-height: 1.04;
+}
+
+.about-section-side-copy {
+  max-width: 280px;
+  margin: 25px 0 0;
+  color: var(--about-faint);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.about-section-body {
+  min-width: 0;
+}
+
+.about-prose {
+  max-width: 590px;
+}
+
+.about-prose p,
+.about-quote-wrap p {
+  margin: 0;
+  color: var(--about-soft);
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.about-prose p + p,
+.about-quote-wrap p + p {
+  margin-top: 19px;
+}
+
+.about-item-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 34px 26px;
+  margin-top: 49px;
+}
+
+.about-item,
+.about-person {
+  padding-top: 14px;
+  border-top: 1px solid var(--about-line);
+}
+
+.about-index {
+  display: block;
+  color: var(--about-accent);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.about-item h3,
+.about-principle h3,
+.about-person h3 {
+  margin: 18px 0 0;
+  color: var(--about-ink);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+}
+
+.about-item p,
+.about-principle p,
+.about-person p {
+  margin: 10px 0 0;
+  color: var(--about-soft);
+  font-size: 13px;
+  line-height: 1.58;
+}
+
+.about-principles {
+  display: grid;
+  margin-top: 49px;
+  border-top: 1px solid var(--about-line);
+}
+
+.about-principle {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  gap: 16px;
+  padding: 21px 0 23px;
+  border-bottom: 1px solid var(--about-line);
+}
+
+.about-principle h3 {
+  margin-top: 0;
+}
+
+.about-open-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px;
+  margin-top: 49px;
+}
+
+.about-boundary {
+  padding-top: 14px;
+  border-top: 1px solid var(--about-line);
+}
+
+.about-boundary ul {
+  display: grid;
+  gap: 11px;
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.about-boundary li {
+  position: relative;
+  padding-left: 15px;
+  color: var(--about-soft);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.about-boundary li::before {
+  position: absolute;
+  top: 0.56em;
+  left: 0;
+  width: 5px;
+  height: 5px;
+  border: 1px solid var(--about-accent);
+  border-radius: 50%;
+  content: "";
+}
+
+.about-callout {
+  max-width: 590px;
+  margin: 32px 0 0;
+  padding: 17px 0 17px 18px;
+  border-left: 2px solid var(--about-accent);
+  color: var(--about-ink);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.about-quote-wrap {
+  max-width: 610px;
+}
+
+.about-quote-wrap blockquote {
+  margin: 0 0 39px;
+  color: var(--about-ink);
+  font-size: clamp(27px, 3.2vw, 42px);
+  font-weight: 650;
+  letter-spacing: -0.06em;
+  line-height: 1.04;
+}
+
+.about-people-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.about-person h3 {
+  margin-top: 24px;
+}
+
+.about-final-links {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-top: 34px;
+}
+
+.about-primary-link {
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 5px;
+  background: var(--about-ink);
+  color: var(--about-bg);
+}
+
+.about-primary-link:hover {
+  background: var(--about-accent);
+  color: #fff;
+}
+
+.about-final-links .about-inline-link {
+  margin-top: 0;
+}
+
+.about-last-section {
+  padding-bottom: 52px;
+}
+
+.about-footer {
+  position: static;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 0 34px;
+  color: var(--about-faint);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.about-footer a {
+  color: var(--about-soft);
+  text-decoration: none;
+}
+
+.about-footer a:hover {
+  color: var(--about-accent);
+}
+
+.about-footer .about-legal-links {
+  margin-left: auto;
+}
+
+.about-footer .about-social-links {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-left: 24px;
+}
+
+.about-footer .about-social-links a {
+  color: var(--about-faint);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.about-footer .about-social-links a:hover {
+  color: var(--about-accent);
+}
+
+@media (max-width: 980px) {
+  .about-layout {
+    grid-template-columns: 190px minmax(0, 1fr);
+    gap: 42px;
+    width: min(800px, calc(100% - 64px));
+  }
+
+  .about-repositories,
+  .about-section {
+    gap: 34px;
+  }
+
+  .about-section-header h2 {
+    font-size: 29px;
+  }
+}
+
+@media (max-width: 720px) {
+  .about-topbar {
+    min-height: 62px;
+    padding: 0 18px;
+  }
+
+  .about-topbar-nav {
+    gap: 14px;
+  }
+
+  .about-topbar-nav a {
+    font-size: 11px;
+  }
+
+  .about-layout {
+    display: block;
+    width: min(560px, calc(100% - 36px));
+  }
+
+  .about-sidebar {
+    position: relative;
+    top: auto;
+    min-height: 0;
+    padding: 25px 0 0;
+  }
+
+  .about-sidebar-heading {
+    padding-right: 0;
+    padding-left: 0;
+  }
+
+  .about-menu {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+  }
+
+  .about-menu > a:first-child {
+    flex: 1 1 100%;
+  }
+
+  .about-menu-group {
+    flex: 1 1 190px;
+    margin-top: 16px;
+  }
+
+  .about-menu a {
+    min-height: 38px;
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+
+  .about-menu-group p {
+    margin-right: 10px;
+    margin-left: 10px;
+  }
+
+  .about-sidebar-home {
+    margin: 21px 0 0;
+  }
+
+  .about-content {
+    padding-top: 50px;
+    padding-bottom: 70px;
+  }
+
+  .about-breadcrumb {
+    margin-bottom: 27px;
+  }
+
+  .about-content h1 {
+    font-size: clamp(42px, 13vw, 65px);
+  }
+
+  .about-lede {
+    font-size: 16px;
+  }
+
+  .about-overview-rule {
+    margin-top: 45px;
+  }
+
+  .about-repositories,
+  .about-section {
+    grid-template-columns: 1fr;
+  }
+
+  .about-page[data-about-route]:not([data-about-route="overview"]) .about-section {
+    grid-template-columns: 1fr;
+    gap: 35px;
+    padding-top: 55px;
+  }
+
+  .about-repositories {
+    gap: 30px;
+  }
+
+  .about-section {
+    gap: 35px;
+    padding: 55px 0 63px;
+  }
+
+  .about-section-header h2 {
+    max-width: 520px;
+    font-size: clamp(28px, 8vw, 36px);
+  }
+
+  .about-section-side-copy {
+    max-width: 450px;
+    margin-top: 17px;
+  }
+
+  .about-item-grid,
+  .about-open-grid {
+    gap: 28px 20px;
+    margin-top: 39px;
+  }
+
+  .about-principles {
+    margin-top: 39px;
+  }
+
+  .about-quote-wrap blockquote {
+    font-size: clamp(28px, 8vw, 39px);
+  }
+
+  .about-footer {
+    padding-bottom: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .about-page .brand-caption {
+    display: none;
+  }
+
+  .about-page .brand-name {
+    font-size: 13px;
+  }
+
+  .about-topbar-nav {
+    gap: 11px;
+  }
+
+  .about-topbar-nav a {
+    font-size: 10px;
+  }
+
+  .repository-list,
+  .about-item-grid,
+  .about-open-grid,
+  .about-people-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .about-final-links {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 14px;
+  }
+}

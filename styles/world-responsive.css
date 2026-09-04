@@ -1,0 +1,354 @@
+/* World responsive behavior: viewport, touch, and tablet adaptations. */
+
+@media (max-width: 920px) {
+  .scene-intro {
+    bottom: 220px;
+  }
+}
+
+@media (max-width: 720px) {
+  .topbar {
+    padding: 20px 18px;
+  }
+
+  .brand-caption,
+  .build-label,
+  .world-status,
+  .camera-mode {
+    display: none;
+  }
+
+  .brand-name {
+    font-size: 13px;
+  }
+
+  .topbar-actions {
+    gap: 0;
+  }
+
+  .world-event {
+    top: 78px;
+    font-size: 10px;
+  }
+
+  .settings-room-hint {
+    top: 128px;
+    max-width: calc(100vw - 36px);
+  }
+
+  .settings-room-panel {
+    padding: 18px;
+  }
+
+  .settings-room-card {
+    max-height: calc(100vh - 36px);
+  }
+
+  .settings-room-header {
+    padding: 20px 18px 18px;
+  }
+
+  .settings-room-body {
+    padding: 20px 18px 22px;
+  }
+
+  .settings-room-footer {
+    padding-inline: 18px;
+  }
+
+  .settings-room-title-wrap {
+    gap: 11px;
+  }
+
+  .settings-room-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 21px;
+  }
+
+  .settings-leave-button {
+    padding-inline: 11px;
+    font-size: 10px;
+  }
+
+  .settings-option {
+    grid-template-columns: 1fr auto;
+  }
+
+  .settings-option-value {
+    grid-column: 1;
+    grid-row: 2;
+    max-width: none;
+  }
+
+  .settings-option-arrow {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+
+  .settings-field-row {
+    display: grid;
+  }
+
+  .settings-save-button {
+    width: 100%;
+  }
+
+  .settings-field-actions {
+    display: grid;
+  }
+
+  .reset-button {
+    min-height: 44px;
+    padding-inline: 14px;
+  }
+
+  .scene-intro {
+    bottom: 198px;
+    left: 18px;
+    width: min(270px, calc(100vw - 36px));
+  }
+
+  .lobby-status {
+    top: 82px;
+    right: auto;
+    left: 18px;
+    width: 188px;
+    padding: 12px 13px 11px;
+  }
+
+  .lobby-status > p {
+    margin: 5px 0 9px;
+    font-size: 10px;
+  }
+
+  .meeting-list {
+    gap: 5px;
+  }
+
+  .launch-status {
+    margin-top: 11px;
+    padding-top: 10px;
+  }
+
+  .launch-status-header strong {
+    font-size: 15px;
+  }
+
+  .scene-intro h1 {
+    font-size: clamp(32px, 11vw, 46px);
+  }
+
+  .scene-description {
+    margin-top: 12px;
+    font-size: 12px;
+  }
+
+  .look-hint {
+    right: 18px;
+    bottom: 112px;
+    left: 18px;
+    justify-content: center;
+    padding-right: 12px;
+    transform: none;
+  }
+
+  .look-hint.is-hidden {
+    transform: translateY(8px);
+  }
+
+  .look-copy span {
+    font-size: 10px;
+  }
+
+  .desktop-hint {
+    display: none;
+  }
+
+  .touch-hint {
+    display: inline;
+  }
+
+  .mobile-controls {
+    right: 18px;
+    bottom: 18px;
+    left: 18px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+
+  .view-controls {
+    display: none;
+  }
+
+  .compass {
+    right: 18px;
+    top: 82px;
+    bottom: auto;
+    gap: 7px;
+  }
+
+  .compass-face {
+    width: 60px;
+    height: 60px;
+  }
+
+  .compass-face::before {
+    height: 46px;
+  }
+
+  .compass-face::after {
+    width: 46px;
+  }
+
+  .compass-needle {
+    height: 20px;
+  }
+
+  .bottom-meta {
+    display: none;
+  }
+}
+
+/* iPad Safari reports a coarse pointer even when the viewport is wider than a phone. */
+@media (hover: none) and (pointer: coarse) and (min-width: 721px) {
+  .compass {
+    display: none;
+  }
+
+  .mobile-controls {
+    right: 28px;
+    bottom: 28px;
+    left: 28px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+
+  .joystick {
+    width: 116px;
+    height: 116px;
+    background: rgba(23, 56, 58, 0.26);
+  }
+
+  .joystick-ring {
+    inset: 12px;
+  }
+
+  .joystick-knob {
+    width: 38px;
+    height: 38px;
+  }
+
+  .mobile-actions {
+    gap: 12px;
+    margin-right: 52px;
+  }
+
+  .run-toggle {
+    min-width: 74px;
+    min-height: 58px;
+  }
+
+  .jump-button {
+    width: 88px;
+    min-width: 88px;
+    height: 88px;
+    border-radius: 50%;
+  }
+
+  .view-controls {
+    position: absolute;
+    right: 0;
+    bottom: 5px;
+  }
+
+  .view-button {
+    width: 44px;
+    height: 44px;
+  }
+
+  .look-hint {
+    bottom: 156px;
+  }
+
+  .desktop-hint {
+    display: none;
+  }
+
+  .touch-hint {
+    display: inline;
+  }
+}
+
+/* maxTouchPoints covers iPad Safari configurations that expose a fine primary pointer. */
+@media (min-width: 721px) {
+  .world-shell.is-touch-device .compass {
+    display: none;
+  }
+
+  .world-shell.is-touch-device .mobile-controls {
+    right: 28px;
+    bottom: 28px;
+    left: 28px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+
+  .world-shell.is-touch-device .joystick {
+    width: 116px;
+    height: 116px;
+    background: rgba(23, 56, 58, 0.26);
+  }
+
+  .world-shell.is-touch-device .joystick-ring {
+    inset: 12px;
+  }
+
+  .world-shell.is-touch-device .joystick-knob {
+    width: 38px;
+    height: 38px;
+  }
+
+  .world-shell.is-touch-device .mobile-actions {
+    gap: 12px;
+    margin-right: 52px;
+  }
+
+  .world-shell.is-touch-device .run-toggle {
+    min-width: 74px;
+    min-height: 58px;
+  }
+
+  .world-shell.is-touch-device .jump-button {
+    width: 88px;
+    min-width: 88px;
+    height: 88px;
+    border-radius: 50%;
+  }
+
+  .world-shell.is-touch-device .view-controls {
+    position: absolute;
+    right: 0;
+    bottom: 5px;
+  }
+
+  .world-shell.is-touch-device .view-button {
+    width: 44px;
+    height: 44px;
+  }
+
+  .world-shell.is-touch-device .look-hint {
+    bottom: 156px;
+  }
+
+  .world-shell.is-touch-device .desktop-hint {
+    display: none;
+  }
+
+  .world-shell.is-touch-device .touch-hint {
+    display: inline;
+  }
+}
