@@ -1,17 +1,4 @@
-const ABOUT_ROUTES = {
-  overview: { title: "Overview", path: "/about/" },
-  "open-source-web": { title: "web", path: "/about/open-source/web/" },
-  "open-source-rust": { title: "rust", path: "/about/open-source/rust/" },
-  "open-source-ios-app": { title: "ios_app", path: "/about/open-source/ios-app/" },
-  "open-source-android-app": { title: "android_app", path: "/about/open-source/android-app/" },
-  "open-source-first-game": { title: "first_game", path: "/about/open-source/first-game/" },
-  "why-another-platform": { title: "Why another platform?", path: "/about/why-another-platform/" },
-  opportunity: { title: "The opportunity", path: "/about/opportunity/" },
-  "open-by-design": { title: "Open by design", path: "/about/open-by-design/" },
-  "hard-part": { title: "The hard part", path: "/about/hard-part/" },
-  constituencies: { title: "Three constituencies", path: "/about/constituencies/" },
-  "where-we-are": { title: "Where we are now", path: "/about/where-we-are/" },
-};
+import { ABOUT_ROUTES } from "./about-routes.js";
 
 const normalizePath = (path) => {
   const normalized = path.replace(/\/+$/, "");
@@ -65,26 +52,10 @@ const initializeAboutPage = (route) => {
   document.body.dataset.aboutRoute = route;
 
   if (route !== "overview") {
-    document.title = `${ABOUT_ROUTES[route].title} · About cubacadabra`;
+    document.title = ABOUT_ROUTES[route].pageTitle || `${ABOUT_ROUTES[route].title} · About cubacadabra`;
   }
-};
-
-const loadRouteShell = async (route) => {
-  const response = await fetch("/about/index.html");
-  if (!response.ok) throw new Error(`About page unavailable: ${response.status}`);
-
-  const source = await response.text();
-  const parsed = new DOMParser().parseFromString(source, "text/html");
-  document.body.innerHTML = parsed.body.innerHTML;
-  document.body.className = "about-page";
-  initializeAboutPage(route);
 };
 
 const route = routeFromPath();
 
 if (document.querySelector(".about-shell")) initializeAboutPage(route);
-else {
-  loadRouteShell(route).catch(() => {
-    document.body.innerHTML = "<main class=\"about-route-error\"><h1>About cubacadabra</h1><p>This page could not be loaded. Please try again.</p><a href=\"/about/\">Back to About</a></main>";
-  });
-}

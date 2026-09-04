@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "sync:game": "sh scripts/sync_first_game.sh",
-    "dev": "npm run sync:game && npm run build:renderer && vite",
-    "dev:lan": "npm run sync:game && npm run build:renderer && vite --host 0.0.0.0",
+    "build:about": "node scripts/build-about-pages.js",
+    "dev": "npm run sync:game && npm run build:renderer && npm run build:about && vite",
+    "dev:lan": "npm run sync:game && npm run build:renderer && npm run build:about && vite --host 0.0.0.0",
     "build:renderer": "sh ../rust/scripts/build_web_renderer.sh",
-    "build": "npm run sync:game && npm run build:renderer && vite build",
+    "build": "npm run sync:game && npm run build:renderer && npm run build:about && vite build",
     "preview": "vite preview"
   },
   "devDependencies": {

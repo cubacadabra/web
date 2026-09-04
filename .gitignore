@@ -5,3 +5,12 @@ package-lock.json
 dist
 .DS_Store
 public/games
+
+# Generated from about/index.html by scripts/build-about-pages.js.
+/about/constituencies/index.html
+/about/hard-part/index.html
+/about/open-by-design/index.html
+/about/opportunity/index.html
+/about/where-we-are/index.html
+/about/why-another-platform/index.html
+/about/open-source/*/index.html
