@@ -71,7 +71,6 @@ export async function createGame() {
     engine,
   });
   buildMode = createBuildModeController({
-    elements,
     state,
     worldSocket,
     engine,
@@ -81,6 +80,23 @@ export async function createGame() {
       if (lobbyIndex >= 0) engine.startWorld(lobbyIndex);
     },
   });
+
+  function handleUIEvents() {
+    let event;
+    while ((event = engine.pollUIEvent())) {
+      if (event.action === "player.move") {
+        state.movement.joystickX = Number.isFinite(event.x) ? event.x : 0;
+        state.movement.joystickY = Number.isFinite(event.y) ? event.y : 0;
+      } else if (event.action === "player.jump" && event.phase === "activate") {
+        state.movement.jumpQueued = true;
+      } else if (event.action === "player.run" && event.phase === "activate") {
+        state.movement.mobileSprint = !state.movement.mobileSprint;
+      } else {
+        buildMode?.handleUiEvent(event);
+      }
+      hud.dismissHint();
+    }
+  }
   let connectedWorldId = null;
 
   function syncRemotePlayers() {
@@ -120,6 +136,8 @@ export async function createGame() {
       state.movement.zoomDelta += amount;
     },
     onInteract: () => settingsRoom.interact(),
+    onUiPointer: (pointerId, phase, x, y) => engine.uiPointer(pointerId, phase, x, y),
+    onBuildKeyboard: (event) => buildMode?.handleKeyboard(event),
   });
 
   function resizeRenderer() {
@@ -128,6 +146,11 @@ export async function createGame() {
     if (!width || !height) return;
 
     renderer.resize();
+    engine.setUIViewport(
+      width,
+      height,
+      Math.min(window.devicePixelRatio || 1, 2),
+    );
   }
 
   const resizeObserver = new ResizeObserver(resizeRenderer);
@@ -168,6 +191,7 @@ export async function createGame() {
     state.movement.zoomDelta = 0;
     syncRemotePlayers();
     engine.step(step);
+    handleUIEvents();
 
     const frame = engine.readFrame();
     syncActiveWorld(frame);

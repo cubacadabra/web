@@ -19,10 +19,6 @@ export function createGameState() {
       startY: 0,
       moved: false,
     },
-    joystickPointer: {
-      active: false,
-      id: null,
-    },
     runtime: {
       elapsed: 0,
       hintDismissed: false,

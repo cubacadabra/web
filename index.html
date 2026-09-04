@@ -69,32 +69,10 @@
         id="world-canvas"
         class="world-canvas"
         tabindex="0"
-        aria-label="cubacadabra world. Drag to look. Use WASD or arrow keys to move, Shift to run, and Space to jump. Touch devices have on-screen controls."
+        aria-label="cubacadabra world. Drag to look. Use WASD or arrow keys to move, Shift to run, and Space to jump. Touch devices have Rust-rendered controls."
       ></canvas>
 
       <div class="atmosphere" aria-hidden="true"></div>
-
-      <header class="topbar">
-        <a class="brand" href="/about" aria-label="About cubacadabra">
-          <span class="brand-mark" aria-hidden="true"><span></span></span>
-          <span class="brand-copy">
-            <span class="brand-name">cubacadabra</span>
-            <span class="brand-caption">A tiny world, in progress</span>
-          </span>
-        </a>
-
-        <div class="topbar-actions">
-          <div class="world-status" id="world-status" aria-label="Cloud connection status">
-            <span class="status-dot" id="status-dot" aria-hidden="true"></span>
-            <span id="connection-status">Connecting</span>
-          </div>
-          <span class="build-label">Preview 01</span>
-          <span class="camera-mode" id="camera-mode">First person</span>
-          <button class="reset-button" id="reset-view" type="button">
-            Reset view
-          </button>
-        </div>
-      </header>
 
       <aside class="world-event" id="world-event" aria-live="polite" hidden>
         <span class="world-event-mark" aria-hidden="true"></span>
@@ -144,134 +122,12 @@
         </div>
       </aside>
 
-      <aside class="lobby-status" id="lobby-status" aria-label="Lobby population and launch pads">
-        <div class="lobby-status-header">
-          <span class="eyebrow lobby-eyebrow">Live lobby</span>
-          <strong id="player-count">1 / 18</strong>
-        </div>
-        <p id="lobby-copy">Players are finding their launch pads</p>
-        <div class="meeting-list" id="launch-pad-list" aria-label="Players on launch pads"></div>
-        <div class="launch-status" id="launch-status" aria-live="polite">
-          <div class="launch-status-header">
-            <span>Next launch</span>
-            <strong id="launch-countdown">—</strong>
-          </div>
-          <p id="launch-copy">Stand on a pad to join the next launch</p>
-        </div>
-      </aside>
-
-      <aside class="build-panel" id="build-panel" aria-live="polite" hidden>
-        <div class="build-panel-kicker" id="build-phase-label">BUILD ROUND</div>
-        <h2 id="build-prompt">Waiting for your prompt…</h2>
-        <p class="build-round-meta" id="build-round-meta">Build together · 06:00</p>
-        <div class="build-toolbar" aria-label="Build tools">
-          <button class="build-tool is-active" data-build-tool="place" type="button">Place</button>
-          <button class="build-tool" data-build-tool="rotate" type="button">Rotate</button>
-          <button class="build-tool" data-build-tool="remove" type="button">Remove</button>
-          <button class="build-tool" data-build-tool="recolor" type="button">Recolor</button>
-        </div>
-        <div class="build-options">
-          <button id="build-shape" type="button">Cube</button>
-          <button id="build-color" type="button"><span aria-hidden="true"></span> Coral</button>
-        </div>
-        <p class="build-status" id="build-status">Place a block in front of you.</p>
-        <div class="build-actions">
-          <button class="build-save-button" id="build-save" type="button">Save &amp; tour</button>
-          <button class="build-return-button" id="build-return" type="button" hidden>Return to lobby</button>
-        </div>
-      </aside>
-
-      <section class="scene-intro" aria-labelledby="scene-title">
-        <p class="eyebrow" id="scene-eyebrow">cubacadabra</p>
-        <h1 id="scene-title">Lobby</h1>
-        <p class="scene-description" id="scene-description">
-          Walk, run, and jump if you dare.
-        </p>
-      </section>
 
       <div class="crosshair" aria-hidden="true">
         <span></span>
         <span></span>
       </div>
 
-      <section class="look-hint" id="look-hint" aria-live="polite">
-        <span class="look-icon" aria-hidden="true">
-          <span class="look-icon-dot"></span>
-        </span>
-        <span class="look-copy">
-          <strong>Move + look</strong>
-          <span class="desktop-hint">WASD move · drag look · Shift run · Space jump · O/I zoom</span>
-          <span class="touch-hint">Left stick move · drag to look · Run + Jump buttons</span>
-        </span>
-      </section>
-
-      <aside class="compass" aria-label="Current view direction">
-        <div class="compass-heading">
-          <span>Heading</span>
-          <strong id="heading-value">N 0°</strong>
-        </div>
-        <div class="compass-face" aria-hidden="true">
-          <span class="compass-letter compass-north">N</span>
-          <span class="compass-letter compass-east">E</span>
-          <span class="compass-letter compass-south">S</span>
-          <span class="compass-letter compass-west">W</span>
-          <span class="compass-needle" id="compass-needle"></span>
-          <span class="compass-center"></span>
-        </div>
-      </aside>
-
-      <div class="bottom-meta" aria-label="Feature status">
-        <span class="meta-line"></span>
-        <span id="movement-state" aria-live="polite" aria-atomic="true">Idle / ready</span>
-      </div>
-
-      <aside
-        class="mobile-controls"
-        aria-label="Touch controls. Use the left thumbstick to move, drag the world to look, and use the action buttons to run or jump."
-      >
-        <button
-          class="joystick"
-          id="joystick"
-          type="button"
-          aria-label="Move with virtual joystick"
-        >
-          <span class="joystick-ring" aria-hidden="true">
-            <span class="joystick-knob" id="joystick-knob"></span>
-          </span>
-        </button>
-        <div class="mobile-actions">
-          <button
-            class="run-toggle"
-            id="run-toggle"
-            type="button"
-            aria-pressed="false"
-          >
-            Run
-          </button>
-          <button class="jump-button" id="jump-button" type="button">
-            Jump
-          </button>
-        </div>
-        <div class="view-controls" aria-label="Camera zoom controls">
-          <button
-            class="view-button"
-            id="zoom-out"
-            type="button"
-            aria-label="Zoom out to third person"
-          >
-            <span aria-hidden="true">−</span>
-          </button>
-          <span class="view-label" aria-hidden="true">View</span>
-          <button
-            class="view-button"
-            id="zoom-in"
-            type="button"
-            aria-label="Zoom in to first person"
-          >
-            <span aria-hidden="true">+</span>
-          </button>
-        </div>
-      </aside>
 
       <div class="loading-state" id="loading-state" role="status">
         <span class="loading-mark" aria-hidden="true"></span>

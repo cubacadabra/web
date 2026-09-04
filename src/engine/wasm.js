@@ -121,6 +121,29 @@ export function createRustEngine(exports) {
         zoomDelta,
       );
     },
+    setUIViewport(width, height, scale = 1, safeTop = 0, safeRight = 0, safeBottom = 0, safeLeft = 0) {
+      call(
+        "engine_set_ui_viewport",
+        width,
+        height,
+        scale,
+        safeTop,
+        safeRight,
+        safeBottom,
+        safeLeft,
+      );
+    },
+    uiPointer(pointerId, phase, x, y) {
+      return Boolean(call("engine_ui_pointer", BigInt(pointerId), phase, x, y));
+    },
+    pollUIEvent() {
+      if (!call("engine_ui_poll_event")) return null;
+      const pointer = call("engine_ui_event_ptr");
+      const length = call("engine_ui_event_len");
+      if (!pointer || !length) return null;
+      const bytes = new Uint8Array(exports.memory.buffer, pointer, length);
+      return JSON.parse(new TextDecoder().decode(bytes));
+    },
     setRemotePlayers(players) {
       call("engine_set_remote_player_count", players.length);
       players.forEach((player, index) => {

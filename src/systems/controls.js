@@ -27,20 +27,15 @@ export function bindControls({
   onResetView,
   onLook,
   onZoom,
-  onJump,
   onInteract,
+  onUiPointer,
+  onBuildKeyboard,
 }) {
-  const {
-    canvas,
-    joystickElement,
-    joystickKnob,
-    runToggle,
-    jumpButton,
-    resetButton,
-    zoomOutButton,
-    zoomInButton,
-  } = elements;
+  const { canvas } = elements;
   const removeListeners = [];
+  const uiPointers = new Set();
+  const cameraPointers = new Map();
+  let pinchDistance = null;
 
   function listen(target, type, handler, options) {
     if (!target) return;
@@ -57,40 +52,92 @@ export function bindControls({
     onLook?.(horizontal, vertical);
   }
 
-  function queueJump() {
-    state.movement.jumpQueued = true;
-    onJump?.();
-    onDismissHint();
+  function pointInCanvas(event) {
+    const bounds = canvas.getBoundingClientRect();
+    return {
+      x: event.clientX - bounds.left,
+      y: event.clientY - bounds.top,
+    };
   }
 
-  function stopPointerLook(event) {
-    if (
-      !state.pointer.active ||
-      (event && event.pointerId !== state.pointer.id)
-    ) return;
-    state.pointer.active = false;
-    state.pointer.id = null;
-    canvas.classList.remove("is-looking");
+  function sendUiPointer(event, phase) {
+    const point = pointInCanvas(event);
+    return onUiPointer?.(event.pointerId, phase, point.x, point.y) ?? false;
+  }
+
+  function stopCameraPointer(pointerId) {
+    cameraPointers.delete(pointerId);
+    if (state.pointer.id === pointerId && cameraPointers.size > 0) {
+      const [nextId, nextPoint] = cameraPointers.entries().next().value;
+      state.pointer.active = true;
+      state.pointer.id = nextId;
+      state.pointer.x = nextPoint.x;
+      state.pointer.y = nextPoint.y;
+      state.pointer.moved = true;
+    } else if (state.pointer.id === pointerId) {
+      state.pointer.active = false;
+      state.pointer.id = null;
+      canvas.classList.remove("is-looking");
+    }
+    if (cameraPointers.size < 2) pinchDistance = null;
+  }
+
+  function updatePinch() {
+    if (cameraPointers.size < 2) {
+      pinchDistance = null;
+      return;
+    }
+    const points = [...cameraPointers.values()].slice(0, 2);
+    const distance = Math.hypot(
+      points[0].x - points[1].x,
+      points[0].y - points[1].y,
+    );
+    if (pinchDistance !== null) onZoom?.(-(distance - pinchDistance) / 100 * 8);
+    pinchDistance = distance;
   }
 
   function handlePointerDown(event) {
-    if (state.runtime.settingsOpen) return;
     if (event.pointerType === "mouse" && event.button !== 0) return;
-
-    state.pointer.active = true;
-    state.pointer.id = event.pointerId;
-    state.pointer.x = event.clientX;
-    state.pointer.y = event.clientY;
-    state.pointer.startX = event.clientX;
-    state.pointer.startY = event.clientY;
-    state.pointer.moved = false;
-    canvas.focus({ preventScroll: true });
+    event.preventDefault();
     canvas.setPointerCapture(event.pointerId);
+    canvas.focus({ preventScroll: true });
+
+    if (!state.runtime.settingsOpen && sendUiPointer(event, 0)) {
+      uiPointers.add(event.pointerId);
+      onDismissHint();
+      return;
+    }
+    if (state.runtime.settingsOpen) return;
+
+    cameraPointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    updatePinch();
+    if (cameraPointers.size === 1) {
+      state.pointer.active = true;
+      state.pointer.id = event.pointerId;
+      state.pointer.x = event.clientX;
+      state.pointer.y = event.clientY;
+      state.pointer.startX = event.clientX;
+      state.pointer.startY = event.clientY;
+      state.pointer.moved = false;
+    }
     canvas.classList.add("is-looking");
     onDismissHint();
   }
 
   function handlePointerMove(event) {
+    if (uiPointers.has(event.pointerId)) {
+      event.preventDefault();
+      sendUiPointer(event, 1);
+      return;
+    }
+    if (!cameraPointers.has(event.pointerId)) return;
+    event.preventDefault();
+
+    cameraPointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (cameraPointers.size > 1) {
+      updatePinch();
+      return;
+    }
     if (!state.pointer.active || event.pointerId !== state.pointer.id) return;
 
     const deltaX = event.clientX - state.pointer.x;
@@ -105,11 +152,26 @@ export function bindControls({
   }
 
   function handlePointerUp(event) {
+    if (uiPointers.delete(event.pointerId)) {
+      event.preventDefault();
+      sendUiPointer(event, 2);
+      stopCameraPointer(event.pointerId);
+      return;
+    }
     const shouldInteract = state.pointer.active
       && event.pointerId === state.pointer.id
       && !state.pointer.moved;
-    stopPointerLook(event);
+    stopCameraPointer(event.pointerId);
     if (shouldInteract) onInteract?.();
+  }
+
+  function handlePointerCancel(event) {
+    if (uiPointers.delete(event.pointerId)) {
+      sendUiPointer(event, 3);
+      stopCameraPointer(event.pointerId);
+      return;
+    }
+    stopCameraPointer(event.pointerId);
   }
 
   function handleKeyDown(event) {
@@ -130,53 +192,23 @@ export function bindControls({
       return;
     }
 
+    if (event.code === "KeyB" || event.code === "KeyR" || event.code === "KeyX"
+      || event.code === "KeyC" || event.code === "Enter") {
+      event.preventDefault();
+      if (!event.repeat) onBuildKeyboard?.(event);
+      return;
+    }
+
     if (!movementCodes.has(event.code)) return;
 
     state.keys.add(event.code);
     event.preventDefault();
     onDismissHint();
 
-    if (event.code === "Space" && !event.repeat) queueJump();
-  }
-
-  function resetJoystick() {
-    state.joystickPointer.active = false;
-    state.joystickPointer.id = null;
-    state.movement.joystickX = 0;
-    state.movement.joystickY = 0;
-    if (joystickKnob) {
-      joystickKnob.style.transform = "translate(-50%, -50%) translate(0, 0)";
+    if (event.code === "Space" && !event.repeat) {
+      state.movement.jumpQueued = true;
     }
-  }
 
-  function updateJoystick(event) {
-    if (!(joystickElement instanceof HTMLElement)) return;
-
-    const bounds = joystickElement.getBoundingClientRect();
-    const centerX = bounds.left + bounds.width / 2;
-    const centerY = bounds.top + bounds.height / 2;
-    const maxDistance = Math.max(bounds.width / 2 - 22, 20);
-    const deltaX = event.clientX - centerX;
-    const deltaY = event.clientY - centerY;
-    const distance = Math.hypot(deltaX, deltaY);
-    const limitedDistance = Math.min(distance, maxDistance);
-    const angle = distance === 0 ? 0 : Math.atan2(deltaY, deltaX);
-    const knobX = Math.cos(angle) * limitedDistance;
-    const knobY = Math.sin(angle) * limitedDistance;
-
-    state.movement.joystickX = knobX / maxDistance;
-    state.movement.joystickY = knobY / maxDistance;
-    if (joystickKnob) {
-      joystickKnob.style.transform =
-        `translate(-50%, -50%) translate(${knobX}px, ${knobY}px)`;
-    }
-    onDismissHint();
-  }
-
-  function handleRunToggle() {
-    state.movement.mobileSprint = !state.movement.mobileSprint;
-    runToggle.setAttribute("aria-pressed", String(state.movement.mobileSprint));
-    runToggle.classList.toggle("is-active", state.movement.mobileSprint);
   }
 
   function handleWheel(event) {
@@ -203,69 +235,36 @@ export function bindControls({
   function handleBlur() {
     state.keys.clear();
     state.movement.jumpQueued = false;
-    resetJoystick();
-  }
-
-  function handleJoystickDown(event) {
-    event.preventDefault();
-    state.joystickPointer.active = true;
-    state.joystickPointer.id = event.pointerId;
-    joystickElement.setPointerCapture(event.pointerId);
-    updateJoystick(event);
-  }
-
-  function handleJoystickMove(event) {
-    if (
-      !state.joystickPointer.active ||
-      event.pointerId !== state.joystickPointer.id
-    ) return;
-    event.preventDefault();
-    updateJoystick(event);
-  }
-
-  function handleJumpPointer(event) {
-    event.preventDefault();
-    queueJump();
+    state.movement.mobileSprint = false;
+    [...uiPointers].forEach((pointerId) => {
+      onUiPointer?.(pointerId, 3, 0, 0);
+    });
+    uiPointers.clear();
+    [...cameraPointers.keys()].forEach(stopCameraPointer);
   }
 
   function handleReset() {
-    onResetView();
+    onResetView?.();
     canvas.focus({ preventScroll: true });
   }
-
-  const handleZoomOut = () => adjustZoom(zoomConfig.step);
-  const handleZoomIn = () => adjustZoom(-zoomConfig.step);
 
   listen(canvas, "pointerdown", handlePointerDown);
   listen(canvas, "pointermove", handlePointerMove);
   listen(canvas, "pointerup", handlePointerUp);
-  listen(canvas, "pointercancel", stopPointerLook);
-  listen(canvas, "lostpointercapture", stopPointerLook);
+  listen(canvas, "pointercancel", handlePointerCancel);
+  listen(canvas, "lostpointercapture", handlePointerCancel);
   listen(canvas, "wheel", handleWheel, { passive: false });
 
   listen(window, "keydown", handleKeyDown);
   listen(window, "keyup", handleKeyUp);
   listen(window, "blur", handleBlur);
 
-  listen(joystickElement, "pointerdown", handleJoystickDown);
-  listen(joystickElement, "pointermove", handleJoystickMove);
-  listen(joystickElement, "pointerup", resetJoystick);
-  listen(joystickElement, "pointercancel", resetJoystick);
-  listen(joystickElement, "lostpointercapture", resetJoystick);
-
-  listen(runToggle, "click", handleRunToggle);
-  listen(jumpButton, "pointerdown", handleJumpPointer);
-  listen(jumpButton, "click", queueJump);
-  listen(resetButton, "click", handleReset);
-  listen(zoomOutButton, "click", handleZoomOut);
-  listen(zoomInButton, "click", handleZoomIn);
+  listen(elements.resetButton, "click", handleReset);
 
   return {
-    resetJoystick,
     destroy() {
       removeListeners.splice(0).forEach((remove) => remove());
-      stopPointerLook();
-      resetJoystick();
+      handleBlur();
       state.keys.clear();
     },
   };
