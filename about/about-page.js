@@ -1,4 +1,5 @@
 import { ABOUT_ROUTES } from "./about-routes.js";
+import { getCurrentUser, initializeLogoutButton } from "../src/auth/session.js";
 
 const normalizePath = (path) => {
   const normalized = path.replace(/\/+$/, "");
@@ -56,6 +57,12 @@ const initializeAboutPage = (route) => {
   }
 };
 
+const initializeAuthUI = async () => {
+  const user = await getCurrentUser();
+  initializeLogoutButton(user);
+};
+
 const route = routeFromPath();
 
 if (document.querySelector(".about-shell")) initializeAboutPage(route);
+initializeAuthUI();

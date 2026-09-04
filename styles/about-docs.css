@@ -289,6 +289,30 @@
   font-weight: 750;
 }
 
+.about-logout {
+  min-height: 32px;
+  padding: 0 11px;
+  border: 1px solid var(--about-line);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--about-soft);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 650;
+  transition: border-color 180ms ease, color 180ms ease, background 180ms ease;
+}
+
+.about-logout:hover {
+  border-color: rgba(139, 156, 246, 0.55);
+  background: var(--about-accent-wash);
+  color: var(--about-ink);
+}
+
+.about-logout:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
 .about-nav {
   display: flex;
   align-items: center;

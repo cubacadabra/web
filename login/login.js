@@ -1,4 +1,5 @@
 import { backendApiUrl } from "../src/config/clientConfig.js";
+import { getPostLoginPath } from "../src/auth/session.js";
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 const googleButton = document.querySelector("#google-button");
@@ -35,7 +36,8 @@ const handleCredentialResponse = async (response) => {
     }
 
     setStatus(`Welcome back, ${result.user.name}.`, "success");
-    window.setTimeout(() => window.location.assign("/"), 450);
+    const destination = getPostLoginPath("/");
+    window.setTimeout(() => window.location.assign(destination), 450);
   } catch {
     setStatus("We could not finish signing you in. Please try again.", "error");
   }

@@ -14,12 +14,17 @@ const aboutRoutes = [
   "where-we-are",
 ];
 
+const siteRoutes = [
+  ...aboutRoutes.map((route) => `/about/${route}`),
+  "/my-cube",
+];
+
 const aboutRouteRedirect = () => ({
   name: "about-route-redirect",
   configureServer(server) {
     server.middlewares.use((request, response, next) => {
       const pathname = request.url?.split("?")[0];
-      if (aboutRoutes.some((route) => pathname === `/about/${route}`)) {
+      if (siteRoutes.includes(pathname)) {
         response.statusCode = 308;
         response.setHeader("Location", `${pathname}/`);
         response.end();
@@ -31,7 +36,7 @@ const aboutRouteRedirect = () => ({
   configurePreviewServer(server) {
     server.middlewares.use((request, response, next) => {
       const pathname = request.url?.split("?")[0];
-      if (aboutRoutes.some((route) => pathname === `/about/${route}`)) {
+      if (siteRoutes.includes(pathname)) {
         response.statusCode = 308;
         response.setHeader("Location", `${pathname}/`);
         response.end();
@@ -63,6 +68,7 @@ export default defineConfig({
         terms: new URL("./terms/index.html", import.meta.url).pathname,
         privacy: new URL("./privacy/index.html", import.meta.url).pathname,
         login: new URL("./login/index.html", import.meta.url).pathname,
+        myCube: new URL("./my-cube/index.html", import.meta.url).pathname,
       },
     },
   },
