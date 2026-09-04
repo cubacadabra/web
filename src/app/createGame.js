@@ -200,6 +200,10 @@ export async function createGame() {
     syncRemotePlayers();
     engine.step(step);
     handleUIEvents();
+    elements.worldShell?.classList.toggle(
+      "is-shared-modal-open",
+      engine.uiSharedModalVisible(),
+    );
 
     const frame = engine.readFrame();
     syncActiveWorld(frame);

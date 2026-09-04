@@ -142,6 +142,9 @@ export function createRustEngine(exports) {
     uiExternalLinkHitTest(x, y) {
       return Boolean(call("engine_ui_external_link_hit_test", x, y));
     },
+    uiSharedModalVisible() {
+      return Boolean(exports.engine_ui_shared_modal_visible(handle));
+    },
     pollUIEvent() {
       if (!call("engine_ui_poll_event")) return null;
       const pointer = call("engine_ui_event_ptr");

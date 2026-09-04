@@ -938,6 +938,10 @@ canvas:focus-visible {
   opacity: 0.76;
 }
 
+.world-shell.is-shared-modal-open .crosshair {
+  visibility: hidden;
+}
+
 .crosshair::before,
 .crosshair::after,
 .crosshair span {
