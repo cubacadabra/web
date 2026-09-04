@@ -137,6 +137,7 @@ export async function createGame() {
     },
     onInteract: () => settingsRoom.interact(),
     onUiPointer: (pointerId, phase, x, y) => engine.uiPointer(pointerId, phase, x, y),
+    onUiHitTest: (x, y) => engine.uiHitTest(x, y),
     onBuildKeyboard: (event) => buildMode?.handleKeyboard(event),
   });
 

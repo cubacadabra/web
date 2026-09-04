@@ -136,6 +136,9 @@ export function createRustEngine(exports) {
     uiPointer(pointerId, phase, x, y) {
       return Boolean(call("engine_ui_pointer", BigInt(pointerId), phase, x, y));
     },
+    uiHitTest(x, y) {
+      return Boolean(call("engine_ui_hit_test", x, y));
+    },
     pollUIEvent() {
       if (!call("engine_ui_poll_event")) return null;
       const pointer = call("engine_ui_event_ptr");

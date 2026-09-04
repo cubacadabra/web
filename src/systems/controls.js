@@ -29,6 +29,7 @@ export function bindControls({
   onZoom,
   onInteract,
   onUiPointer,
+  onUiHitTest,
   onBuildKeyboard,
 }) {
   const { canvas } = elements;
@@ -63,6 +64,13 @@ export function bindControls({
   function sendUiPointer(event, phase) {
     const point = pointInCanvas(event);
     return onUiPointer?.(event.pointerId, phase, point.x, point.y) ?? false;
+  }
+
+  function updateCursor(event) {
+    if (event.pointerType && event.pointerType !== "mouse") return;
+    const point = pointInCanvas(event);
+    const isInteractive = onUiHitTest?.(point.x, point.y) ?? false;
+    canvas.classList.toggle("is-pointer", Boolean(isInteractive));
   }
 
   function stopCameraPointer(pointerId) {
@@ -104,6 +112,7 @@ export function bindControls({
 
     if (!state.runtime.settingsOpen && sendUiPointer(event, 0)) {
       uiPointers.add(event.pointerId);
+      updateCursor(event);
       onDismissHint();
       return;
     }
@@ -121,6 +130,7 @@ export function bindControls({
       state.pointer.moved = false;
     }
     canvas.classList.add("is-looking");
+    canvas.classList.remove("is-pointer");
     onDismissHint();
   }
 
@@ -128,9 +138,13 @@ export function bindControls({
     if (uiPointers.has(event.pointerId)) {
       event.preventDefault();
       sendUiPointer(event, 1);
+      updateCursor(event);
       return;
     }
-    if (!cameraPointers.has(event.pointerId)) return;
+    if (!cameraPointers.has(event.pointerId)) {
+      updateCursor(event);
+      return;
+    }
     event.preventDefault();
 
     cameraPointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
@@ -156,12 +170,14 @@ export function bindControls({
       event.preventDefault();
       sendUiPointer(event, 2);
       stopCameraPointer(event.pointerId);
+      updateCursor(event);
       return;
     }
     const shouldInteract = state.pointer.active
       && event.pointerId === state.pointer.id
       && !state.pointer.moved;
     stopCameraPointer(event.pointerId);
+    updateCursor(event);
     if (shouldInteract) onInteract?.();
   }
 
@@ -169,9 +185,11 @@ export function bindControls({
     if (uiPointers.delete(event.pointerId)) {
       sendUiPointer(event, 3);
       stopCameraPointer(event.pointerId);
+      updateCursor(event);
       return;
     }
     stopCameraPointer(event.pointerId);
+    updateCursor(event);
   }
 
   function handleKeyDown(event) {
@@ -241,6 +259,7 @@ export function bindControls({
     });
     uiPointers.clear();
     [...cameraPointers.keys()].forEach(stopCameraPointer);
+    canvas.classList.remove("is-pointer");
   }
 
   function handleReset() {
@@ -250,6 +269,12 @@ export function bindControls({
 
   listen(canvas, "pointerdown", handlePointerDown);
   listen(canvas, "pointermove", handlePointerMove);
+  listen(canvas, "pointerenter", updateCursor);
+  listen(canvas, "pointerleave", () => {
+    if (!state.pointer.active && uiPointers.size === 0) {
+      canvas.classList.remove("is-pointer");
+    }
+  });
   listen(canvas, "pointerup", handlePointerUp);
   listen(canvas, "pointercancel", handlePointerCancel);
   listen(canvas, "lostpointercapture", handlePointerCancel);

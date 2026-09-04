@@ -68,6 +68,10 @@ canvas:focus-visible {
     linear-gradient(180deg, #79a9c0 0%, #b9d4d1 48%, #e8e4cd 100%);
 }
 
+.world-canvas.is-pointer {
+  cursor: pointer;
+}
+
 .world-shell.is-session-world .world-canvas {
   background:
     linear-gradient(180deg, #263e4a 0%, #49686d 54%, #71887d 100%);
