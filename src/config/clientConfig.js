@@ -11,7 +11,7 @@ export const playerPresentationConfig = {
   eyeHeight: 3.4,
 };
 
-const productionBackendUrl = "wss://cubacadabra.andrew-f97.workers.dev";
+const productionBackendUrl = "wss://api.cubacadabra.com";
 const localBackendUrl = "ws://127.0.0.1:8787";
 
 export const backendConfig = {
