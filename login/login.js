@@ -1,3 +1,5 @@
+import { backendApiUrl } from "../src/config/clientConfig.js";
+
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 const googleButton = document.querySelector("#google-button");
 const fallbackButton = document.querySelector(".google-button-fallback");
@@ -11,27 +13,32 @@ const setStatus = (message, state = "") => {
   status.dataset.state = state;
 };
 
-const decodeCredential = (credential) => {
-  try {
-    const encodedPayload = credential.split(".")[1];
-    const normalizedPayload = encodedPayload.replace(/-/g, "+").replace(/_/g, "/");
-    const paddedPayload = normalizedPayload.padEnd(Math.ceil(normalizedPayload.length / 4) * 4, "=");
-    return JSON.parse(window.atob(paddedPayload));
-  } catch {
-    return null;
-  }
-};
-
-const handleCredentialResponse = (response) => {
-  const account = response?.credential ? decodeCredential(response.credential) : null;
-  const displayName = account?.name || account?.email || "your Google account";
-
-  if (!account) {
+const handleCredentialResponse = async (response) => {
+  if (!response?.credential) {
     setStatus("Google sign-in could not be completed. Please try again.", "error");
     return;
   }
 
-  setStatus(`Signed in as ${displayName}.`, "success");
+  setStatus("Signing you in…");
+
+  try {
+    const apiResponse = await fetch(backendApiUrl("/auth/google"), {
+      method: "POST",
+      credentials: "include",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ credential: response.credential }),
+    });
+    const result = await apiResponse.json().catch(() => null);
+
+    if (!apiResponse.ok || !result?.user) {
+      throw new Error(result?.error || "sign_in_failed");
+    }
+
+    setStatus(`Welcome back, ${result.user.name}.`, "success");
+    window.setTimeout(() => window.location.assign("/"), 450);
+  } catch {
+    setStatus("We could not finish signing you in. Please try again.", "error");
+  }
 };
 
 const initializeGoogleButton = () => {
