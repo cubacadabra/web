@@ -131,13 +131,13 @@ const createMyCubePage = (source) => {
     /<div class="about-sidebar-heading">[\s\S]*?<\/div>\s*<nav class="about-menu"[\s\S]*?<\/nav>/,
     `<div class="about-sidebar-heading">
             <span>My Cube</span>
-            <span class="about-sidebar-status">Your space</span>
+            <span class="about-sidebar-status">Required to continue</span>
           </div>
 
           <nav class="about-menu" aria-label="My Cube sections">
-            <a href="#item1"><span>item1</span><span class="about-menu-arrow" aria-hidden="true">↗</span></a>
-            <a href="#item2"><span>item2</span><span class="about-menu-arrow" aria-hidden="true">↗</span></a>
-            <a href="#item3"><span>item3</span><span class="about-menu-arrow" aria-hidden="true">↗</span></a>
+            <a href="#birthday" aria-current="page"><span>Birthday</span><span class="about-menu-arrow" aria-hidden="true">↗</span></a>
+            <a href="#item2" hidden><span>item2</span><span class="about-menu-arrow" aria-hidden="true">↗</span></a>
+            <a href="#item3" hidden><span>item3</span><span class="about-menu-arrow" aria-hidden="true">↗</span></a>
           </nav>`,
   );
   const footer = extractElement(source, '<footer class="about-footer"', "</footer>");

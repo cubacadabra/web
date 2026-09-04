@@ -335,6 +335,286 @@
   }
 }
 
+/* My Cube birthday gate: a calm, age-aware entry point before the workspace. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.my-cube-page .about-layout {
+  grid-template-columns: 232px minmax(0, 900px);
+  gap: clamp(52px, 7vw, 104px);
+}
+
+.my-cube-page .about-content {
+  padding-top: 66px;
+}
+
+.my-cube-page .about-menu a[aria-current="page"] {
+  background: var(--about-accent-wash);
+  color: var(--about-accent);
+  font-weight: 700;
+}
+
+.birthday-intro {
+  max-width: 700px;
+}
+
+.birthday-intro h1 {
+  max-width: 680px;
+}
+
+.birthday-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(340px, 1.1fr);
+  gap: clamp(54px, 8vw, 116px);
+  margin-top: 66px;
+  padding-top: 33px;
+  border-top: 1px solid var(--about-line);
+}
+
+.birthday-guidance {
+  max-width: 440px;
+}
+
+.birthday-kicker {
+  margin: 0;
+  color: var(--about-accent);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.birthday-guidance h2 {
+  max-width: 360px;
+  margin: 18px 0 0;
+  color: var(--about-ink);
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 750;
+  letter-spacing: -0.06em;
+  line-height: 1.04;
+}
+
+.birthday-guidance p:not(.birthday-kicker):not(.birthday-parent-note) {
+  max-width: 410px;
+  margin: 20px 0 0;
+  color: var(--about-soft);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.birthday-parent-note {
+  max-width: 390px;
+  margin: 28px 0 0;
+  padding-left: 15px;
+  border-left: 2px solid var(--about-logo-accent);
+  color: var(--about-faint);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.birthday-form {
+  width: min(100%, 450px);
+  justify-self: end;
+  padding: 28px 0 0;
+  border-top: 1px solid rgba(231, 233, 236, 0.25);
+}
+
+.birthday-form-heading p:last-child {
+  max-width: 330px;
+  margin: 12px 0 0;
+  color: var(--about-soft);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.birthday-fields {
+  display: grid;
+  grid-template-columns: 1.35fr 0.8fr 0.8fr;
+  gap: 10px;
+  margin-top: 28px;
+}
+
+.birthday-field,
+.parent-email-field {
+  display: grid;
+  gap: 8px;
+  color: var(--about-soft);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.birthday-field input,
+.parent-email-field input {
+  width: 100%;
+  min-height: 48px;
+  box-sizing: border-box;
+  padding: 0 13px;
+  border: 1px solid rgba(231, 233, 236, 0.2);
+  border-radius: 4px;
+  outline: 0;
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--about-ink);
+  font: 600 16px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  letter-spacing: 0.02em;
+  transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+
+.birthday-field input::placeholder,
+.parent-email-field input::placeholder {
+  color: var(--about-faint);
+}
+
+.birthday-field input:hover,
+.parent-email-field input:hover {
+  border-color: rgba(231, 233, 236, 0.4);
+}
+
+.birthday-field input:focus,
+.parent-email-field input:focus {
+  border-color: var(--about-accent);
+  background: rgba(139, 156, 246, 0.08);
+  box-shadow: 0 0 0 3px rgba(139, 156, 246, 0.14);
+}
+
+.birthday-form-note {
+  margin: 13px 0 0;
+  color: var(--about-faint);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.birthday-status {
+  min-height: 18px;
+  margin: 14px 0 0;
+  color: var(--about-soft);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.birthday-status[data-state="error"] {
+  color: #ef9a88;
+}
+
+.birthday-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 23px;
+  min-width: 164px;
+  min-height: 46px;
+  margin-top: 16px;
+  padding: 0 15px 0 17px;
+  border: 1px solid var(--about-accent);
+  border-radius: 4px;
+  background: var(--about-accent);
+  color: #111315;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+  transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+
+.birthday-submit:hover {
+  border-color: #aeb9ff;
+  background: #aeb9ff;
+  transform: translateY(-1px);
+}
+
+.birthday-submit:active {
+  transform: translateY(1px);
+}
+
+.birthday-submit:focus-visible {
+  outline: 3px solid rgba(139, 156, 246, 0.32);
+  outline-offset: 3px;
+}
+
+.birthday-submit:disabled {
+  cursor: wait;
+  opacity: 0.65;
+  transform: none;
+}
+
+.parent-email-field {
+  margin-top: 30px;
+}
+
+.birthday-ready {
+  max-width: 650px;
+  padding-top: 34px;
+  border-top: 1px solid var(--about-line);
+}
+
+.birthday-ready h1 {
+  margin-top: 18px;
+}
+
+@media (max-width: 960px) {
+  .my-cube-page .about-layout {
+    grid-template-columns: 200px minmax(0, 1fr);
+    gap: 48px;
+  }
+
+  .birthday-workspace {
+    grid-template-columns: 1fr;
+    gap: 54px;
+  }
+
+  .birthday-form {
+    justify-self: start;
+  }
+}
+
+@media (max-width: 720px) {
+  .my-cube-page .about-content {
+    padding-top: 50px;
+  }
+
+  .birthday-workspace {
+    gap: 44px;
+    margin-top: 52px;
+    padding-top: 28px;
+  }
+
+  .birthday-form {
+    padding-top: 24px;
+  }
+}
+
+@media (max-width: 420px) {
+  .birthday-fields {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .birthday-field-year {
+    grid-column: 1 / -1;
+  }
+
+  .birthday-guidance h2 {
+    font-size: 30px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .birthday-field input,
+  .parent-email-field input,
+  .birthday-submit {
+    transition: none;
+  }
+}
+
 /* Open-source pages: a compact map of the code boundaries. */
 .about-code-section .about-section-header h2 {
   max-width: 610px;
