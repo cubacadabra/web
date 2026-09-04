@@ -125,7 +125,6 @@ function parentStepMarkup() {
 function readyMarkup() {
   return `
     <div class="birthday-ready">
-      <p class="about-label">Birthday saved</p>
       <h1>Your cube is ready.</h1>
       <p class="about-lede">Thanks for helping us keep cubacadabra safe. Your other My Cube sections are available now.</p>
     </div>`;
