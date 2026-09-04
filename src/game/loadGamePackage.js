@@ -32,6 +32,9 @@ export async function loadGamePackage() {
     new URL("manifest.json", baseUrl),
   );
   const script = await loadText(new URL("game.luau", baseUrl));
+  if (!script.trim()) {
+    throw new Error("The game script is empty.");
+  }
 
   function normalizeWorld(world = {}) {
     const palette = Object.fromEntries(

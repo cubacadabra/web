@@ -9,7 +9,7 @@ same content.
 The five repositories work together as follows:
 
 ```text
-first-game  -> manifest.json + game.luau (content and rules)
+first-game  -> src/ + manifest.json (source package)
 rust        -> simulation and renderer compiled to WebAssembly
 web         -> this browser shell and package host
 backend     -> multiplayer Worker at /world/:worldId
@@ -52,8 +52,9 @@ Backend:      ws://127.0.0.1:8787
 ```
 
 The browser joins the backend at `/world/lobby` and changes to the destination
-world from the game manifest after a launch-pad session. Run
-`npm run sync:game` when you want to refresh only the copied package.
+world from the game manifest after a launch-pad session. `npm run sync:game`
+builds the sibling source package into the served directory; run it when you
+want to refresh only the game package.
 
 ## Dev LAN mode
 
@@ -113,7 +114,7 @@ repository; use it only when you intend to update the public site.
 - `src/state/` — mutable game state
 - `src/systems/` — browser input adapters
 - `src/ui/` — DOM access and HUD updates
-- `scripts/sync_first_game.sh` — copies the sibling package into `public/`
+- `scripts/sync_first_game.sh` — builds the sibling package into `public/`
 
 The project intentionally remains JavaScript-only. Do not add TypeScript or a
 frontend framework without changing that project decision explicitly.

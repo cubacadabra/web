@@ -332,7 +332,7 @@
             <div class="about-section-body">
               <div class="about-code-intro">
                 <p>The <code>first-game</code> repository is content and rules only. It has no browser, Swift, Kotlin, Rust, or server code. That constraint is what lets the same lobby and session travel across the web, iOS, and Android clients.</p>
-                <p><code>manifest.json</code> describes presentation-independent world data: palette, bounds, spawn points, clouds, blocks, portals, launch pads, settings room, avatars, and the runtime world map. <code>game.luau</code> is intentionally small today; the host calls its lifecycle hooks while platform services continue to own movement, collision, launching, and routing.</p>
+                <p><code>manifest.json</code> describes presentation-independent world data: palette, bounds, spawn points, clouds, blocks, portals, launch pads, settings room, avatars, and the runtime world map. The game source lives under <code>first-game/src/</code>; the package builder assembles its Luau modules into the single <code>game.luau</code> entry consumed by the host.</p>
               </div>
 
               <dl class="about-code-map">
@@ -353,8 +353,8 @@
                   <p class="about-code-label">Rules and delivery</p>
                   <h3>Ship data through the web host.</h3>
                   <ul class="about-code-list">
-                    <li><code>web/scripts/sync_first_game.sh</code> copies the manifest, script, and optional assets into <code>public/games/first-game/</code>.</li>
-                    <li>iOS and Android fetch the same URLs; iOS also bundles a safe fallback and caches a validated manifest for the next launch.</li>
+                    <li><code>web/scripts/sync_first_game.sh</code> builds the source package and writes its manifest, generated script, metadata, and optional assets into <code>public/games/first-game/</code>.</li>
+                    <li>iOS and Android bundle the same generated package, then fetch and cache a validated manifest/script pair for the next launch.</li>
                     <li>Native and browser Rust engines execute the same lifecycle callbacks through target-specific Luau runtimes.</li>
                     <li>Platform behavior belongs in the runtime or host API. Keep package rules portable and free of client-specific imports.</li>
                   </ul>
