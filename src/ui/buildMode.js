@@ -13,9 +13,14 @@ const SHAPES = [
   { id: "slab", size: [2, 0.5, 2] },
 ];
 const TOOLS = ["place", "rotate", "remove", "recolor"];
+const DIRECT_BUILD_ACTIONS = new Set([
+  "build.place",
+  "build.rotate",
+  "build.remove",
+  "build.recolor",
+]);
 
 export function createBuildModeController({ state, worldSocket, engine, onReturn }) {
-  let phase = "build";
   let blocks = [];
   let tool = "place";
   let shapeIndex = 0;
@@ -78,7 +83,7 @@ export function createBuildModeController({ state, worldSocket, engine, onReturn
   }
 
   function act(frame) {
-    if (state.runtime.worldId !== "real-game" || phase !== "build" || !frame) return;
+    if (state.runtime.worldId !== "real-game" || !frame) return;
     if (tool === "place") {
       worldSocket.sendExperience("build_action", {
         action: "place",
@@ -105,7 +110,10 @@ export function createBuildModeController({ state, worldSocket, engine, onReturn
 
   function handleUiEvent(event) {
     if (event.phase !== "activate") return true;
-    if (event.action === "build.tool") {
+    if (DIRECT_BUILD_ACTIONS.has(event.action)) {
+      tool = event.action.slice("build.".length);
+      act(state.runtime.engineFrame);
+    } else if (event.action === "build.tool") {
       tool = TOOLS[(TOOLS.indexOf(tool) + 1) % TOOLS.length];
     } else if (event.action === "build.shape") {
       cycleBuildShape();
@@ -129,7 +137,6 @@ export function createBuildModeController({ state, worldSocket, engine, onReturn
 
   function handleState(event) {
     if (event.kind !== "build") return;
-    phase = event.phase || "build";
     blocks = Array.isArray(event.blocks) ? event.blocks : [];
     syncBlocks();
   }
