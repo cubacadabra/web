@@ -643,12 +643,12 @@
 .basics-submit {
   display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 23px;
-  min-width: 164px;
-  min-height: 46px;
+  justify-content: center;
+  gap: 0;
+  min-width: 96px;
+  min-height: 38px;
   margin-top: 16px;
-  padding: 0 15px 0 17px;
+  padding: 0 14px;
   border: 1px solid var(--about-accent);
   border-radius: 4px;
   background: var(--about-accent);
