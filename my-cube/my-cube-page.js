@@ -152,12 +152,20 @@ function cubesMarkup() {
       <table class="cube-table" aria-label="Available cubes">
         <tbody>
           <tr>
-            <td><div class="cube-thumbnail" aria-hidden="true"><span>Thumbnail</span></div></td>
-            <th scope="row">first-game</th>
+            <td colspan="2">
+              <a class="cube-link" href="/?game=first-game">
+                <div class="cube-thumbnail" aria-hidden="true"><span>Thumbnail</span></div>
+                <span class="cube-name">first-game</span>
+              </a>
+            </td>
           </tr>
           <tr>
-            <td><div class="cube-thumbnail" aria-hidden="true"><span>Thumbnail</span></div></td>
-            <th scope="row">second-game</th>
+            <td colspan="2">
+              <a class="cube-link" href="/?game=second-game">
+                <div class="cube-thumbnail" aria-hidden="true"><span>Thumbnail</span></div>
+                <span class="cube-name">second-game</span>
+              </a>
+            </td>
           </tr>
         </tbody>
       </table>

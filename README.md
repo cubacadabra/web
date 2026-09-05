@@ -3,31 +3,32 @@
 This repository is the browser client: vanilla JavaScript owns the page, HUD,
 input, and networking adapter, while Rust compiled to WebAssembly owns game
 simulation, the Luau host, and the shared `wgpu` renderer. The browser also
-serves the `first-game` package as static files so the native apps can load the
-same content.
+serves the sibling game packages as static files so clients can load the
+selected content.
 
-The five repositories work together as follows:
+The repositories work together as follows:
 
 ```text
-first-game  -> src/ + manifest.json (source package)
+first-game  -> src/ + manifest.json (game package)
+second-game -> src/ + manifest.json (game package)
 rust        -> simulation and renderer compiled to WebAssembly
 web         -> this browser shell and package host
 backend     -> multiplayer Worker at /world/:worldId
 ios_app     -> native client using the same package and Rust runtime
 ```
 
-When starting here, read [first-game/README.md](../first-game/README.md) next
-to understand the package this app loads. Then read
+When starting here, read the README for the game package you want to work on.
+Then read
 [rust/README.md](../rust/README.md) for the engine boundary or
 [backend/README.md](../backend/README.md) for the multiplayer service.
 
 The repositories are expected to be sibling directories because the sync and
-Rust build scripts use `../first-game` and `../rust`.
+Rust build scripts use the sibling game projects and `../rust`.
 
 ## Local development
 
 Install dependencies and start Vite. The command automatically syncs the
-current sibling game package and builds the Rust renderer before starting:
+sibling game packages and builds the Rust renderer before starting:
 
 ```sh
 cargo install wasm-bindgen-cli  # one time; requires Rust/Cargo
@@ -47,14 +48,15 @@ npm run dev
 Development defaults are:
 
 ```text
-Game package: http://localhost:5173/games/first-game/
+Game packages: http://localhost:5173/games/first-game/ and
+http://localhost:5173/games/second-game/
 Backend:      ws://127.0.0.1:8787
 ```
 
 The browser joins the backend at `/world/lobby` and changes to the destination
-world from the game manifest after a launch-pad session. `npm run sync:game`
-builds the sibling source package into the served directory; run it when you
-want to refresh only the game package.
+world from the game manifest after a launch-pad session. `npm run sync:games`
+builds the sibling game packages into the served directory; run it when you
+want to refresh only the game packages.
 
 ## Dev LAN mode
 
@@ -114,7 +116,7 @@ repository; use it only when you intend to update the public site.
 - `src/state/` — mutable game state
 - `src/systems/` — browser input adapters
 - `src/ui/` — DOM access and HUD updates
-- `scripts/sync_first_game.sh` — builds the sibling package into `public/`
+- `scripts/sync_games.sh` — builds the sibling game packages into `public/`
 
 The project intentionally remains JavaScript-only. Do not add TypeScript or a
 frontend framework without changing that project decision explicitly.
@@ -131,7 +133,8 @@ frontend framework without changing that project decision explicitly.
 
 ## Where to look next
 
-- [first-game/README.md](../first-game/README.md) — package schema and game
-  behavior
+- [first-game/README.md](../first-game/README.md) — package schema and first
+  game behavior
+- [second-game/README.md](../second-game/README.md) — second game behavior
 - [rust/README.md](../rust/README.md) — simulation and WASM renderer
 - [backend/README.md](../backend/README.md) — local/LAN/production multiplayer

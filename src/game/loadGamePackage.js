@@ -1,4 +1,10 @@
-const GAME_PACKAGE_PATH = "games/first-game";
+const DEFAULT_GAME_ID = "first-game";
+const GAME_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+function requestedGameId() {
+  const gameId = new URLSearchParams(window.location.search).get("game");
+  return gameId && GAME_ID_PATTERN.test(gameId) ? gameId : DEFAULT_GAME_ID;
+}
 
 function parseColor(value, fallback = 0xffffff) {
   if (typeof value === "number") return value;
@@ -27,7 +33,8 @@ async function loadText(url) {
 }
 
 export async function loadGamePackage() {
-  const baseUrl = new URL(`${GAME_PACKAGE_PATH}/`, document.baseURI);
+  const gameId = requestedGameId();
+  const baseUrl = new URL(`games/${gameId}/`, document.baseURI);
   const { source: manifestSource, manifest } = await loadManifest(
     new URL("manifest.json", baseUrl),
   );
@@ -76,6 +83,7 @@ export async function loadGamePackage() {
 
   return {
     ...manifest,
+    gameId,
     manifestSource,
     script,
     worlds,

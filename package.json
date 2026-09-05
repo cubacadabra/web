@@ -4,14 +4,14 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "sync:game": "sh scripts/sync_first_game.sh",
+    "sync:games": "sh scripts/sync_games.sh",
     "build:about": "node scripts/build-about-pages.js",
-    "dev": "npm run sync:game && npm run build:renderer && npm run build:about && vite",
-    "dev:lan": "npm run sync:game && npm run build:renderer && npm run build:about && vite --host 0.0.0.0",
+    "dev": "npm run sync:games && npm run build:renderer && npm run build:about && vite",
+    "dev:lan": "npm run sync:games && npm run build:renderer && npm run build:about && vite --host 0.0.0.0",
     "build:renderer": "sh ../rust/scripts/build_web_renderer.sh",
     "build:renderer:release": "sh ../rust/scripts/build_web_renderer.sh --release",
-    "build": "npm run sync:game && npm run build:renderer && npm run build:about && vite build",
-    "build:release": "npm run sync:game && npm run build:renderer:release && npm run build:about && vite build",
+    "build": "npm run sync:games && npm run build:renderer && npm run build:about && vite build",
+    "build:release": "npm run sync:games && npm run build:renderer:release && npm run build:about && vite build",
     "preview": "vite preview"
   },
   "devDependencies": {

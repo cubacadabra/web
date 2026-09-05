@@ -353,7 +353,7 @@
                   <p class="about-code-label">Rules and delivery</p>
                   <h3>Ship data through the web host.</h3>
                   <ul class="about-code-list">
-                    <li><code>web/scripts/sync_first_game.sh</code> builds the source package and writes its manifest, generated script, metadata, and optional assets into <code>public/games/first-game/</code>.</li>
+                    <li><code>web/scripts/sync_games.sh</code> builds the sibling game sources and writes each manifest, generated script, metadata, and optional assets into <code>public/games/&lt;game-id&gt;/</code>.</li>
                     <li>iOS and Android bundle the same generated package, then fetch and cache a validated manifest/script pair for the next launch.</li>
                     <li>Native and browser Rust engines execute the same lifecycle callbacks through target-specific Luau runtimes.</li>
                     <li>Platform behavior belongs in the runtime or host API. Keep package rules portable and free of client-specific imports.</li>
