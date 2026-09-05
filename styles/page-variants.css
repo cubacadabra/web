@@ -1066,6 +1066,65 @@
   margin-top: 0;
 }
 
+.subscription-view {
+  width: min(100%, 580px);
+}
+
+.subscription-heading {
+  max-width: none;
+}
+
+.subscription-heading h1 {
+  margin: 0;
+  color: var(--about-ink);
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+}
+
+.subscription-plan {
+  display: grid;
+  gap: 6px;
+  margin-top: 18px;
+  padding: 16px 0;
+  border-top: 1px solid var(--about-line);
+  border-bottom: 1px solid var(--about-line);
+}
+
+.subscription-plan strong {
+  color: var(--about-ink);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.subscription-plan span {
+  color: var(--about-soft);
+  font-size: 12px;
+}
+
+.subscription-plan p {
+  max-width: 500px;
+  margin: 5px 0 0;
+  color: var(--about-faint);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.subscription-status {
+  margin-top: 18px;
+}
+
+.subscription-checkout-form[hidden],
+.subscription-start[hidden] {
+  display: none;
+}
+
+.subscription-checkout-form {
+  gap: 10px;
+  margin-top: 18px;
+}
+
 @media (max-width: 960px) {
   .my-cube-page .about-layout {
     grid-template-columns: 200px minmax(0, 1fr);
