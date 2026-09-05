@@ -9,6 +9,7 @@ import { createSettingsRoomController } from "../ui/settingsRoom.js";
 import { createBuildModeController } from "../ui/buildMode.js";
 import { getDomElements } from "../ui/dom.js";
 import { createHudController } from "../ui/hud.js";
+import { getCurrentUser, logout } from "../auth/session.js";
 
 export async function createGame() {
   const elements = getDomElements();
@@ -18,8 +19,10 @@ export async function createGame() {
   elements.worldShell?.classList.toggle("is-touch-device", isTouchDevice);
   const renderer = await createRustRenderer({ canvas: elements.canvas });
   const engine = createRustEngine(renderer.wasmExports);
+  let authActionPending = false;
   engine.loadGamePackage(gameDefinition.manifestSource);
   engine.loadGameScript(gameDefinition.script);
+  engine.setAuthenticated(Boolean(await getCurrentUser()));
   const runtimeWorldIds = gameDefinition.runtimeWorldIds;
   const state = createGameState();
   state.runtime.worldId = gameDefinition.activeWorldId;
@@ -97,11 +100,26 @@ export async function createGame() {
       } else if (event.action === "shared.sign_in" && event.phase === "activate") {
         const baseURL = new URL(import.meta.env.BASE_URL, document.baseURI);
         window.location.assign(new URL("login/", baseURL).href);
+      } else if (event.action === "shared.sign_out" && event.phase === "activate") {
+        void handleSignOut();
       } else {
         buildMode?.handleUiEvent(event);
       }
       hud.dismissHint();
     }
+  }
+
+  async function handleSignOut() {
+    if (authActionPending) return;
+    authActionPending = true;
+    try {
+      await logout();
+    } catch {
+      // Re-read the browser session below so a transient API failure does not
+      // make the button claim the user is signed out when they are not.
+    }
+    engine.setAuthenticated(Boolean(await getCurrentUser()));
+    authActionPending = false;
   }
   let connectedWorldId = null;
 

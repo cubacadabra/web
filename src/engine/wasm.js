@@ -133,6 +133,9 @@ export function createRustEngine(exports) {
         safeLeft,
       );
     },
+    setAuthenticated(authenticated) {
+      call("engine_set_authenticated", authenticated ? 1 : 0);
+    },
     uiPointer(pointerId, phase, x, y) {
       return Boolean(call("engine_ui_pointer", BigInt(pointerId), phase, x, y));
     },
