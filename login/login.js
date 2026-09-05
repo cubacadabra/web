@@ -21,22 +21,11 @@ const setStatus = (message, state = "") => {
 const finishAppLogin = async () => {
   if (!isAppLogin) return false;
 
-  setStatus("Preparing the app…");
-  const response = await fetch(backendApiUrl("/auth/app/authorize"), {
-    method: "POST",
-    credentials: "include",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ redirect_uri: appRedirectURI }),
-  });
-  const result = await response.json().catch(() => null);
-  if (!response.ok || typeof result?.code !== "string") {
-    throw new Error(result?.error || "app_authorization_failed");
-  }
-
-  const callback = new URL(appRedirectURI);
-  callback.searchParams.set("code", result.code);
-  if (appState) callback.searchParams.set("state", appState);
-  window.location.replace(callback.toString());
+  setStatus("Opening the app…");
+  const redirect = backendApiUrl("/auth/app/redirect");
+  redirect.searchParams.set("redirect_uri", appRedirectURI);
+  if (appState) redirect.searchParams.set("state", appState);
+  window.location.assign(redirect.toString());
   return true;
 };
 
