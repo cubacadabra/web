@@ -94,7 +94,7 @@ export async function createGame() {
       } else if (event.action === "player.run" && event.phase === "activate") {
         state.movement.mobileSprint = !state.movement.mobileSprint;
       } else if (event.action === "shared.about.open" && event.phase === "activate") {
-        // The web pointer-up handler opens this synchronously to preserve
+        // The web pointer-up handler navigates synchronously to preserve
         // browser user activation and avoid popup blockers.
       } else {
         buildMode?.handleUiEvent(event);
@@ -144,7 +144,7 @@ export async function createGame() {
     onUiPointer: (pointerId, phase, x, y) => engine.uiPointer(pointerId, phase, x, y),
     onUiHitTest: (x, y) => engine.uiHitTest(x, y),
     onUiExternalLinkHitTest: (x, y) => engine.uiExternalLinkHitTest(x, y),
-    onOpenExternalLink: () => window.open(ABOUT_URL, "_blank", "noopener,noreferrer"),
+    onOpenExternalLink: () => window.location.assign(ABOUT_URL),
     onBuildKeyboard: (event) => buildMode?.handleKeyboard(event),
   });
 
