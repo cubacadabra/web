@@ -335,7 +335,7 @@
   }
 }
 
-/* My Cube birthday gate: a calm, age-aware entry point before the workspace. */
+/* My Cube: calm, age-aware entry point and lightweight profile basics. */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -551,14 +551,167 @@
   margin-top: 30px;
 }
 
-.birthday-ready {
-  max-width: 650px;
-  padding-top: 34px;
+.basics-intro {
+  max-width: 700px;
+}
+
+.basics-intro h1 {
+  max-width: 680px;
+}
+
+.basics-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(340px, 1.1fr);
+  gap: clamp(54px, 8vw, 116px);
+  margin-top: 66px;
+  padding-top: 33px;
   border-top: 1px solid var(--about-line);
 }
 
-.birthday-ready h1 {
-  margin-top: 18px;
+.basics-guidance {
+  max-width: 440px;
+}
+
+.basics-guidance h2 {
+  max-width: 360px;
+  margin: 18px 0 0;
+  color: var(--about-ink);
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 750;
+  letter-spacing: -0.06em;
+  line-height: 1.04;
+}
+
+.basics-guidance p:not(.birthday-kicker):not(.basics-note) {
+  max-width: 410px;
+  margin: 20px 0 0;
+  color: var(--about-soft);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.basics-note {
+  max-width: 390px;
+  margin: 28px 0 0;
+  padding-left: 15px;
+  border-left: 2px solid var(--about-logo-accent);
+  color: var(--about-faint);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.basics-form {
+  width: min(100%, 450px);
+  justify-self: end;
+  padding: 28px 0 0;
+  border-top: 1px solid rgba(231, 233, 236, 0.25);
+}
+
+.basics-field {
+  display: grid;
+  gap: 8px;
+  margin-top: 30px;
+  color: var(--about-soft);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.basics-field input {
+  width: 100%;
+  min-height: 48px;
+  box-sizing: border-box;
+  padding: 0 13px;
+  border: 1px solid rgba(231, 233, 236, 0.2);
+  border-radius: 4px;
+  outline: 0;
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--about-ink);
+  font: 600 16px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  letter-spacing: 0.02em;
+  transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+
+.basics-field input::placeholder {
+  color: var(--about-faint);
+}
+
+.basics-field input:hover {
+  border-color: rgba(231, 233, 236, 0.4);
+}
+
+.basics-field input:focus {
+  border-color: var(--about-accent);
+  background: rgba(139, 156, 246, 0.08);
+  box-shadow: 0 0 0 3px rgba(139, 156, 246, 0.14);
+}
+
+.basics-field input[aria-invalid="true"] {
+  border-color: #ef9a88;
+}
+
+.basics-field-help {
+  margin: 10px 0 0;
+  color: var(--about-faint);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.basics-status {
+  min-height: 18px;
+  margin: 14px 0 0;
+  color: var(--about-soft);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.basics-status[data-state="error"] {
+  color: #ef9a88;
+}
+
+.basics-status[data-state="success"] {
+  color: #a8d8a5;
+}
+
+.basics-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 23px;
+  min-width: 164px;
+  min-height: 46px;
+  margin-top: 16px;
+  padding: 0 15px 0 17px;
+  border: 1px solid var(--about-accent);
+  border-radius: 4px;
+  background: var(--about-accent);
+  color: #111315;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+  transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+
+.basics-submit:hover {
+  border-color: #aeb9ff;
+  background: #aeb9ff;
+  transform: translateY(-1px);
+}
+
+.basics-submit:active {
+  transform: translateY(1px);
+}
+
+.basics-submit:focus-visible {
+  outline: 3px solid rgba(139, 156, 246, 0.32);
+  outline-offset: 3px;
+}
+
+.basics-submit:disabled {
+  cursor: wait;
+  opacity: 0.65;
+  transform: none;
 }
 
 @media (max-width: 960px) {
@@ -573,6 +726,15 @@
   }
 
   .birthday-form {
+    justify-self: start;
+  }
+
+  .basics-workspace {
+    grid-template-columns: 1fr;
+    gap: 54px;
+  }
+
+  .basics-form {
     justify-self: start;
   }
 }
@@ -591,6 +753,16 @@
   .birthday-form {
     padding-top: 24px;
   }
+
+  .basics-workspace {
+    gap: 44px;
+    margin-top: 52px;
+    padding-top: 28px;
+  }
+
+  .basics-form {
+    padding-top: 24px;
+  }
 }
 
 @media (max-width: 420px) {
@@ -605,12 +777,18 @@
   .birthday-guidance h2 {
     font-size: 30px;
   }
+
+  .basics-guidance h2 {
+    font-size: 30px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .birthday-field input,
   .parent-email-field input,
-  .birthday-submit {
+  .birthday-submit,
+  .basics-field input,
+  .basics-submit {
     transition: none;
   }
 }

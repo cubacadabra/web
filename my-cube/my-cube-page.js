@@ -5,6 +5,7 @@ const loginPath = `/login/?returnTo=${encodeURIComponent(`${window.location.path
 const content = document.querySelector(".about-content");
 const menuLinks = [...document.querySelectorAll(".about-menu > a")];
 const sidebarStatus = document.querySelector(".about-sidebar-status");
+const USERNAME_MAX_LENGTH = 24;
 
 function calculateAge(dob) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dob || "")) return null;
@@ -21,13 +22,9 @@ function setMenuState(requiresBirthday) {
   const firstLink = menuLinks[0];
   if (firstLink) {
     firstLink.href = requiresBirthday ? "#birthday" : "#item1";
-    firstLink.querySelector("span").textContent = requiresBirthday ? "Birthday" : "item1";
-    firstLink.classList.toggle("is-active", requiresBirthday);
-    if (requiresBirthday) {
-      firstLink.setAttribute("aria-current", "page");
-    } else {
-      firstLink.removeAttribute("aria-current");
-    }
+    firstLink.querySelector("span").textContent = requiresBirthday ? "Birthday" : "Basics";
+    firstLink.classList.add("is-active");
+    firstLink.setAttribute("aria-current", "page");
   }
 
   menuLinks.slice(1).forEach((link) => {
@@ -122,12 +119,38 @@ function parentStepMarkup() {
     </div>`;
 }
 
-function readyMarkup() {
+function basicsMarkup() {
   return `
-    <div class="birthday-ready">
-      <h1>Your cube is ready.</h1>
-      <p class="about-lede">Thanks for helping us keep cubacadabra safe. Your other My Cube sections are available now.</p>
+    <div class="basics-view" id="item1">
+      <div class="basics-workspace">
+        <section class="basics-guidance" aria-labelledby="basics-guidance-title">
+          <h2>A name people can recognize.</h2>
+          <p>Your username is how other players will see you in the world. Pick something that feels like you and is easy to remember.</p>
+        </section>
+
+        <form class="basics-form" novalidate>
+          <div class="birthday-form-heading">
+            <p>This name will appear to other players when you’re in a world together.</p>
+          </div>
+          <label class="basics-field" for="my-cube-username">
+            <span>Username</span>
+            <input id="my-cube-username" name="username" type="text" autocomplete="nickname" minlength="2" maxlength="${USERNAME_MAX_LENGTH}" pattern="[A-Za-z0-9 _-]+" aria-describedby="my-cube-username-help basics-username-status" spellcheck="false" required />
+          </label>
+          <p class="basics-field-help" id="my-cube-username-help">letters, numbers, spaces, _ or -.</p>
+          <button class="basics-submit" type="submit">Save</button>
+        </form>
+      </div>
     </div>`;
+}
+
+function normalizeUsername(value) {
+  return value.trim().replace(/\s+/g, " ");
+}
+
+function isValidUsername(username) {
+  return username.length >= 2
+    && username.length <= USERNAME_MAX_LENGTH
+    && /^[A-Za-z0-9 _-]+$/.test(username);
 }
 
 function renderBirthdayForm() {
@@ -169,8 +192,7 @@ function renderBirthdayForm() {
       if (age < 13) {
         renderParentStep();
       } else {
-        setMenuState(false);
-        content.innerHTML = readyMarkup();
+        renderBasics(result.user);
       }
     } catch (error) {
       submit.disabled = false;
@@ -203,6 +225,69 @@ function renderParentStep() {
   email.focus();
 }
 
+function renderBasics(user) {
+  setMenuState(false);
+  content.innerHTML = basicsMarkup();
+
+  const form = content.querySelector(".basics-form");
+  const input = content.querySelector("#my-cube-username");
+  const status = content.querySelector(".basics-status");
+  const submit = form.querySelector(".basics-submit");
+  input.value = typeof user.username === "string" ? user.username : "";
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const username = normalizeUsername(input.value);
+    input.value = username;
+
+    if (!isValidUsername(username)) {
+      input.setAttribute("aria-invalid", "true");
+      setFormStatus(status, `Use 2–${USERNAME_MAX_LENGTH} letters, numbers, spaces, _ or -.`, "error");
+      input.focus();
+      return;
+    }
+
+    input.removeAttribute("aria-invalid");
+    submit.disabled = true;
+    setFormStatus(status, "Saving your username…", "pending");
+
+    try {
+      const response = await fetch(backendApiUrl("/auth/username"), {
+        method: "POST",
+        credentials: "include",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ username }),
+      });
+      const result = await response.json().catch(() => null);
+      if (!response.ok || typeof result?.user?.username !== "string") {
+        throw new Error(result?.error || "username_save_failed");
+      }
+
+      input.value = result.user.username;
+      setFormStatus(status, "Username saved.", "success");
+    } catch (error) {
+      setFormStatus(
+        status,
+          error.message === "username_taken"
+          ? "That username is already in use. Try another."
+          : error.message === "username_not_allowed"
+            ? "That username isn’t available. Try another."
+            : error.message === "invalid_username"
+              ? `Use 2–${USERNAME_MAX_LENGTH} letters, numbers, spaces, _ or -.`
+            : error.message === "age_required"
+              ? "Complete the birthday step before choosing a username."
+              : "We couldn’t save your username. Please try again.",
+        "error",
+      );
+    } finally {
+      submit.disabled = false;
+    }
+  });
+
+  input.focus();
+  input.select();
+}
+
 getCurrentUser().then((user) => {
   if (!user) {
     window.location.replace(loginPath);
@@ -218,7 +303,6 @@ getCurrentUser().then((user) => {
   } else if (age !== null && age < 13) {
     renderParentStep();
   } else {
-    setMenuState(false);
-    content.innerHTML = readyMarkup();
+    renderBasics(user);
   }
 });
