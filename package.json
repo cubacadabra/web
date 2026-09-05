@@ -14,6 +14,9 @@
     "build:release": "npm run sync:games && npm run build:renderer:release && npm run build:about && vite build",
     "preview": "vite preview"
   },
+  "dependencies": {
+    "@stripe/stripe-js": "^9.2.0"
+  },
   "devDependencies": {
     "vite": "latest"
   }

@@ -1,5 +1,6 @@
 import { getCurrentUser, initializeLogoutButton } from "../src/auth/session.js";
 import { backendApiUrl } from "../src/config/clientConfig.js";
+import { mountStripeEmbeddedCheckout } from "../src/payments/stripeEmbeddedCheckout.js";
 
 const loginPath = `/login/?returnTo=${encodeURIComponent(`${window.location.pathname}${window.location.search}`)}`;
 const content = document.querySelector(".about-content");
@@ -7,7 +8,9 @@ const menuLinks = [...document.querySelectorAll(".about-menu > a")];
 const sidebarStatus = document.querySelector(".about-sidebar-status");
 const USERNAME_MAX_LENGTH = 24;
 const BLOCKED_USERS_PATH = "/moderation/blocks";
+const SUBSCRIPTION_PATH = "/subscription";
 let currentUser = null;
+let subscriptionCheckoutCleanup = null;
 
 function calculateAge(dob) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dob || "")) return null;
@@ -184,6 +187,91 @@ function blockedUsersMarkup() {
       <button class="blocked-users-retry" type="button" hidden>Try again</button>
       <ul class="blocked-users-list"></ul>
     </div>`;
+}
+
+function subscriptionMarkup() {
+  return [
+    '<div class="subscription-view" id="subscription">',
+    '  <div class="subscription-heading">',
+    '    <p class="about-label">parent-cadabra</p>',
+    '    <h1 id="subscription-title">Subscription</h1>',
+    '    <p class="about-lede">Parents fund the platform directly, so kids can play without being pushed toward a Robux casino.</p>',
+    '  </div>',
+    '  <div class="subscription-workspace">',
+    '    <section class="subscription-offer" aria-labelledby="subscription-offer-title">',
+    '      <p class="subscription-kicker">The parent plan</p>',
+    '      <h2 id="subscription-offer-title">parent-cadabra</h2>',
+    '      <p class="subscription-price"><strong>$9.99</strong> <span>USD / month</span></p>',
+    '      <p class="subscription-copy">A simple monthly subscription that helps keep cubacadabra creative, safe, and free from kid-targeted coin loops.</p>',
+    '    </section>',
+    '    <section class="subscription-panel" aria-labelledby="subscription-panel-title">',
+    '      <div class="subscription-panel-heading">',
+    '        <p class="subscription-kicker">Your subscription</p>',
+    '        <h2 id="subscription-panel-title">Keep the world running.</h2>',
+    '      </div>',
+    '      <p class="subscription-status" role="status" aria-live="polite">Checking subscription…</p>',
+    '      <button class="subscription-start" type="button" hidden>Continue to payment</button>',
+    '      <form class="subscription-checkout-form" hidden>',
+    '        <div class="subscription-payment" aria-label="Payment details"></div>',
+    '        <p class="subscription-checkout-status" role="status" aria-live="polite"></p>',
+    '        <button class="subscription-submit" type="submit" disabled>Subscribe for $9.99/month</button>',
+    '      </form>',
+    '    </section>',
+    '  </div>',
+    '</div>',
+  ].join("");
+}
+
+function subscriptionStatusLabel(subscription) {
+  const status = typeof subscription?.status === "string" ? subscription.status.trim().toLowerCase() : "";
+  return status ? status.replace(/_/g, " ") : "Not active";
+}
+
+function hasSubscriptionAccess(subscription) {
+  return ["active", "trialing", "past_due", "unpaid", "paused"].includes(
+    typeof subscription?.status === "string" ? subscription.status.trim().toLowerCase() : "",
+  );
+}
+
+async function fetchSubscription() {
+  const response = await fetch(backendApiUrl(SUBSCRIPTION_PATH), {
+    credentials: "include",
+    headers: { Accept: "application/json" },
+  });
+  const result = await response.json().catch(() => null);
+  if (!response.ok) throw new Error(result?.error || "subscription_load_failed");
+  return result;
+}
+
+async function createSubscriptionCheckout() {
+  const response = await fetch(backendApiUrl(SUBSCRIPTION_PATH + "/checkout-session"), {
+    method: "POST",
+    credentials: "include",
+    headers: { Accept: "application/json", "content-type": "application/json" },
+    body: "{}",
+  });
+  const result = await response.json().catch(() => null);
+  if (!response.ok) throw new Error(result?.error || "subscription_checkout_failed");
+  return result;
+}
+
+async function completeSubscriptionCheckout(checkoutSessionId) {
+  const response = await fetch(backendApiUrl(SUBSCRIPTION_PATH + "/checkout-session/complete"), {
+    method: "POST",
+    credentials: "include",
+    headers: { Accept: "application/json", "content-type": "application/json" },
+    body: JSON.stringify({ checkout_session_id: checkoutSessionId }),
+  });
+  const result = await response.json().catch(() => null);
+  if (!response.ok) throw new Error(result?.error || "subscription_completion_failed");
+  return result;
+}
+
+function subscriptionErrorMessage(error) {
+  if (error.message === "not_authenticated") return "Your session has expired. Please sign in again.";
+  if (error.message === "age_required") return "Complete your birthday before starting a subscription.";
+  if (error.message.includes("not configured")) return "Subscriptions are not configured yet. Please try again later.";
+  return "We couldn’t load subscription details. Please try again.";
 }
 
 function blockedUserLabel(userId) {
@@ -453,6 +541,146 @@ async function renderBlockedUsers() {
   }
 }
 
+async function renderSubscription() {
+  subscriptionCheckoutCleanup?.();
+  subscriptionCheckoutCleanup = null;
+  setMenuState(false, "subscription");
+  content.innerHTML = subscriptionMarkup();
+
+  const status = content.querySelector(".subscription-status");
+  const start = content.querySelector(".subscription-start");
+  const form = content.querySelector(".subscription-checkout-form");
+  const payment = content.querySelector(".subscription-payment");
+  const checkoutStatus = content.querySelector(".subscription-checkout-status");
+  const submit = content.querySelector(".subscription-submit");
+  const params = new URLSearchParams(window.location.search);
+  const returnSessionId = params.get("checkout_session_id");
+  const hasReturnSession = params.get("subscription_return") === "1" && returnSessionId;
+
+  try {
+    const subscriptionData = await fetchSubscription();
+    const subscription = subscriptionData.subscription;
+    if (hasSubscriptionAccess(subscription)) {
+      status.textContent = hasReturnSession ? "Finalizing subscription…" : "parent-cadabra is " + subscriptionStatusLabel(subscription) + ".";
+      status.dataset.state = "success";
+      if (hasReturnSession) {
+        try {
+          const completed = await completeSubscriptionCheckout(returnSessionId);
+          const completedSubscription = completed?.subscription;
+          status.textContent = hasSubscriptionAccess(completedSubscription)
+            ? "parent-cadabra is active. Thank you for funding the world."
+            : "Subscription payment needs attention. Please try again.";
+          status.dataset.state = hasSubscriptionAccess(completedSubscription) ? "success" : "error";
+        } catch (error) {
+          status.textContent = subscriptionErrorMessage(error);
+          status.dataset.state = "error";
+        }
+        params.delete("subscription_return");
+        params.delete("checkout_session_id");
+        const nextQuery = params.toString();
+        window.history.replaceState(
+          {},
+          "",
+          window.location.pathname + (nextQuery ? "?" + nextQuery : "") + window.location.hash,
+        );
+      }
+      return;
+    }
+
+    if (!subscriptionData.configured) {
+      status.textContent = "Subscriptions are not configured yet.";
+      status.dataset.state = "error";
+      return;
+    }
+
+    status.textContent = "No active subscription.";
+    start.hidden = false;
+  } catch (error) {
+    status.textContent = subscriptionErrorMessage(error);
+    status.dataset.state = "error";
+    return;
+  }
+
+  start.addEventListener("click", async () => {
+    start.disabled = true;
+    start.textContent = "Loading payment form…";
+    status.textContent = "Preparing secure payment…";
+    status.dataset.state = "pending";
+
+    try {
+      const checkout = await createSubscriptionCheckout();
+      if (!checkout.client_secret || !checkout.publishable_key) {
+        throw new Error("subscription_checkout_unavailable");
+      }
+
+      start.hidden = true;
+      form.hidden = false;
+      subscriptionCheckoutCleanup = mountStripeEmbeddedCheckout({
+        container: payment,
+        form,
+        submitButton: submit,
+        statusElement: checkoutStatus,
+        clientSecret: checkout.client_secret,
+        publishableKey: checkout.publishable_key,
+        onComplete: async (session) => {
+          checkoutStatus.textContent = "Finalizing subscription…";
+          checkoutStatus.dataset.state = "pending";
+          const completed = session?.id
+            ? await completeSubscriptionCheckout(session.id)
+            : await fetchSubscription();
+          const nextSubscription = completed?.subscription || completed?.membership?.subscription;
+          if (!hasSubscriptionAccess(nextSubscription)) throw new Error("subscription_not_active");
+          status.textContent = "parent-cadabra is active. Thank you for funding the world.";
+          status.dataset.state = "success";
+          form.hidden = true;
+          checkoutStatus.textContent = "";
+          subscriptionCheckoutCleanup?.();
+          subscriptionCheckoutCleanup = null;
+        },
+        onError: (message) => {
+          checkoutStatus.textContent = message;
+          checkoutStatus.dataset.state = "error";
+        },
+      });
+      status.textContent = "Enter your payment details below.";
+      status.dataset.state = "";
+    } catch (error) {
+      start.disabled = false;
+      start.textContent = "Try again";
+      status.textContent = subscriptionErrorMessage(error);
+      status.dataset.state = "error";
+    }
+  });
+
+  if (hasReturnSession) {
+    start.hidden = true;
+    status.textContent = "Finalizing subscription…";
+    status.dataset.state = "pending";
+    try {
+      const completed = await completeSubscriptionCheckout(returnSessionId);
+      const nextSubscription = completed?.subscription;
+      status.textContent = hasSubscriptionAccess(nextSubscription)
+        ? "parent-cadabra is active. Thank you for funding the world."
+        : "Subscription payment needs attention. Please try again.";
+      status.dataset.state = hasSubscriptionAccess(nextSubscription) ? "success" : "error";
+    } catch (error) {
+      start.hidden = false;
+      start.disabled = false;
+      start.textContent = "Try again";
+      status.textContent = subscriptionErrorMessage(error);
+      status.dataset.state = "error";
+    }
+    params.delete("subscription_return");
+    params.delete("checkout_session_id");
+    const nextQuery = params.toString();
+    window.history.replaceState(
+      {},
+      "",
+      window.location.pathname + (nextQuery ? "?" + nextQuery : "") + window.location.hash,
+    );
+  }
+}
+
 menuLinks.forEach((link) => {
   link.addEventListener("click", (event) => {
     if (link.hidden) {
@@ -469,6 +697,9 @@ menuLinks.forEach((link) => {
     } else if (link.dataset.section === "basics" && currentUser) {
       event.preventDefault();
       renderBasics(currentUser);
+    } else if (link.dataset.section === "subscription" && currentUser) {
+      event.preventDefault();
+      renderSubscription();
     }
   });
 });
@@ -492,6 +723,8 @@ getCurrentUser().then((user) => {
     renderCubes();
   } else if (window.location.hash === "#blocked-users") {
     renderBlockedUsers();
+  } else if (window.location.hash === "#subscription") {
+    renderSubscription();
   } else {
     renderBasics(user);
   }
