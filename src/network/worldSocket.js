@@ -50,6 +50,7 @@ export function createWorldSocket({ gameId = "first-game", onEvent, onMove, onEx
   let reconnectAttempt = 0;
   let lastMoveSentAt = Number.NEGATIVE_INFINITY;
   let lastSentMove = null;
+  let appearance = null;
   let generation = 0;
   let destroyed = false;
 
@@ -86,6 +87,9 @@ export function createWorldSocket({ gameId = "first-game", onEvent, onMove, onEx
       setStatus("connected");
       try {
         nextSocket.send(JSON.stringify({ type: "set_hidden", hidden }));
+        if (appearance) {
+          nextSocket.send(JSON.stringify({ type: "set_appearance", appearance }));
+        }
       } catch {
         // The close handler will schedule a reconnect if the socket is gone.
       }
@@ -128,6 +132,7 @@ export function createWorldSocket({ gameId = "first-game", onEvent, onMove, onEx
         if (
           event?.type !== "player_join"
           && event?.type !== "player_leave"
+          && event?.type !== "appearance"
           && event?.type !== "player_name"
           && event?.type !== "username_updated"
           && event?.type !== "username_error"
@@ -262,6 +267,18 @@ export function createWorldSocket({ gameId = "first-game", onEvent, onMove, onEx
     }
   }
 
+  function setAppearance(nextAppearance) {
+    appearance = nextAppearance && typeof nextAppearance === "object"
+      ? nextAppearance
+      : null;
+    if (!appearance || !socket || socket.readyState !== WebSocket.OPEN) return;
+    try {
+      socket.send(JSON.stringify({ type: "set_appearance", appearance }));
+    } catch {
+      // The close handler will replay the appearance after reconnecting.
+    }
+  }
+
   function sendExperience(type, payload = {}) {
     if (!socket || socket.readyState !== WebSocket.OPEN) return false;
     try {
@@ -304,6 +321,7 @@ export function createWorldSocket({ gameId = "first-game", onEvent, onMove, onEx
     connect,
     reconnect,
     sendMove,
+    setAppearance,
     setUsername,
     setHidden,
     sendExperience,

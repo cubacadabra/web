@@ -20,7 +20,16 @@ export async function createGame() {
   elements.worldShell?.classList.toggle("is-touch-device", isTouchDevice);
   const renderer = await createRustRenderer({ canvas: elements.canvas });
   const engine = createRustEngine(renderer.wasmExports);
+  const engineCapabilities = engine.getCharacterShowcaseCapabilities?.() ?? {};
   engine.loadGamePackage(gameDefinition.manifestSource);
+  let localAppearance = gameDefinition.avatars?.player?.character ?? null;
+  try {
+    const storedAppearance = window.localStorage.getItem("cubacadabra.character-appearance");
+    if (storedAppearance) localAppearance = JSON.parse(storedAppearance);
+  } catch {
+    // The bundled package appearance remains the safe offline default.
+  }
+  if (localAppearance) engine.setLocalAppearance(JSON.stringify(localAppearance));
   engine.loadGameScript(gameDefinition.script);
   engine.setAuthenticated(Boolean(await getCurrentUser()));
   const runtimeWorldIds = gameDefinition.runtimeWorldIds;
@@ -28,6 +37,7 @@ export async function createGame() {
   state.runtime.worldId = gameDefinition.activeWorldId;
   let activeWorld = gameDefinition.worlds[gameDefinition.activeWorldId];
   const remotePlayers = new Map();
+  let remoteSequence = 0;
   let pendingSessionWorldId = null;
   let buildMode = null;
   const hud = createHudController({ elements, state, gameDefinition: activeWorld });
@@ -43,6 +53,21 @@ export async function createGame() {
     onEvent: (event) => {
       hud.showWorldEvent(event);
       if (event.type === "player_leave") remotePlayers.delete(event.id);
+      if (event.type === "player_join" && !event.isSelf) {
+        remotePlayers.set(event.id, {
+          id: event.id,
+          generation: event.generation ?? 0,
+          position: [0, 0, 0],
+          yaw: 0,
+          moving: false,
+          sprinting: false,
+          appearance: event.appearance ?? null,
+          motionSequence: 0,
+        });
+      }
+      if (event.type === "appearance" && remotePlayers.has(event.id)) {
+        remotePlayers.get(event.id).appearance = event.appearance ?? null;
+      }
     },
     onMove: (event) => {
       if (event.isSelf) {
@@ -52,12 +77,14 @@ export async function createGame() {
         return;
       }
       remotePlayers.set(event.id, {
-        x: event.x,
-        y: event.y,
-        z: event.z,
+        id: event.id,
+        generation: event.generation ?? remotePlayers.get(event.id)?.generation ?? 0,
+        position: [event.x, event.y, event.z],
         yaw: event.yaw,
         moving: event.moving,
         sprinting: event.sprinting,
+        motionSequence: event.motionSequence ?? 0,
+        appearance: remotePlayers.get(event.id)?.appearance ?? null,
       });
     },
     onExperience: (event) => {
@@ -75,6 +102,7 @@ export async function createGame() {
     },
     onStatusChange: hud.setConnectionStatus,
   });
+  worldSocket.setAppearance(localAppearance);
   const settingsRoom = createSettingsRoomController({
     elements,
     state,
@@ -120,9 +148,47 @@ export async function createGame() {
   let connectedWorldId = null;
 
   function syncRemotePlayers() {
-    engine.setRemotePlayers(state.runtime.worldId === "settings"
-      ? []
-      : [...remotePlayers.values()]);
+    if (state.runtime.worldId === "settings") {
+      if (engineCapabilities.persistentIdentity) {
+        remoteSequence += 1;
+        engine.applyRemoteUpdate(JSON.stringify({
+          version: 1,
+          sequence: remoteSequence,
+          players: [],
+        }));
+      } else {
+        engine.setRemotePlayers([]);
+      }
+      return;
+    }
+    const players = [...remotePlayers.values()];
+    if (engineCapabilities.persistentIdentity) {
+      remoteSequence += 1;
+      engine.applyRemoteUpdate(JSON.stringify({
+        version: 1,
+        sequence: remoteSequence,
+        worldId: state.runtime.worldId,
+        players: players.map((player) => ({
+          id: player.id,
+          generation: player.generation,
+          position: player.position,
+          yaw: player.yaw,
+          moving: player.moving,
+          sprinting: player.sprinting,
+          motionSequence: player.motionSequence,
+          ...(player.appearance ? { appearance: player.appearance } : {}),
+        })),
+      }));
+      return;
+    }
+    engine.setRemotePlayers(players.map((player) => ({
+      x: player.position[0],
+      y: player.position[1],
+      z: player.position[2],
+      yaw: player.yaw,
+      moving: player.moving,
+      sprinting: player.sprinting,
+    })));
   }
 
   function connectWorld(worldId) {
@@ -134,6 +200,8 @@ export async function createGame() {
     if (networkWorldId === connectedWorldId) return;
     connectedWorldId = networkWorldId;
     remotePlayers.clear();
+    remoteSequence = 0;
+    engine.resetRemoteSession?.();
     syncRemotePlayers();
     worldSocket.connect(networkWorldId);
   }

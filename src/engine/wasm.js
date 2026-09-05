@@ -79,6 +79,14 @@ export function createRustEngine(exports) {
     };
   }
 
+  function writeJsonBuffer(pointerExport, json, loadExport) {
+    const bytes = new TextEncoder().encode(json);
+    const pointer = call(pointerExport, bytes.length);
+    if (!pointer && bytes.length) return 0;
+    new Uint8Array(exports.memory.buffer, pointer, bytes.length).set(bytes);
+    return call(loadExport);
+  }
+
   return {
     loadGameScript(source) {
       const bytes = new TextEncoder().encode(source);
@@ -101,6 +109,29 @@ export function createRustEngine(exports) {
       if (!call("engine_load_package_buffer")) {
         throw new Error("The game manifest could not be loaded by Rust.");
       }
+    },
+    setLocalAppearance(source) {
+      if (typeof source !== "string") return 0;
+      if (typeof exports.engine_appearance_buffer_ptr !== "function") return 0;
+      return writeJsonBuffer(
+        "engine_appearance_buffer_ptr",
+        source,
+        "engine_load_appearance_buffer",
+      );
+    },
+    applyRemoteUpdate(message) {
+      if (typeof message !== "string") return 0;
+      if (typeof exports.engine_remote_update_buffer_ptr !== "function") return 0;
+      return writeJsonBuffer(
+        "engine_remote_update_buffer_ptr",
+        message,
+        "engine_apply_remote_update_buffer",
+      );
+    },
+    resetRemoteSession() {
+      if (typeof exports.engine_reset_remote_session !== "function") return false;
+      call("engine_reset_remote_session");
+      return true;
     },
     setUsername(username) {
       const bytes = new TextEncoder().encode(username);
@@ -144,6 +175,7 @@ export function createRustEngine(exports) {
     getCharacterShowcaseCapabilities() {
       return {
         reducedEffects: typeof exports.engine_set_reduced_effects === "function",
+        persistentIdentity: typeof exports.engine_remote_update_buffer_ptr === "function",
       };
     },
     uiPointer(pointerId, phase, x, y) {
