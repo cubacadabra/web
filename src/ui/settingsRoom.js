@@ -54,12 +54,7 @@ export function createSettingsRoomController({ elements, state, worldSocket, eng
 
   function interact() {
     if (roomState !== 2 || isOpen) return false;
-    if (session.authenticated) {
-      setStatus("Choose a unique name using 2–24 letters, numbers, spaces, _ or -.");
-    } else {
-      setAgeStatus("Your date of birth is used to check which features are available.");
-    }
-    setOpen(true);
+    window.location.assign(session.authenticated ? "/my-cube/" : "/login/");
     return true;
   }
 
