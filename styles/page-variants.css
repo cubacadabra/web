@@ -680,6 +680,67 @@
   transform: none;
 }
 
+.cubes-intro {
+  max-width: 700px;
+}
+
+.cubes-intro h1 {
+  max-width: 680px;
+}
+
+.cube-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px;
+  margin: 58px 0 0;
+  padding: 28px 0 0;
+  border-top: 1px solid var(--about-line);
+  list-style: none;
+}
+
+.cube-item {
+  min-width: 0;
+}
+
+.cube-thumbnail {
+  display: grid;
+  aspect-ratio: 1;
+  width: 100%;
+  place-items: center;
+  border: 1px solid var(--about-line);
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--about-faint);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.cube-item-meta {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.cube-item-label {
+  margin: 0;
+  color: var(--about-accent);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.cube-item h2 {
+  margin: 0;
+  color: var(--about-ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 16px;
+  font-weight: 650;
+  line-height: 1.2;
+}
+
 @media (max-width: 960px) {
   .my-cube-page .about-layout {
     grid-template-columns: 200px minmax(0, 1fr);
@@ -693,6 +754,10 @@
 
   .birthday-form {
     justify-self: start;
+  }
+
+  .cube-list {
+    gap: 20px;
   }
 
 }
@@ -709,6 +774,13 @@
   }
 
   .birthday-form {
+    padding-top: 24px;
+  }
+
+  .cube-list {
+    grid-template-columns: 1fr;
+    gap: 34px;
+    margin-top: 48px;
     padding-top: 24px;
   }
 

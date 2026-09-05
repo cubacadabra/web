@@ -6,6 +6,7 @@ const content = document.querySelector(".about-content");
 const menuLinks = [...document.querySelectorAll(".about-menu > a")];
 const sidebarStatus = document.querySelector(".about-sidebar-status");
 const USERNAME_MAX_LENGTH = 24;
+let currentUser = null;
 
 function calculateAge(dob) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dob || "")) return null;
@@ -18,17 +19,26 @@ function calculateAge(dob) {
   return age;
 }
 
-function setMenuState(requiresBirthday) {
+function setMenuState(requiresBirthday, activeSection = requiresBirthday ? "birthday" : "basics") {
   const firstLink = menuLinks[0];
   if (firstLink) {
     firstLink.href = requiresBirthday ? "#birthday" : "#item1";
     firstLink.querySelector("span").textContent = requiresBirthday ? "Birthday" : "Basics";
-    firstLink.classList.add("is-active");
-    firstLink.setAttribute("aria-current", "page");
+    firstLink.dataset.section = requiresBirthday ? "birthday" : "basics";
   }
 
   menuLinks.slice(1).forEach((link) => {
     link.hidden = requiresBirthday;
+  });
+
+  menuLinks.forEach((link) => {
+    const isActive = !link.hidden && link.dataset.section === activeSection;
+    link.classList.toggle("is-active", isActive);
+    if (isActive) {
+      link.setAttribute("aria-current", "page");
+    } else {
+      link.removeAttribute("aria-current");
+    }
   });
 
   if (sidebarStatus) {
@@ -133,6 +143,34 @@ function basicsMarkup() {
           <button class="basics-submit" type="submit">Save</button>
         </form>
       </div>
+    </div>`;
+}
+
+function cubesMarkup() {
+  return `
+    <div class="cubes-view" id="cubes">
+      <div class="cubes-intro">
+        <p class="about-label">Your collection</p>
+        <h1 id="cubes-title">Cubes</h1>
+        <p class="about-lede">Your available worlds will live here.</p>
+      </div>
+
+      <ul class="cube-list" aria-label="Available cubes">
+        <li class="cube-item">
+          <div class="cube-thumbnail" aria-hidden="true"><span>Thumbnail</span></div>
+          <div class="cube-item-meta">
+            <p class="cube-item-label">Cube 01</p>
+            <h2>first-game</h2>
+          </div>
+        </li>
+        <li class="cube-item">
+          <div class="cube-thumbnail" aria-hidden="true"><span>Thumbnail</span></div>
+          <div class="cube-item-meta">
+            <p class="cube-item-label">Cube 02</p>
+            <h2>second-game</h2>
+          </div>
+        </li>
+      </ul>
     </div>`;
 }
 
@@ -257,6 +295,7 @@ function renderBasics(user) {
       }
 
       input.value = result.user.username;
+      currentUser = { ...currentUser, username: result.user.username };
       setFormStatus(status, "Username saved.", "success");
     } catch (error) {
       setFormStatus(
@@ -281,6 +320,28 @@ function renderBasics(user) {
   input.select();
 }
 
+function renderCubes() {
+  setMenuState(false, "cubes");
+  content.innerHTML = cubesMarkup();
+}
+
+menuLinks.forEach((link) => {
+  link.addEventListener("click", (event) => {
+    if (link.hidden) {
+      event.preventDefault();
+      return;
+    }
+
+    if (link.dataset.section === "cubes") {
+      event.preventDefault();
+      renderCubes();
+    } else if (link.dataset.section === "basics" && currentUser) {
+      event.preventDefault();
+      renderBasics(currentUser);
+    }
+  });
+});
+
 getCurrentUser().then((user) => {
   if (!user) {
     window.location.replace(loginPath);
@@ -288,6 +349,7 @@ getCurrentUser().then((user) => {
   }
 
   initializeLogoutButton(user);
+  currentUser = user;
   document.body.dataset.authenticated = "true";
 
   const age = calculateAge(user.dob);
@@ -295,6 +357,8 @@ getCurrentUser().then((user) => {
     renderBirthdayForm();
   } else if (age !== null && age < 13) {
     renderParentStep();
+  } else if (window.location.hash === "#cubes") {
+    renderCubes();
   } else {
     renderBasics(user);
   }
