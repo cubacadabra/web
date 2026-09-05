@@ -94,6 +94,9 @@ export async function createGame() {
       } else if (event.action === "shared.about.open" && event.phase === "activate") {
         // The web pointer-up handler navigates synchronously to preserve
         // browser user activation and avoid popup blockers.
+      } else if (event.action === "shared.sign_in" && event.phase === "activate") {
+        const baseURL = new URL(import.meta.env.BASE_URL, document.baseURI);
+        window.location.assign(new URL("login/", baseURL).href);
       } else {
         buildMode?.handleUiEvent(event);
       }
