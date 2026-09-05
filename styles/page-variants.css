@@ -836,6 +836,31 @@
   color: #a8d8a5;
 }
 
+.blocked-users-retry {
+  min-height: 38px;
+  margin-top: 11px;
+  padding: 0 12px;
+  border: 1px solid rgba(231, 233, 236, 0.24);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--about-soft);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  transition: border-color 180ms ease, background 180ms ease, color 180ms ease;
+}
+
+.blocked-users-retry:hover {
+  border-color: var(--about-accent);
+  background: var(--about-accent-wash);
+  color: var(--about-ink);
+}
+
+.blocked-users-retry:focus-visible {
+  outline: 3px solid rgba(139, 156, 246, 0.32);
+  outline-offset: 3px;
+}
+
 .blocked-users-list {
   display: grid;
   gap: 0;

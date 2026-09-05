@@ -198,6 +198,7 @@ function blockedUsersMarkup() {
             <span class="blocked-users-count" aria-live="polite"></span>
           </div>
           <p class="blocked-users-status" role="status" aria-live="polite">Loading blocked users…</p>
+          <button class="blocked-users-retry" type="button" hidden>Try again</button>
           <ul class="blocked-users-list"></ul>
         </section>
       </div>
@@ -278,8 +279,15 @@ function renderBlockedUserRows(userIds, status, count) {
         const result = await response.json().catch(() => null);
         if (!response.ok) throw new Error(result?.error || "unblock_failed");
 
-        const remainingUsers = userIds.filter((blockedUserId) => blockedUserId !== userId);
-        renderBlockedUserRows(remainingUsers, status, count);
+        row.remove();
+        const remainingRows = list.querySelectorAll(".blocked-user-row").length;
+        count.textContent = `${remainingRows} ${remainingRows === 1 ? "user" : "users"}`;
+        if (remainingRows === 0) {
+          const emptyState = document.createElement("li");
+          emptyState.className = "blocked-users-empty";
+          emptyState.textContent = "You haven’t blocked anyone.";
+          list.append(emptyState);
+        }
         status.textContent = `${blockedUserLabel(userId)} was unblocked.`;
         status.dataset.state = "success";
       } catch (error) {
@@ -452,8 +460,10 @@ async function renderBlockedUsers() {
 
   const status = content.querySelector(".blocked-users-status");
   const count = content.querySelector(".blocked-users-count");
+  const retry = content.querySelector(".blocked-users-retry");
   try {
     const userIds = await fetchBlockedUsers();
+    retry.hidden = true;
     renderBlockedUserRows(userIds, status, count);
     status.textContent = userIds.length > 0
       ? "These users are hidden from your world."
@@ -463,6 +473,8 @@ async function renderBlockedUsers() {
     count.textContent = "";
     status.textContent = blockedUsersErrorMessage(error);
     status.dataset.state = "error";
+    retry.hidden = false;
+    retry.addEventListener("click", () => renderBlockedUsers(), { once: true });
   }
 }
 
