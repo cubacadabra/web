@@ -201,6 +201,7 @@ function subscriptionMarkup() {
     '    <p>Parents fund the platform directly, so kids can play without Robux casino coins.</p>',
     '  </div>',
     '  <p class="subscription-status" role="status" aria-live="polite">Checking subscription…</p>',
+    '  <button class="subscription-cancel-link" type="button" hidden>Cancel subscription</button>',
     '  <button class="subscription-start" type="button" hidden>Continue to payment</button>',
     '  <form class="subscription-checkout-form" hidden>',
     '    <div class="subscription-payment" aria-label="Payment details"></div>',
@@ -256,9 +257,23 @@ async function completeSubscriptionCheckout(checkoutSessionId) {
   return result;
 }
 
+async function cancelSubscription(subscriptionId) {
+  const response = await fetch(backendApiUrl(SUBSCRIPTION_PATH + "/cancel"), {
+    method: "POST",
+    credentials: "include",
+    headers: { Accept: "application/json", "content-type": "application/json" },
+    body: JSON.stringify({ subscription_id: subscriptionId }),
+  });
+  const result = await response.json().catch(() => null);
+  if (!response.ok) throw new Error(result?.error || "subscription_cancel_failed");
+  return result;
+}
+
 function subscriptionErrorMessage(error) {
   if (error.message === "not_authenticated") return "Your session has expired. Please sign in again.";
   if (error.message === "age_required") return "Complete your birthday before starting a subscription.";
+  if (error.message === "subscription_cancel_failed") return "We couldn’t cancel the subscription. Please try again.";
+  if (error.message === "subscription_not_active") return "The subscription could not be confirmed. Please try again.";
   if (error.message.includes("not configured")) return "Subscriptions are not configured yet. Please try again later.";
   return "We couldn’t load subscription details. Please try again.";
 }
@@ -537,6 +552,7 @@ async function renderSubscription() {
   content.innerHTML = subscriptionMarkup();
 
   const status = content.querySelector(".subscription-status");
+  const cancel = content.querySelector(".subscription-cancel-link");
   const start = content.querySelector(".subscription-start");
   const form = content.querySelector(".subscription-checkout-form");
   const payment = content.querySelector(".subscription-payment");
@@ -545,17 +561,52 @@ async function renderSubscription() {
   const params = new URLSearchParams(window.location.search);
   const returnSessionId = params.get("checkout_session_id");
   const hasReturnSession = params.get("subscription_return") === "1" && returnSessionId;
+  let activeSubscription = null;
+
+  cancel.addEventListener("click", async () => {
+    if (!activeSubscription?.id || cancel.disabled) return;
+    if (!window.confirm("Cancel your parent-cadabra subscription now?")) return;
+
+    cancel.disabled = true;
+    cancel.textContent = "Cancelling…";
+    status.textContent = "Cancelling subscription…";
+    status.dataset.state = "pending";
+    try {
+      await cancelSubscription(activeSubscription.id);
+      activeSubscription = null;
+      form.hidden = true;
+      subscriptionCheckoutCleanup?.();
+      subscriptionCheckoutCleanup = null;
+      cancel.hidden = true;
+      cancel.disabled = false;
+      cancel.textContent = "Cancel subscription";
+      start.hidden = false;
+      start.disabled = false;
+      start.textContent = "Continue to payment";
+      status.textContent = "Subscription canceled. You can subscribe again anytime.";
+      status.dataset.state = "success";
+    } catch (error) {
+      cancel.disabled = false;
+      cancel.textContent = "Cancel subscription";
+      status.textContent = subscriptionErrorMessage(error);
+      status.dataset.state = "error";
+    }
+  });
 
   try {
     const subscriptionData = await fetchSubscription();
     const subscription = subscriptionData.subscription;
     if (hasSubscriptionAccess(subscription)) {
+      activeSubscription = subscription;
+      cancel.hidden = false;
       status.textContent = hasReturnSession ? "Finalizing subscription…" : "parent-cadabra is " + subscriptionStatusLabel(subscription) + ".";
       status.dataset.state = "success";
       if (hasReturnSession) {
         try {
           const completed = await completeSubscriptionCheckout(returnSessionId);
           const completedSubscription = completed?.subscription;
+          activeSubscription = completedSubscription;
+          cancel.hidden = !hasSubscriptionAccess(completedSubscription);
           status.textContent = hasSubscriptionAccess(completedSubscription)
             ? "parent-cadabra is active. Thank you for funding the world."
             : "Subscription payment needs attention. Please try again.";
@@ -619,6 +670,8 @@ async function renderSubscription() {
             : await fetchSubscription();
           const nextSubscription = completed?.subscription || completed?.membership?.subscription;
           if (!hasSubscriptionAccess(nextSubscription)) throw new Error("subscription_not_active");
+          activeSubscription = nextSubscription;
+          cancel.hidden = false;
           status.textContent = "parent-cadabra is active. Thank you for funding the world.";
           status.dataset.state = "success";
           form.hidden = true;
