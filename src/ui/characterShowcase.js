@@ -29,14 +29,14 @@ const OUTFITS = [
   {
     id: "raincoat",
     label: "Glossy raincoat",
-    stableId: "cuba:raincoat.v1",
+    stableId: "cuba:glossy-raincoat.v1",
     pairing: "Cat",
     supported: SPECIES.map(({ id }) => id),
   },
   {
     id: "wizard-cloak",
     label: "Star wizard cloak",
-    stableId: "cuba:star-wizard-cloak.v1",
+    stableId: "cuba:star-wizard.v1",
     pairing: "Dragon",
     supported: ["dragon"],
   },
@@ -95,7 +95,13 @@ function makeButton({ className, label, detail, selected, onClick }) {
   return button;
 }
 
-export function createCharacterShowcaseController({ elements, state, engine }) {
+export function createCharacterShowcaseController({
+  elements,
+  state,
+  engine,
+  manifestSource,
+  runtimeWorldIds = [],
+}) {
   const enabled = showcaseRequested() && Boolean(elements.characterShowcasePanel);
   const removeListeners = [];
   const selection = {
@@ -109,7 +115,59 @@ export function createCharacterShowcaseController({ elements, state, engine }) {
   let waveCount = 0;
   let faceCameraActive = false;
   let faceCameraPending = false;
+  let appearanceRevision = 0;
   const capabilities = engine.getCharacterShowcaseCapabilities?.() ?? {};
+
+  function appearanceManifest() {
+    const manifest = JSON.parse(manifestSource);
+    const player = manifest.avatars?.player ?? {};
+    const legacyColors = {
+      skin: player.skin,
+      primary: player.shirt,
+      secondary: player.pants,
+      sole: player.shoes,
+    };
+    const previousRevision = Number(player.character?.revision) || 0;
+    manifest.avatars = {
+      ...(manifest.avatars ?? {}),
+      player: {
+        ...player,
+        character: {
+          ...(player.character ?? {}),
+          version: 1,
+          body: currentSpecies().stableId,
+          face: selection.expression,
+          outfit: currentOutfit().stableId,
+          colors: {
+            ...(player.character?.colors ?? {}),
+            ...Object.fromEntries(
+              Object.entries(legacyColors).filter(([, value]) => typeof value === "string"),
+            ),
+          },
+          revision: Math.max(appearanceRevision, previousRevision) + 1,
+        },
+      },
+    };
+    appearanceRevision = manifest.avatars.player.character.revision;
+    return JSON.stringify(manifest);
+  }
+
+  function applyAppearance() {
+    if (!manifestSource || typeof engine.loadGamePackage !== "function") return false;
+    const frame = state.runtime.engineFrame;
+    const worldIndex = runtimeWorldIds.indexOf(state.runtime.worldId);
+    try {
+      engine.loadGamePackage(appearanceManifest());
+      if (worldIndex >= 0) engine.startWorld(worldIndex);
+      if (frame) {
+        engine.reconcilePlayer(frame.player.position, frame.camera.yaw);
+      }
+      return true;
+    } catch (error) {
+      console.error("Character appearance preview could not be applied.", error);
+      return false;
+    }
+  }
 
   function listen(target, type, handler) {
     if (!target) return;
@@ -146,6 +204,15 @@ export function createCharacterShowcaseController({ elements, state, engine }) {
     return `${currentSpecies().label} · ${titleCase(selection.expression)} · ${currentOutfit().label} · ${fitNote}`;
   }
 
+  function commitAppearance() {
+    syncState();
+    const applied = applyAppearance();
+    render();
+    setStatus(applied
+      ? `${selectionSummary()} · preview applied`
+      : `${selectionSummary()} · preview unavailable in this WASM build`);
+  }
+
   function syncState() {
     state.runtime.characterShowcase = {
       ...selection,
@@ -169,9 +236,7 @@ export function createCharacterShowcaseController({ elements, state, engine }) {
       selected: selection.species === species.id,
       onClick: () => {
         selection.species = species.id;
-        syncState();
-        render();
-        setStatus(selectionSummary());
+        commitAppearance();
       },
     })));
 
@@ -182,9 +247,7 @@ export function createCharacterShowcaseController({ elements, state, engine }) {
       selected: selection.expression === expression,
       onClick: () => {
         selection.expression = expression;
-        syncState();
-        render();
-        setStatus(selectionSummary());
+        commitAppearance();
       },
     })));
 
@@ -197,9 +260,7 @@ export function createCharacterShowcaseController({ elements, state, engine }) {
         selected: selection.outfit === outfit.id,
         onClick: () => {
           selection.outfit = outfit.id;
-          syncState();
-          render();
-          setStatus(selectionSummary());
+          commitAppearance();
         },
       });
       button.classList.toggle("is-unsupported", !supported);
@@ -342,25 +403,19 @@ export function createCharacterShowcaseController({ elements, state, engine }) {
   function selectSpecies(id) {
     if (!SPECIES.some((species) => species.id === id)) return;
     selection.species = id;
-    syncState();
-    render();
-    setStatus(selectionSummary());
+    commitAppearance();
   }
 
   function cycleExpression(direction) {
     const index = (currentExpressionIndex() + direction + EXPRESSIONS.length) % EXPRESSIONS.length;
     selection.expression = EXPRESSIONS[index];
-    syncState();
-    render();
-    setStatus(selectionSummary());
+    commitAppearance();
   }
 
   function cycleOutfit(direction) {
     const index = Math.max(0, OUTFITS.findIndex(({ id }) => id === selection.outfit));
     selection.outfit = OUTFITS[(index + direction + OUTFITS.length) % OUTFITS.length].id;
-    syncState();
-    render();
-    setStatus(selectionSummary());
+    commitAppearance();
   }
 
   function update() {
@@ -390,9 +445,7 @@ export function createCharacterShowcaseController({ elements, state, engine }) {
   elements.characterShowcaseLauncher.hidden = false;
   render();
   syncState();
-  setStatus(capabilities.reducedEffects
-    ? "Client selector ready · choose a body, face, outfit, or motion."
-    : "Client selector ready · appearance/emote setters are not exposed by this Rust build yet.");
+  setStatus("Client selector ready · body, face, and outfit previews use the Phase 5 package schema.");
 
   listen(elements.characterShowcaseLauncher, "click", togglePanel);
   listen(elements.characterShowcaseClose, "click", closePanel);

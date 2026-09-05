@@ -136,11 +136,11 @@ top-right corner to review the Phase 4/5 development selector. It includes all
 21 authored expressions, the wave action, all three bodies, the six outfit
 recipes, compatibility checks, and live idle/walk/run/jump input. It is
 available in a production build only with `?showcase=1`. Appearance and emote
-changes remain local client intent until the Rust host exposes those setters;
-the panel labels that boundary instead of pretending to persist or render a
-selection it cannot send. Use `Face camera` while reviewing expressions; it
-uses a showcase-only reverse movement assist to keep the player facing the
-camera with the current engine API.
+previews use the Phase 5 package appearance schema; they are intentionally
+local and non-persistent. Wave remains a client-side intent until the Rust
+host exposes a local emote setter. Use `Face camera` while reviewing
+expressions; it uses a showcase-only reverse movement assist to keep the
+player facing the camera with the current engine API.
 
 ## Where to look next
 

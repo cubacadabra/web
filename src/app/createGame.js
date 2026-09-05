@@ -35,6 +35,8 @@ export async function createGame() {
     elements,
     state,
     engine,
+    manifestSource: gameDefinition.manifestSource,
+    runtimeWorldIds,
   });
   const worldSocket = createWorldSocket({
     gameId: gameDefinition.gameId,
