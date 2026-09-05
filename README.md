@@ -142,6 +142,11 @@ host exposes a local emote setter. Use `Face camera` while reviewing
 expressions; it uses a showcase-only reverse movement assist to keep the
 player facing the camera with the current engine API.
 
+The Phase 6 renderer applies automatic projected-size LOD, conservative
+presentation culling, and bounded effects behind the same client surface.
+`Reduced effects` exercises the renderer's presentation preference; the
+quality policy does not change simulation or character identity.
+
 ## Where to look next
 
 - [first-game/README.md](../first-game/README.md) — package schema and first

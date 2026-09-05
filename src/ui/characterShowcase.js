@@ -291,6 +291,11 @@ export function createCharacterShowcaseController({
         ? "Toggle the Rust presentation effects preference"
         : "This Rust build does not expose reduced-effects control";
     }
+    if (elements.characterShowcaseQualityNote) {
+      elements.characterShowcaseQualityNote.textContent = selection.reducedEffects
+        ? "Phase 6 renderer · automatic LOD · reduced seam effects"
+        : "Phase 6 renderer · automatic LOD · bounded effects";
+    }
   }
 
   function setMotion(motion) {
@@ -445,7 +450,7 @@ export function createCharacterShowcaseController({
   elements.characterShowcaseLauncher.hidden = false;
   render();
   syncState();
-  setStatus("Client selector ready · body, face, and outfit previews use the Phase 5 package schema.");
+  setStatus("Client selector ready · Phase 5 appearance schema with Phase 6 renderer quality.");
 
   listen(elements.characterShowcaseLauncher, "click", togglePanel);
   listen(elements.characterShowcaseClose, "click", closePanel);

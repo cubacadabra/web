@@ -42,6 +42,7 @@ export function getDomElements() {
     characterShowcaseMotion: getElement("#character-showcase-motion"),
     characterShowcaseReducedEffects: getElement("#character-showcase-reduced-effects"),
     characterShowcaseFaceCamera: getElement("#character-showcase-face-camera"),
+    characterShowcaseQualityNote: getElement("#character-showcase-quality-note"),
     resetButton: getElement("#reset-view"),
     headingValue: getElement("#heading-value"),
     compassNeedle: getElement("#compass-needle"),
