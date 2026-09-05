@@ -38,6 +38,7 @@ export async function createGame() {
   let activeWorld = gameDefinition.worlds[gameDefinition.activeWorldId];
   const remotePlayers = new Map();
   let remoteSequence = 0;
+  let worldSocket = null;
   let pendingSessionWorldId = null;
   let buildMode = null;
   const hud = createHudController({ elements, state, gameDefinition: activeWorld });
@@ -47,8 +48,17 @@ export async function createGame() {
     engine,
     manifestSource: gameDefinition.manifestSource,
     runtimeWorldIds,
+    initialAppearance: localAppearance,
+    onAppearanceChange: (appearance) => {
+      try {
+        window.localStorage.setItem("cubacadabra.character-appearance", JSON.stringify(appearance));
+      } catch {
+        // The appearance still applies to the current engine session.
+      }
+      worldSocket?.setAppearance(appearance);
+    },
   });
-  const worldSocket = createWorldSocket({
+  worldSocket = createWorldSocket({
     gameId: gameDefinition.gameId,
     onEvent: (event) => {
       hud.showWorldEvent(event);

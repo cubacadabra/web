@@ -175,6 +175,8 @@ export function createRustEngine(exports) {
     getCharacterShowcaseCapabilities() {
       return {
         reducedEffects: typeof exports.engine_set_reduced_effects === "function",
+        localAppearance: typeof exports.engine_appearance_buffer_ptr === "function"
+          && typeof exports.engine_load_appearance_buffer === "function",
         persistentIdentity: typeof exports.engine_remote_update_buffer_ptr === "function",
       };
     },

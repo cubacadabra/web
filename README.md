@@ -135,12 +135,13 @@ When running the web client in development, open the `Character lab` from the
 top-right corner to review the Phase 4/5 development selector. It includes all
 21 authored expressions, the wave action, all three bodies, the six outfit
 recipes, compatibility checks, and live idle/walk/run/jump input. It is
-available in a production build only with `?showcase=1`. Appearance and emote
-previews use the Phase 5 package appearance schema; they are intentionally
-local and non-persistent. Wave remains a client-side intent until the Rust
-host exposes a local emote setter. Use `Face camera` while reviewing
-expressions; it uses a showcase-only reverse movement assist to keep the
-player facing the camera with the current engine API.
+available in a production build only with `?showcase=1`. Appearance previews
+use the Phase 7 local appearance API when available, persist in local storage,
+and are sent to the connected world host. Older WASM builds fall back to the
+Phase 5 package appearance schema. Wave remains a client-side intent until the
+Rust host exposes a local emote setter. Use `Face camera` while
+reviewing expressions; it uses a showcase-only reverse movement assist to keep
+the player facing the camera with the current engine API.
 
 The Phase 6 renderer applies automatic projected-size LOD, conservative
 presentation culling, and bounded effects behind the same client surface.

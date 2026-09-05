@@ -101,13 +101,17 @@ export function createCharacterShowcaseController({
   engine,
   manifestSource,
   runtimeWorldIds = [],
+  onAppearanceChange = null,
+  initialAppearance = null,
 }) {
   const enabled = showcaseRequested() && Boolean(elements.characterShowcasePanel);
   const removeListeners = [];
+  const initialSpecies = SPECIES.find(({ stableId }) => stableId === initialAppearance?.body);
+  const initialOutfit = OUTFITS.find(({ stableId }) => stableId === initialAppearance?.outfit);
   const selection = {
-    species: "person",
-    expression: "happy",
-    outfit: "everyday-hoodie",
+    species: initialSpecies?.id ?? "person",
+    expression: EXPRESSIONS.includes(initialAppearance?.face) ? initialAppearance.face : "happy",
+    outfit: initialOutfit?.id ?? "everyday-hoodie",
     motion: "idle",
     reducedEffects: false,
   };
@@ -115,10 +119,10 @@ export function createCharacterShowcaseController({
   let waveCount = 0;
   let faceCameraActive = false;
   let faceCameraPending = false;
-  let appearanceRevision = 0;
+  let appearanceRevision = Number(initialAppearance?.revision) || 0;
   const capabilities = engine.getCharacterShowcaseCapabilities?.() ?? {};
 
-  function appearanceManifest() {
+  function appearanceDefinition() {
     const manifest = JSON.parse(manifestSource);
     const player = manifest.avatars?.player ?? {};
     const legacyColors = {
@@ -128,44 +132,65 @@ export function createCharacterShowcaseController({
       sole: player.shoes,
     };
     const previousRevision = Number(player.character?.revision) || 0;
+    const character = {
+      ...(player.character ?? {}),
+      version: 1,
+      body: currentSpecies().stableId,
+      face: selection.expression,
+      outfit: currentOutfit().stableId,
+      colors: {
+        ...(player.character?.colors ?? {}),
+        ...Object.fromEntries(
+          Object.entries(legacyColors).filter(([, value]) => typeof value === "string"),
+        ),
+      },
+      revision: Math.max(appearanceRevision, previousRevision) + 1,
+    };
+    appearanceRevision = character.revision;
+    return character;
+  }
+
+  function appearanceManifest(appearance = appearanceDefinition()) {
+    const manifest = JSON.parse(manifestSource);
+    const player = manifest.avatars?.player ?? {};
     manifest.avatars = {
       ...(manifest.avatars ?? {}),
       player: {
         ...player,
-        character: {
-          ...(player.character ?? {}),
-          version: 1,
-          body: currentSpecies().stableId,
-          face: selection.expression,
-          outfit: currentOutfit().stableId,
-          colors: {
-            ...(player.character?.colors ?? {}),
-            ...Object.fromEntries(
-              Object.entries(legacyColors).filter(([, value]) => typeof value === "string"),
-            ),
-          },
-          revision: Math.max(appearanceRevision, previousRevision) + 1,
-        },
+        character: appearance,
       },
     };
-    appearanceRevision = manifest.avatars.player.character.revision;
     return JSON.stringify(manifest);
   }
 
   function applyAppearance() {
-    if (!manifestSource || typeof engine.loadGamePackage !== "function") return false;
+    if (capabilities.localAppearance && typeof engine.setLocalAppearance === "function") {
+      try {
+        const appearance = appearanceDefinition();
+        const applied = Boolean(engine.setLocalAppearance(JSON.stringify(appearance)));
+        if (applied) {
+          return { applied: true, mode: "local", appearance };
+        }
+      } catch (error) {
+        console.error("Character appearance could not be applied through the local API.", error);
+      }
+    }
+    if (!manifestSource || typeof engine.loadGamePackage !== "function") {
+      return { applied: false, mode: "unavailable" };
+    }
     const frame = state.runtime.engineFrame;
     const worldIndex = runtimeWorldIds.indexOf(state.runtime.worldId);
     try {
-      engine.loadGamePackage(appearanceManifest());
+      const appearance = appearanceDefinition();
+      engine.loadGamePackage(appearanceManifest(appearance));
       if (worldIndex >= 0) engine.startWorld(worldIndex);
       if (frame) {
         engine.reconcilePlayer(frame.player.position, frame.camera.yaw);
       }
-      return true;
+      return { applied: true, mode: "package", appearance };
     } catch (error) {
       console.error("Character appearance preview could not be applied.", error);
-      return false;
+      return { applied: false, mode: "package" };
     }
   }
 
@@ -206,10 +231,11 @@ export function createCharacterShowcaseController({
 
   function commitAppearance() {
     syncState();
-    const applied = applyAppearance();
+    const result = applyAppearance();
+    if (result.applied && result.appearance) onAppearanceChange?.(result.appearance);
     render();
-    setStatus(applied
-      ? `${selectionSummary()} · preview applied`
+    setStatus(result.applied
+      ? `${selectionSummary()} · ${result.mode === "local" ? "appearance applied" : "preview applied"}`
       : `${selectionSummary()} · preview unavailable in this WASM build`);
   }
 
@@ -450,7 +476,9 @@ export function createCharacterShowcaseController({
   elements.characterShowcaseLauncher.hidden = false;
   render();
   syncState();
-  setStatus("Client selector ready · Phase 5 appearance schema with Phase 6 renderer quality.");
+  setStatus(capabilities.localAppearance
+    ? "Client selector ready · Phase 7 local appearance API is active."
+    : "Client selector ready · Phase 5 appearance schema with Phase 6 renderer quality.");
 
   listen(elements.characterShowcaseLauncher, "click", togglePanel);
   listen(elements.characterShowcaseClose, "click", closePanel);
