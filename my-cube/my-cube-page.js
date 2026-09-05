@@ -149,28 +149,18 @@ function basicsMarkup() {
 function cubesMarkup() {
   return `
     <div class="cubes-view" id="cubes">
-      <div class="cubes-intro">
-        <p class="about-label">Your collection</p>
-        <h1 id="cubes-title">Cubes</h1>
-        <p class="about-lede">Your available worlds will live here.</p>
-      </div>
-
-      <ul class="cube-list" aria-label="Available cubes">
-        <li class="cube-item">
-          <div class="cube-thumbnail" aria-hidden="true"><span>Thumbnail</span></div>
-          <div class="cube-item-meta">
-            <p class="cube-item-label">Cube 01</p>
-            <h2>first-game</h2>
-          </div>
-        </li>
-        <li class="cube-item">
-          <div class="cube-thumbnail" aria-hidden="true"><span>Thumbnail</span></div>
-          <div class="cube-item-meta">
-            <p class="cube-item-label">Cube 02</p>
-            <h2>second-game</h2>
-          </div>
-        </li>
-      </ul>
+      <table class="cube-table" aria-label="Available cubes">
+        <tbody>
+          <tr>
+            <td><div class="cube-thumbnail" aria-hidden="true"><span>Thumbnail</span></div></td>
+            <th scope="row">first-game</th>
+          </tr>
+          <tr>
+            <td><div class="cube-thumbnail" aria-hidden="true"><span>Thumbnail</span></div></td>
+            <th scope="row">second-game</th>
+          </tr>
+        </tbody>
+      </table>
     </div>`;
 }
 
