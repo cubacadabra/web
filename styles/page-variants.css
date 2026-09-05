@@ -902,71 +902,50 @@
 }
 
 .subscription-view {
-  width: min(100%, 760px);
+  width: min(100%, 580px);
 }
 
 .subscription-heading {
-  max-width: 620px;
+  max-width: none;
 }
 
 .subscription-heading h1 {
-  margin: 12px 0 0;
-  color: var(--about-ink);
-  font-size: clamp(32px, 4vw, 46px);
-  font-weight: 750;
-  letter-spacing: -0.06em;
-  line-height: 1.04;
-}
-
-.subscription-heading .about-lede {
-  max-width: 600px;
-}
-
-.subscription-workspace {
-  display: grid;
-  grid-template-columns: minmax(220px, 0.75fr) minmax(340px, 1.25fr);
-  gap: clamp(42px, 7vw, 88px);
-  margin-top: 54px;
-  padding-top: 30px;
-  border-top: 1px solid var(--about-line);
-}
-
-.subscription-kicker {
   margin: 0;
-  color: var(--about-accent);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  line-height: 1.4;
-  text-transform: uppercase;
-}
-
-.subscription-offer h2,
-.subscription-panel h2 {
-  margin: 14px 0 0;
   color: var(--about-ink);
-  font-size: 24px;
-  font-weight: 750;
-  letter-spacing: -0.04em;
-  line-height: 1.1;
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
 }
 
-.subscription-price {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 7px;
-  margin: 25px 0 0;
+.subscription-plan {
+  display: grid;
+  gap: 6px;
+  margin-top: 18px;
+  padding: 16px 0;
+  border-top: 1px solid var(--about-line);
+  border-bottom: 1px solid var(--about-line);
 }
 
-.subscription-price strong {
+.subscription-plan strong {
   color: var(--about-ink);
-  font-size: 30px;
-  letter-spacing: -0.05em;
+  font-size: 14px;
+  font-weight: 700;
 }
 
-.subscription-price span,
-.subscription-copy,
+.subscription-plan span {
+  color: var(--about-soft);
+  font-size: 12px;
+}
+
+.subscription-plan p {
+  max-width: 500px;
+  margin: 5px 0 0;
+  color: var(--about-faint);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 .subscription-status,
 .subscription-checkout-status {
   color: var(--about-soft);
@@ -974,24 +953,9 @@
   line-height: 1.6;
 }
 
-.subscription-copy {
-  max-width: 290px;
-  margin: 18px 0 0;
-}
-
-.subscription-panel {
-  min-width: 0;
-  padding-top: 1px;
-}
-
-.subscription-panel-heading {
-  padding-bottom: 19px;
-  border-bottom: 1px solid rgba(231, 233, 236, 0.2);
-}
-
 .subscription-status {
   min-height: 21px;
-  margin: 18px 0 0;
+  margin-top: 18px;
 }
 
 .subscription-status[data-state="error"],
@@ -1046,10 +1010,15 @@
   transform: none;
 }
 
+.subscription-checkout-form[hidden],
+.subscription-start[hidden] {
+  display: none;
+}
+
 .subscription-checkout-form {
   display: grid;
   gap: 10px;
-  margin-top: 20px;
+  margin-top: 18px;
 }
 
 .subscription-payment {
@@ -1066,65 +1035,6 @@
   margin-top: 0;
 }
 
-.subscription-view {
-  width: min(100%, 580px);
-}
-
-.subscription-heading {
-  max-width: none;
-}
-
-.subscription-heading h1 {
-  margin: 0;
-  color: var(--about-ink);
-  font-size: 21px;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  line-height: 1.2;
-}
-
-.subscription-plan {
-  display: grid;
-  gap: 6px;
-  margin-top: 18px;
-  padding: 16px 0;
-  border-top: 1px solid var(--about-line);
-  border-bottom: 1px solid var(--about-line);
-}
-
-.subscription-plan strong {
-  color: var(--about-ink);
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.subscription-plan span {
-  color: var(--about-soft);
-  font-size: 12px;
-}
-
-.subscription-plan p {
-  max-width: 500px;
-  margin: 5px 0 0;
-  color: var(--about-faint);
-  font-size: 12px;
-  line-height: 1.5;
-}
-
-.subscription-status {
-  margin-top: 18px;
-}
-
-.subscription-checkout-form[hidden],
-.subscription-start[hidden] {
-  display: none;
-}
-
-.subscription-checkout-form {
-  gap: 10px;
-  margin-top: 18px;
-}
-
 @media (max-width: 960px) {
   .my-cube-page .about-layout {
     grid-template-columns: 200px minmax(0, 1fr);
@@ -1138,11 +1048,6 @@
 
   .birthday-form {
     justify-self: start;
-  }
-
-  .subscription-workspace {
-    grid-template-columns: 1fr;
-    gap: 38px;
   }
 
 }
@@ -1175,12 +1080,6 @@
     flex: 0 0 auto;
   }
 
-  .subscription-workspace {
-    gap: 32px;
-    margin-top: 44px;
-    padding-top: 26px;
-  }
-
 }
 
 @media (max-width: 420px) {
@@ -1204,8 +1103,7 @@
   .birthday-submit,
   .basics-field input,
   .basics-submit,
-  .subscription-start,
-  .subscription-submit {
+  .subscription-start {
     transition: none;
   }
 }

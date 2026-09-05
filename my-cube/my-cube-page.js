@@ -198,7 +198,7 @@ function subscriptionMarkup() {
     '  <div class="subscription-plan">',
     '    <strong>parent-cadabra</strong>',
     '    <span>$9.99 USD / month</span>',
-    '    <p>Parents fund the platform directly, so kids can play without being pushed toward a casino.</p>',
+    '    <p>Parents fund the platform directly, so kids can play without Robux casino coins.</p>',
     '  </div>',
     '  <p class="subscription-status" role="status" aria-live="polite">Checking subscription…</p>',
     '  <button class="subscription-start" type="button" hidden>Continue to payment</button>',
