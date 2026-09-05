@@ -80,7 +80,7 @@ function birthdayFormMarkup() {
           </div>
           <p class="birthday-form-note">Please enter a complete, valid calendar date.</p>
           <p class="birthday-status" role="alert" aria-live="polite"></p>
-          <button class="birthday-submit" type="submit">Save birthday <span aria-hidden="true">↗</span></button>
+          <button class="birthday-submit" type="submit">Save birthday</button>
         </form>
       </div>
     </div>`;
@@ -113,7 +113,7 @@ function parentStepMarkup() {
             <input id="parent-email" name="parent-email" type="email" autocomplete="email" placeholder="parent@example.com" required autofocus />
           </label>
           <p class="birthday-status" role="status" aria-live="polite"></p>
-          <button class="birthday-submit" type="submit">Continue with a parent <span aria-hidden="true">↗</span></button>
+          <button class="birthday-submit" type="submit">Continue with a parent</button>
         </form>
       </div>
     </div>`;
