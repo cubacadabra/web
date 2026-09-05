@@ -10,8 +10,6 @@ import { createBuildModeController } from "../ui/buildMode.js";
 import { getDomElements } from "../ui/dom.js";
 import { createHudController } from "../ui/hud.js";
 
-const ABOUT_URL = "https://cubacadabra.com/about/";
-
 export async function createGame() {
   const elements = getDomElements();
   const gameDefinition = await loadGamePackage();
@@ -144,7 +142,7 @@ export async function createGame() {
     onUiPointer: (pointerId, phase, x, y) => engine.uiPointer(pointerId, phase, x, y),
     onUiHitTest: (x, y) => engine.uiHitTest(x, y),
     onUiExternalLinkHitTest: (x, y) => engine.uiExternalLinkHitTest(x, y),
-    onOpenExternalLink: () => window.location.assign(ABOUT_URL),
+    onOpenExternalLink: () => window.location.assign("/about/"),
     onBuildKeyboard: (event) => buildMode?.handleKeyboard(event),
   });
 
