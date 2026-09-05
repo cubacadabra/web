@@ -9,7 +9,9 @@
     "dev": "npm run sync:game && npm run build:renderer && npm run build:about && vite",
     "dev:lan": "npm run sync:game && npm run build:renderer && npm run build:about && vite --host 0.0.0.0",
     "build:renderer": "sh ../rust/scripts/build_web_renderer.sh",
+    "build:renderer:release": "sh ../rust/scripts/build_web_renderer.sh --release",
     "build": "npm run sync:game && npm run build:renderer && npm run build:about && vite build",
+    "build:release": "npm run sync:game && npm run build:renderer:release && npm run build:about && vite build",
     "preview": "vite preview"
   },
   "devDependencies": {

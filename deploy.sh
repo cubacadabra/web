@@ -1,4 +1,4 @@
-GENERATE_SOURCEMAP=false npm run build
+GENERATE_SOURCEMAP=false npm run build:release
 rm -rf ../deployed
 mkdir ../deployed
 echo "cubacadabra.com" > ../deployed/CNAME
