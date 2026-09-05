@@ -131,6 +131,15 @@ frontend framework without changing that project decision explicitly.
 - On touch devices, use the thumbstick, look gesture, Run, Jump, and View
   controls
 
+When running the web client in development, open the `Character lab` from the
+top-right corner to review the Phase 4/5 development selector. It includes all
+21 authored expressions, the wave action, all three bodies, the six outfit
+recipes, compatibility checks, and live idle/walk/run/jump input. It is
+available in a production build only with `?showcase=1`. Appearance and emote
+changes remain local client intent until the Rust host exposes those setters;
+the panel labels that boundary instead of pretending to persist or render a
+selection it cannot send.
+
 ## Where to look next
 
 - [first-game/README.md](../first-game/README.md) — package schema and first

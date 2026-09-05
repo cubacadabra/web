@@ -140,6 +140,96 @@
         </div>
       </aside>
 
+      <button
+        class="character-showcase-launcher"
+        id="character-showcase-launcher"
+        type="button"
+        aria-controls="character-showcase-panel"
+        aria-expanded="false"
+        hidden
+      >
+        <span class="character-showcase-launcher-mark" aria-hidden="true">✦</span>
+        <span>Character lab</span>
+        <kbd>?</kbd>
+      </button>
+
+      <aside
+        class="character-showcase-panel"
+        id="character-showcase-panel"
+        aria-labelledby="character-showcase-title"
+        hidden
+      >
+        <header class="character-showcase-header">
+          <div>
+            <p class="character-showcase-eyebrow">Developer showcase</p>
+            <h2 id="character-showcase-title">Character lab</h2>
+          </div>
+          <button
+            class="character-showcase-close"
+            id="character-showcase-close"
+            type="button"
+            aria-label="Close character lab"
+          >
+            ×
+          </button>
+        </header>
+
+        <p class="character-showcase-status" id="character-showcase-status" role="status"></p>
+
+        <div class="character-showcase-section">
+          <div class="character-showcase-section-heading">
+            <h3>Body</h3>
+            <span>1 / 3</span>
+          </div>
+          <div class="character-showcase-options character-showcase-options-three" id="character-showcase-species"></div>
+        </div>
+
+        <div class="character-showcase-section">
+          <div class="character-showcase-section-heading">
+            <h3>Expression</h3>
+            <span id="character-showcase-expression-count">1 / 21</span>
+          </div>
+          <div class="character-showcase-options character-showcase-options-expressions" id="character-showcase-expressions"></div>
+          <button class="character-showcase-action" id="character-showcase-wave" type="button">
+            <span>Wave</span>
+            <kbd>H</kbd>
+          </button>
+        </div>
+
+        <div class="character-showcase-section">
+          <div class="character-showcase-section-heading">
+            <h3>Outfit</h3>
+            <span id="character-showcase-outfit-count">1 / 6</span>
+          </div>
+          <div class="character-showcase-options character-showcase-options-outfits" id="character-showcase-outfits"></div>
+        </div>
+
+        <div class="character-showcase-section character-showcase-motion-section">
+          <div class="character-showcase-section-heading">
+            <h3>Motion</h3>
+            <span>live gameplay</span>
+          </div>
+          <div class="character-showcase-motion-row" id="character-showcase-motion"></div>
+          <div class="character-showcase-utility-row">
+            <button class="character-showcase-action" id="character-showcase-reduced-effects" type="button">
+              <span>Full effects</span>
+            </button>
+            <button class="character-showcase-action" id="character-showcase-reset" type="button">
+              <span>Reset view</span>
+              <kbd>V</kbd>
+            </button>
+          </div>
+        </div>
+
+        <footer class="character-showcase-footer">
+          <span>1–3 body</span>
+          <span>E expression</span>
+          <span>O outfit</span>
+          <span>H wave</span>
+          <span>WASD move</span>
+        </footer>
+      </aside>
+
 
       <div class="crosshair" aria-hidden="true">
         <span></span>

@@ -9,6 +9,7 @@ import { createSettingsRoomController } from "../ui/settingsRoom.js";
 import { createBuildModeController } from "../ui/buildMode.js";
 import { getDomElements } from "../ui/dom.js";
 import { createHudController } from "../ui/hud.js";
+import { createCharacterShowcaseController } from "../ui/characterShowcase.js";
 import { getCurrentUser } from "../auth/session.js";
 
 export async function createGame() {
@@ -30,6 +31,11 @@ export async function createGame() {
   let pendingSessionWorldId = null;
   let buildMode = null;
   const hud = createHudController({ elements, state, gameDefinition: activeWorld });
+  const characterShowcase = createCharacterShowcaseController({
+    elements,
+    state,
+    engine,
+  });
   const worldSocket = createWorldSocket({
     gameId: gameDefinition.gameId,
     onEvent: (event) => {
@@ -153,6 +159,7 @@ export async function createGame() {
     onUiExternalLinkHitTest: (x, y) => engine.uiExternalLinkHitTest(x, y),
     onOpenExternalLink: () => window.location.assign("/about/"),
     onBuildKeyboard: (event) => buildMode?.handleKeyboard(event),
+    onShowcaseKeyboard: (event) => characterShowcase.handleKeyboard(event),
   });
 
   function resizeRenderer() {
@@ -236,6 +243,7 @@ export async function createGame() {
     }
     hud.updateLaunchStatus(frame);
     buildMode.update(frame);
+    characterShowcase.update(frame);
     hud.setCameraMode(frame.camera.distance > 0.75);
     hud.updateMovementStatus(frame);
     hud.updateCompass(frame);
@@ -261,6 +269,7 @@ export async function createGame() {
     controls.destroy();
     worldSocket.destroy();
     hud.destroy();
+    characterShowcase.destroy();
     settingsRoom.destroy();
     buildMode.destroy();
     renderer.destroy();

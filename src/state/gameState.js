@@ -27,6 +27,7 @@ export function createGameState() {
       engineFrame: null,
       settingsOpen: false,
       worldId: "lobby",
+      characterShowcase: null,
     },
   };
 }

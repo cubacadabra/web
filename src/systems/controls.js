@@ -33,6 +33,7 @@ export function bindControls({
   onUiExternalLinkHitTest,
   onOpenExternalLink,
   onBuildKeyboard,
+  onShowcaseKeyboard,
 }) {
   const { canvas } = elements;
   const removeListeners = [];
@@ -200,6 +201,8 @@ export function bindControls({
   function handleKeyDown(event) {
     if (state.runtime.settingsOpen) return;
     if (isInteractiveTarget(event.target)) return;
+
+    if (onShowcaseKeyboard?.(event)) return;
 
     if (event.code === "KeyE") {
       event.preventDefault();

@@ -136,6 +136,16 @@ export function createRustEngine(exports) {
     setAuthenticated(authenticated) {
       call("engine_set_authenticated", authenticated ? 1 : 0);
     },
+    setReducedEffects(reduced) {
+      if (typeof exports.engine_set_reduced_effects !== "function") return false;
+      call("engine_set_reduced_effects", reduced ? 1 : 0);
+      return true;
+    },
+    getCharacterShowcaseCapabilities() {
+      return {
+        reducedEffects: typeof exports.engine_set_reduced_effects === "function",
+      };
+    },
     uiPointer(pointerId, phase, x, y) {
       return Boolean(call("engine_ui_pointer", BigInt(pointerId), phase, x, y));
     },
