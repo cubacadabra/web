@@ -41,7 +41,7 @@ export function getDomElements() {
     characterShowcaseOutfitCount: getElement("#character-showcase-outfit-count"),
     characterShowcaseMotion: getElement("#character-showcase-motion"),
     characterShowcaseReducedEffects: getElement("#character-showcase-reduced-effects"),
-    characterShowcaseReset: getElement("#character-showcase-reset"),
+    characterShowcaseFaceCamera: getElement("#character-showcase-face-camera"),
     resetButton: getElement("#reset-view"),
     headingValue: getElement("#heading-value"),
     compassNeedle: getElement("#compass-needle"),

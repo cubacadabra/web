@@ -138,7 +138,9 @@ recipes, compatibility checks, and live idle/walk/run/jump input. It is
 available in a production build only with `?showcase=1`. Appearance and emote
 changes remain local client intent until the Rust host exposes those setters;
 the panel labels that boundary instead of pretending to persist or render a
-selection it cannot send.
+selection it cannot send. Use `Face camera` while reviewing expressions; it
+uses a showcase-only reverse movement assist to keep the player facing the
+camera with the current engine API.
 
 ## Where to look next
 

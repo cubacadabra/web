@@ -67,9 +67,15 @@ const MOVEMENT_KEYS = [
   "KeyW", "KeyA", "KeyS", "KeyD", "ArrowUp", "ArrowLeft", "ArrowDown",
   "ArrowRight", "ShiftLeft", "ShiftRight",
 ];
+const LOOK_SENSITIVITY = 0.0062;
+const SHOWCASE_CAMERA_DISTANCE = 8;
 
 function titleCase(value) {
   return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+function shortestAngle(angle) {
+  return ((angle + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI;
 }
 
 function showcaseRequested() {
@@ -101,6 +107,8 @@ export function createCharacterShowcaseController({ elements, state, engine }) {
   };
   let open = false;
   let waveCount = 0;
+  let faceCameraActive = false;
+  let faceCameraPending = false;
   const capabilities = engine.getCharacterShowcaseCapabilities?.() ?? {};
 
   function listen(target, type, handler) {
@@ -225,6 +233,8 @@ export function createCharacterShowcaseController({ elements, state, engine }) {
   }
 
   function setMotion(motion) {
+    faceCameraActive = false;
+    faceCameraPending = false;
     selection.motion = motion;
     MOVEMENT_KEYS.forEach((code) => state.keys.delete(code));
     if (motion === "walk" || motion === "run") state.keys.add("KeyW");
@@ -249,6 +259,20 @@ export function createCharacterShowcaseController({ elements, state, engine }) {
     setStatus(selection.reducedEffects ? "Reduced effects enabled." : "Full effects enabled.");
   }
 
+  function faceCamera() {
+    faceCameraActive = true;
+    faceCameraPending = true;
+    selection.motion = "idle";
+    MOVEMENT_KEYS.forEach((code) => state.keys.delete(code));
+    // The engine derives an idle player's facing from the camera. Holding
+    // reverse input keeps the local character facing the front camera while
+    // the showcase is open, without adding a Rust-only orientation API.
+    state.keys.add("KeyS");
+    syncState();
+    render();
+    setStatus("Front view ready · the character walks backward to keep its face toward the camera.");
+  }
+
   function openPanel() {
     if (!enabled) return;
     open = true;
@@ -260,6 +284,9 @@ export function createCharacterShowcaseController({ elements, state, engine }) {
   function closePanel() {
     if (!enabled) return;
     open = false;
+    faceCameraActive = false;
+    faceCameraPending = false;
+    state.keys.delete("KeyS");
     elements.characterShowcasePanel.hidden = true;
     elements.characterShowcaseLauncher?.setAttribute("aria-expanded", "false");
     elements.characterShowcaseLauncher?.setAttribute("aria-label", "Open character lab");
@@ -279,7 +306,7 @@ export function createCharacterShowcaseController({ elements, state, engine }) {
     }
     if (!open) return false;
     if (event.repeat) {
-      const showcaseKey = ["Digit1", "Digit2", "Digit3", "KeyE", "KeyO", "KeyH", "KeyV"].includes(event.code);
+      const showcaseKey = ["Digit1", "Digit2", "Digit3", "KeyE", "KeyO", "KeyH", "KeyF"].includes(event.code);
       if (showcaseKey) event.preventDefault();
       return showcaseKey;
     }
@@ -304,10 +331,9 @@ export function createCharacterShowcaseController({ elements, state, engine }) {
       triggerWave();
       return true;
     }
-    if (event.code === "KeyV") {
+    if (event.code === "KeyF") {
       event.preventDefault();
-      engine.resetView();
-      setStatus("Camera view reset.");
+      faceCamera();
       return true;
     }
     return false;
@@ -339,6 +365,14 @@ export function createCharacterShowcaseController({ elements, state, engine }) {
 
   function update() {
     if (!enabled || !state.runtime.engineFrame) return;
+    if (faceCameraActive) state.keys.add("KeyS");
+    if (faceCameraPending) {
+      const { camera } = state.runtime.engineFrame;
+      const yawDelta = shortestAngle(Math.PI - camera.yaw);
+      state.movement.lookX += -yawDelta / LOOK_SENSITIVITY;
+      state.movement.zoomDelta += SHOWCASE_CAMERA_DISTANCE - camera.distance;
+      faceCameraPending = false;
+    }
     if (selection.motion === "jump" && state.runtime.engineFrame.player.grounded) {
       selection.motion = "idle";
       render();
@@ -364,10 +398,7 @@ export function createCharacterShowcaseController({ elements, state, engine }) {
   listen(elements.characterShowcaseClose, "click", closePanel);
   listen(elements.characterShowcaseWave, "click", triggerWave);
   listen(elements.characterShowcaseReducedEffects, "click", toggleReducedEffects);
-  listen(elements.characterShowcaseReset, "click", () => {
-    engine.resetView();
-    setStatus("Camera view reset.");
-  });
+  listen(elements.characterShowcaseFaceCamera, "click", faceCamera);
 
   return {
     handleKeyboard,
@@ -375,6 +406,8 @@ export function createCharacterShowcaseController({ elements, state, engine }) {
     destroy() {
       removeListeners.splice(0).forEach((remove) => remove());
       MOVEMENT_KEYS.forEach((code) => state.keys.delete(code));
+      faceCameraActive = false;
+      faceCameraPending = false;
       state.runtime.characterShowcase = null;
     },
   };
