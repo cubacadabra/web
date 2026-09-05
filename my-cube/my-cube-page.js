@@ -123,15 +123,7 @@ function basicsMarkup() {
   return `
     <div class="basics-view" id="item1">
       <div class="basics-workspace">
-        <section class="basics-guidance" aria-labelledby="basics-guidance-title">
-          <h2>A name people can recognize.</h2>
-          <p>Your username is how other players will see you in the world. Pick something that feels like you and is easy to remember.</p>
-        </section>
-
         <form class="basics-form" novalidate>
-          <div class="birthday-form-heading">
-            <p>This name will appear to other players when you’re in a world together.</p>
-          </div>
           <label class="basics-field" for="my-cube-username">
             <span>Username</span>
             <input id="my-cube-username" name="username" type="text" autocomplete="nickname" minlength="2" maxlength="${USERNAME_MAX_LENGTH}" pattern="[A-Za-z0-9_\\-]+" aria-describedby="my-cube-username-help basics-username-status" spellcheck="false" required />

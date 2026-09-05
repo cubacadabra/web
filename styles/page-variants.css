@@ -560,57 +560,23 @@
 }
 
 .basics-workspace {
-  display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(340px, 1.1fr);
-  gap: clamp(54px, 8vw, 116px);
-  margin-top: 66px;
-  padding-top: 33px;
-  border-top: 1px solid var(--about-line);
-}
-
-.basics-guidance {
-  max-width: 440px;
-}
-
-.basics-guidance h2 {
-  max-width: 360px;
-  margin: 18px 0 0;
-  color: var(--about-ink);
-  font-size: clamp(28px, 3vw, 40px);
-  font-weight: 750;
-  letter-spacing: -0.06em;
-  line-height: 1.04;
-}
-
-.basics-guidance p:not(.birthday-kicker):not(.basics-note) {
-  max-width: 410px;
-  margin: 20px 0 0;
-  color: var(--about-soft);
-  font-size: 14px;
-  line-height: 1.65;
-}
-
-.basics-note {
-  max-width: 390px;
-  margin: 28px 0 0;
-  padding-left: 15px;
-  border-left: 2px solid var(--about-logo-accent);
-  color: var(--about-faint);
-  font-size: 12px;
-  line-height: 1.55;
+  display: block;
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
 }
 
 .basics-form {
   width: min(100%, 450px);
-  justify-self: end;
-  padding: 28px 0 0;
-  border-top: 1px solid rgba(231, 233, 236, 0.25);
+  justify-self: start;
+  padding: 0;
+  border-top: 0;
 }
 
 .basics-field {
   display: grid;
   gap: 8px;
-  margin-top: 30px;
+  margin-top: 0;
   color: var(--about-soft);
   font-size: 11px;
   font-weight: 700;
@@ -729,14 +695,6 @@
     justify-self: start;
   }
 
-  .basics-workspace {
-    grid-template-columns: 1fr;
-    gap: 54px;
-  }
-
-  .basics-form {
-    justify-self: start;
-  }
 }
 
 @media (max-width: 720px) {
@@ -754,15 +712,6 @@
     padding-top: 24px;
   }
 
-  .basics-workspace {
-    gap: 44px;
-    margin-top: 52px;
-    padding-top: 28px;
-  }
-
-  .basics-form {
-    padding-top: 24px;
-  }
 }
 
 @media (max-width: 420px) {
@@ -778,9 +727,6 @@
     font-size: 30px;
   }
 
-  .basics-guidance h2 {
-    font-size: 30px;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
