@@ -176,32 +176,13 @@ function cubesMarkup() {
 function blockedUsersMarkup() {
   return `
     <div class="blocked-users-view" id="blocked-users">
-      <div class="blocked-users-intro">
-        <p class="about-label">Your safety settings</p>
+      <div class="blocked-users-heading">
         <h1 id="blocked-users-title">Blocked Users</h1>
-        <p class="about-lede">Manage the people you’ve chosen not to see in cubacadabra.</p>
+        <span class="blocked-users-count" aria-live="polite"></span>
       </div>
-
-      <div class="blocked-users-workspace">
-        <section class="blocked-users-guidance" aria-labelledby="blocked-users-guidance-title">
-          <p class="blocked-users-kicker">Your block list</p>
-          <h2 id="blocked-users-guidance-title">A quieter world, on your terms.</h2>
-          <p>Blocked users won’t appear to you in the world. You can change this list whenever you want.</p>
-        </section>
-
-        <section class="blocked-users-list-panel" aria-labelledby="blocked-users-list-title">
-          <div class="blocked-users-list-heading">
-            <div>
-              <p class="blocked-users-kicker">Blocked users</p>
-              <h2 id="blocked-users-list-title">Manage list</h2>
-            </div>
-            <span class="blocked-users-count" aria-live="polite"></span>
-          </div>
-          <p class="blocked-users-status" role="status" aria-live="polite">Loading blocked users…</p>
-          <button class="blocked-users-retry" type="button" hidden>Try again</button>
-          <ul class="blocked-users-list"></ul>
-        </section>
-      </div>
+      <p class="blocked-users-status" role="status" aria-live="polite">Loading blocked users…</p>
+      <button class="blocked-users-retry" type="button" hidden>Try again</button>
+      <ul class="blocked-users-list"></ul>
     </div>`;
 }
 
@@ -247,10 +228,6 @@ function renderBlockedUserRows(userIds, status, count) {
 
     const identity = document.createElement("div");
     identity.className = "blocked-user-identity";
-    const mark = document.createElement("span");
-    mark.className = "blocked-user-mark";
-    mark.setAttribute("aria-hidden", "true");
-    mark.textContent = "×";
     const details = document.createElement("div");
     details.className = "blocked-user-details";
     const label = document.createElement("strong");
@@ -258,7 +235,7 @@ function renderBlockedUserRows(userIds, status, count) {
     const id = document.createElement("code");
     id.textContent = userId;
     details.append(label, id);
-    identity.append(mark, details);
+    identity.append(details);
 
     const unblock = document.createElement("button");
     unblock.className = "blocked-user-unblock";
@@ -465,10 +442,8 @@ async function renderBlockedUsers() {
     const userIds = await fetchBlockedUsers();
     retry.hidden = true;
     renderBlockedUserRows(userIds, status, count);
-    status.textContent = userIds.length > 0
-      ? "These users are hidden from your world."
-      : "Your block list is clear.";
-    status.dataset.state = "success";
+    status.textContent = "";
+    status.dataset.state = "";
   } catch (error) {
     count.textContent = "";
     status.textContent = blockedUsersErrorMessage(error);

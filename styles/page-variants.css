@@ -743,74 +743,24 @@
   outline-offset: 5px;
 }
 
-.blocked-users-intro {
-  max-width: 700px;
+.blocked-users-view {
+  width: min(100%, 580px);
 }
 
-.blocked-users-intro h1 {
-  max-width: 680px;
-}
-
-.blocked-users-workspace {
-  display: grid;
-  grid-template-columns: minmax(0, 0.85fr) minmax(340px, 1.15fr);
-  gap: clamp(54px, 8vw, 116px);
-  margin-top: 66px;
-  padding-top: 33px;
-  border-top: 1px solid var(--about-line);
-}
-
-.blocked-users-guidance {
-  max-width: 400px;
-}
-
-.blocked-users-guidance h2 {
-  max-width: 360px;
-  margin: 18px 0 0;
-  color: var(--about-ink);
-  font-size: clamp(28px, 3vw, 40px);
-  font-weight: 750;
-  letter-spacing: -0.06em;
-  line-height: 1.04;
-}
-
-.blocked-users-guidance p:not(.blocked-users-kicker) {
-  max-width: 370px;
-  margin: 20px 0 0;
-  color: var(--about-soft);
-  font-size: 14px;
-  line-height: 1.65;
-}
-
-.blocked-users-kicker {
-  margin: 0;
-  color: var(--about-accent);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  line-height: 1.4;
-  text-transform: uppercase;
-}
-
-.blocked-users-list-panel {
-  min-width: 0;
-  padding-top: 28px;
-  border-top: 1px solid rgba(231, 233, 236, 0.25);
-}
-
-.blocked-users-list-heading {
+.blocked-users-heading {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 20px;
+  gap: 16px;
 }
 
-.blocked-users-list-heading h2 {
-  margin: 10px 0 0;
+.blocked-users-heading h1 {
+  margin: 0;
   color: var(--about-ink);
   font-size: 21px;
   font-weight: 700;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
 }
 
 .blocked-users-count {
@@ -822,10 +772,14 @@
 
 .blocked-users-status {
   min-height: 18px;
-  margin: 17px 0 0;
+  margin: 18px 0 0;
   color: var(--about-faint);
   font-size: 12px;
   line-height: 1.45;
+}
+
+.blocked-users-status:empty {
+  display: none;
 }
 
 .blocked-users-status[data-state="error"] {
@@ -864,7 +818,7 @@
 .blocked-users-list {
   display: grid;
   gap: 0;
-  margin: 17px 0 0;
+  margin: 18px 0 0;
   padding: 0;
   border-top: 1px solid var(--about-line);
   list-style: none;
@@ -875,8 +829,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 18px;
-  min-height: 74px;
-  padding: 12px 0;
+  min-height: 60px;
+  padding: 10px 0;
   border-bottom: 1px solid var(--about-line);
 }
 
@@ -884,20 +838,6 @@
   display: flex;
   min-width: 0;
   align-items: center;
-  gap: 13px;
-}
-
-.blocked-user-mark {
-  display: grid;
-  flex: 0 0 30px;
-  width: 30px;
-  height: 30px;
-  place-items: center;
-  border: 1px solid rgba(237, 114, 91, 0.48);
-  border-radius: 50%;
-  color: var(--about-logo-accent);
-  font-size: 17px;
-  line-height: 1;
 }
 
 .blocked-user-details {
@@ -976,11 +916,6 @@
     justify-self: start;
   }
 
-  .blocked-users-workspace {
-    grid-template-columns: 1fr;
-    gap: 54px;
-  }
-
 }
 
 @media (max-width: 720px) {
@@ -998,16 +933,6 @@
     padding-top: 24px;
   }
 
-  .blocked-users-workspace {
-    gap: 44px;
-    margin-top: 52px;
-    padding-top: 28px;
-  }
-
-  .blocked-users-list-panel {
-    padding-top: 24px;
-  }
-
   .cube-table {
     width: 100%;
   }
@@ -1015,10 +940,6 @@
   .cube-link {
     grid-template-columns: 132px minmax(0, 1fr);
     gap: 18px;
-  }
-
-  .blocked-user-row {
-    align-items: flex-start;
   }
 
   .blocked-user-unblock {
