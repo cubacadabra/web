@@ -134,9 +134,10 @@ function basicsMarkup() {
           </div>
           <label class="basics-field" for="my-cube-username">
             <span>Username</span>
-            <input id="my-cube-username" name="username" type="text" autocomplete="nickname" minlength="2" maxlength="${USERNAME_MAX_LENGTH}" pattern="[A-Za-z0-9 _-]+" aria-describedby="my-cube-username-help basics-username-status" spellcheck="false" required />
+            <input id="my-cube-username" name="username" type="text" autocomplete="nickname" minlength="2" maxlength="${USERNAME_MAX_LENGTH}" pattern="[A-Za-z0-9 _\\-]+" aria-describedby="my-cube-username-help basics-username-status" spellcheck="false" required />
           </label>
           <p class="basics-field-help" id="my-cube-username-help">letters, numbers, spaces, _ or -.</p>
+          <p class="basics-status" id="basics-username-status" role="status" aria-live="polite"></p>
           <button class="basics-submit" type="submit">Save</button>
         </form>
       </div>
@@ -231,7 +232,7 @@ function renderBasics(user) {
 
   const form = content.querySelector(".basics-form");
   const input = content.querySelector("#my-cube-username");
-  const status = content.querySelector(".basics-status");
+  const status = content.querySelector("#basics-username-status");
   const submit = form.querySelector(".basics-submit");
   input.value = typeof user.username === "string" ? user.username : "";
 
