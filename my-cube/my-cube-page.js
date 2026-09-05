@@ -563,6 +563,59 @@ async function renderSubscription() {
   const hasReturnSession = params.get("subscription_return") === "1" && returnSessionId;
   let activeSubscription = null;
 
+  start.addEventListener("click", async () => {
+    start.disabled = true;
+    start.textContent = "Loading payment form…";
+    status.textContent = "Preparing secure payment…";
+    status.dataset.state = "pending";
+
+    try {
+      const checkout = await createSubscriptionCheckout();
+      if (!checkout.client_secret || !checkout.publishable_key) {
+        throw new Error("subscription_checkout_unavailable");
+      }
+
+      start.hidden = true;
+      form.hidden = false;
+      subscriptionCheckoutCleanup = mountStripeEmbeddedCheckout({
+        container: payment,
+        form,
+        submitButton: submit,
+        statusElement: checkoutStatus,
+        clientSecret: checkout.client_secret,
+        publishableKey: checkout.publishable_key,
+        onComplete: async (session) => {
+          checkoutStatus.textContent = "Finalizing subscription…";
+          checkoutStatus.dataset.state = "pending";
+          const completed = session?.id
+            ? await completeSubscriptionCheckout(session.id)
+            : await fetchSubscription();
+          const nextSubscription = completed?.subscription || completed?.membership?.subscription;
+          if (!hasSubscriptionAccess(nextSubscription)) throw new Error("subscription_not_active");
+          activeSubscription = nextSubscription;
+          cancel.hidden = false;
+          status.textContent = "parent-cadabra is active. Thank you for funding the world.";
+          status.dataset.state = "success";
+          form.hidden = true;
+          checkoutStatus.textContent = "";
+          subscriptionCheckoutCleanup?.();
+          subscriptionCheckoutCleanup = null;
+        },
+        onError: (message) => {
+          checkoutStatus.textContent = message;
+          checkoutStatus.dataset.state = "error";
+        },
+      });
+      status.textContent = "Enter your payment details below.";
+      status.dataset.state = "";
+    } catch (error) {
+      start.disabled = false;
+      start.textContent = "Try again";
+      status.textContent = subscriptionErrorMessage(error);
+      status.dataset.state = "error";
+    }
+  });
+
   cancel.addEventListener("click", async () => {
     if (!activeSubscription?.id || cancel.disabled) return;
     if (!window.confirm("Cancel your parent-cadabra subscription now?")) return;
@@ -640,59 +693,6 @@ async function renderSubscription() {
     status.dataset.state = "error";
     return;
   }
-
-  start.addEventListener("click", async () => {
-    start.disabled = true;
-    start.textContent = "Loading payment form…";
-    status.textContent = "Preparing secure payment…";
-    status.dataset.state = "pending";
-
-    try {
-      const checkout = await createSubscriptionCheckout();
-      if (!checkout.client_secret || !checkout.publishable_key) {
-        throw new Error("subscription_checkout_unavailable");
-      }
-
-      start.hidden = true;
-      form.hidden = false;
-      subscriptionCheckoutCleanup = mountStripeEmbeddedCheckout({
-        container: payment,
-        form,
-        submitButton: submit,
-        statusElement: checkoutStatus,
-        clientSecret: checkout.client_secret,
-        publishableKey: checkout.publishable_key,
-        onComplete: async (session) => {
-          checkoutStatus.textContent = "Finalizing subscription…";
-          checkoutStatus.dataset.state = "pending";
-          const completed = session?.id
-            ? await completeSubscriptionCheckout(session.id)
-            : await fetchSubscription();
-          const nextSubscription = completed?.subscription || completed?.membership?.subscription;
-          if (!hasSubscriptionAccess(nextSubscription)) throw new Error("subscription_not_active");
-          activeSubscription = nextSubscription;
-          cancel.hidden = false;
-          status.textContent = "parent-cadabra is active. Thank you for funding the world.";
-          status.dataset.state = "success";
-          form.hidden = true;
-          checkoutStatus.textContent = "";
-          subscriptionCheckoutCleanup?.();
-          subscriptionCheckoutCleanup = null;
-        },
-        onError: (message) => {
-          checkoutStatus.textContent = message;
-          checkoutStatus.dataset.state = "error";
-        },
-      });
-      status.textContent = "Enter your payment details below.";
-      status.dataset.state = "";
-    } catch (error) {
-      start.disabled = false;
-      start.textContent = "Try again";
-      status.textContent = subscriptionErrorMessage(error);
-      status.dataset.state = "error";
-    }
-  });
 
   if (hasReturnSession) {
     start.hidden = true;
