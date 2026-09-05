@@ -134,9 +134,9 @@ function basicsMarkup() {
           </div>
           <label class="basics-field" for="my-cube-username">
             <span>Username</span>
-            <input id="my-cube-username" name="username" type="text" autocomplete="nickname" minlength="2" maxlength="${USERNAME_MAX_LENGTH}" pattern="[A-Za-z0-9 _\\-]+" aria-describedby="my-cube-username-help basics-username-status" spellcheck="false" required />
+            <input id="my-cube-username" name="username" type="text" autocomplete="nickname" minlength="2" maxlength="${USERNAME_MAX_LENGTH}" pattern="[A-Za-z0-9_\\-]+" aria-describedby="my-cube-username-help basics-username-status" spellcheck="false" required />
           </label>
-          <p class="basics-field-help" id="my-cube-username-help">letters, numbers, spaces, _ or -.</p>
+          <p class="basics-field-help" id="my-cube-username-help">letters, numbers, _ or -.</p>
           <p class="basics-status" id="basics-username-status" role="status" aria-live="polite"></p>
           <button class="basics-submit" type="submit">Save</button>
         </form>
@@ -151,7 +151,7 @@ function normalizeUsername(value) {
 function isValidUsername(username) {
   return username.length >= 2
     && username.length <= USERNAME_MAX_LENGTH
-    && /^[A-Za-z0-9 _-]+$/.test(username);
+    && /^[A-Za-z0-9_-]+$/.test(username);
 }
 
 function renderBirthdayForm() {
@@ -243,7 +243,7 @@ function renderBasics(user) {
 
     if (!isValidUsername(username)) {
       input.setAttribute("aria-invalid", "true");
-      setFormStatus(status, `Use 2–${USERNAME_MAX_LENGTH} letters, numbers, spaces, _ or -.`, "error");
+      setFormStatus(status, `Use 2–${USERNAME_MAX_LENGTH} letters, numbers, _ or -.`, "error");
       input.focus();
       return;
     }
@@ -274,7 +274,7 @@ function renderBasics(user) {
           : error.message === "username_not_allowed"
             ? "That username isn’t available. Try another."
             : error.message === "invalid_username"
-              ? `Use 2–${USERNAME_MAX_LENGTH} letters, numbers, spaces, _ or -.`
+              ? `Use 2–${USERNAME_MAX_LENGTH} letters, numbers, _ or -.`
             : error.message === "age_required"
               ? "Complete the birthday step before choosing a username."
               : "We couldn’t save your username. Please try again.",
