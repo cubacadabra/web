@@ -1,7 +1,5 @@
 import { backendConfig } from "../config/clientConfig.js";
 
-const PLAYER_ID_STORAGE_KEY = "cubacadabra.player-id";
-const USERNAME_STORAGE_KEY = "cubacadabra.username";
 const USERNAME_MAX_LENGTH = 24;
 const RECONNECT_BASE_DELAY = 750;
 const RECONNECT_MAX_DELAY = 8_000;
@@ -20,37 +18,6 @@ function movesAreMeaningfullyDifferent(previousMove, nextMove) {
     || Math.abs(previousMove.yaw - nextMove.yaw) > MOVE_YAW_EPSILON;
 }
 
-function createPlayerId() {
-  const randomId = typeof crypto.randomUUID === "function"
-    ? crypto.randomUUID()
-    : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-  return `web-${randomId}`;
-}
-
-function getPlayerId() {
-  try {
-    const stored = localStorage.getItem(PLAYER_ID_STORAGE_KEY);
-    if (stored) return stored;
-
-    const playerId = createPlayerId();
-    localStorage.setItem(PLAYER_ID_STORAGE_KEY, playerId);
-    return playerId;
-  } catch {
-    return createPlayerId();
-  }
-}
-
-function platformLabel(playerId) {
-  if (playerId.startsWith("ios-")) return "iOS";
-  if (playerId.startsWith("web-")) return "Web";
-  if (playerId.startsWith("android-")) return "Android";
-  return "Player";
-}
-
-export function defaultUsernameForPlayer(playerId) {
-  return `${platformLabel(playerId)} Player ${playerId.slice(-4).toUpperCase()}`;
-}
-
 function normalizeUsername(value) {
   if (typeof value !== "string") return null;
   const username = value.trim().replace(/\s+/g, " ");
@@ -62,35 +29,18 @@ function normalizeUsername(value) {
   return username;
 }
 
-function getUsername(playerId) {
-  const fallback = defaultUsernameForPlayer(playerId);
-  try {
-    return normalizeUsername(localStorage.getItem(USERNAME_STORAGE_KEY)) || fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-function storeUsername(username) {
-  try {
-    localStorage.setItem(USERNAME_STORAGE_KEY, username);
-  } catch {
-    // The live connection still owns the current name when storage is unavailable.
-  }
-}
-
-function createSocketUrl(worldId, playerId) {
+function createSocketUrl(worldId) {
   const url = new URL(backendConfig.webSocketUrl);
   const basePath = url.pathname.replace(/\/$/, "");
   url.pathname = `${basePath}/world/${encodeURIComponent(worldId)}`;
-  url.searchParams.set("player_id", playerId);
+  url.searchParams.set("client", "web");
   return url;
 }
 
 export function createWorldSocket({ onEvent, onMove, onExperience, onStatusChange }) {
-  const playerId = getPlayerId();
-  let username = getUsername(playerId);
-  let pendingUsername = username;
+  let playerId = null;
+  let username = "Player";
+  let sessionResultHandler = null;
   let hidden = false;
   let usernameResultHandler = null;
   let socket = null;
@@ -124,7 +74,7 @@ export function createWorldSocket({ onEvent, onMove, onExperience, onStatusChang
     if (destroyed || !worldId || expectedGeneration !== generation) return;
 
     setStatus(reconnectAttempt > 0 ? "reconnecting" : "connecting");
-    const nextSocket = new WebSocket(createSocketUrl(worldId, playerId));
+    const nextSocket = new WebSocket(createSocketUrl(worldId));
     socket = nextSocket;
 
     nextSocket.addEventListener("open", () => {
@@ -133,16 +83,6 @@ export function createWorldSocket({ onEvent, onMove, onExperience, onStatusChang
       lastMoveSentAt = Number.NEGATIVE_INFINITY;
       lastSentMove = null;
       setStatus("connected");
-      if (pendingUsername) {
-        try {
-          nextSocket.send(JSON.stringify({
-            type: "set_username",
-            username: pendingUsername,
-          }));
-        } catch {
-          // The close handler will schedule a reconnect if the socket is gone.
-        }
-      }
       try {
         nextSocket.send(JSON.stringify({ type: "set_hidden", hidden }));
       } catch {
@@ -155,6 +95,18 @@ export function createWorldSocket({ onEvent, onMove, onExperience, onStatusChang
 
       try {
         const event = JSON.parse(message.data);
+        if (event?.type === "session_identity") {
+          if (typeof event.id !== "string" || typeof event.username !== "string") return;
+          playerId = event.id;
+          username = event.username;
+          sessionResultHandler?.({
+            id: playerId,
+            username,
+            hasUsername: event.hasUsername === true,
+            authenticated: event.authenticated === true,
+          });
+          return;
+        }
         if (event?.type === "move") {
           if (
             typeof event.id !== "string"
@@ -184,10 +136,6 @@ export function createWorldSocket({ onEvent, onMove, onExperience, onStatusChang
         if (event.type === "username_updated" || event.type === "username_error") {
           if (event.type === "username_updated" && typeof event.username === "string") {
             username = event.username;
-            pendingUsername = event.username;
-            storeUsername(event.username);
-          } else if (event.type === "username_error") {
-            pendingUsername = username;
           }
           usernameResultHandler?.(event);
           return;
@@ -275,7 +223,6 @@ export function createWorldSocket({ onEvent, onMove, onExperience, onStatusChang
       return false;
     }
 
-    pendingUsername = normalizedUsername;
     if (!socket || socket.readyState !== WebSocket.OPEN) return true;
 
     try {
@@ -287,6 +234,19 @@ export function createWorldSocket({ onEvent, onMove, onExperience, onStatusChang
       return true;
     }
     return true;
+  }
+
+  function reconnect() {
+    if (!worldId) return;
+    generation += 1;
+    clearReconnectTimer();
+    closeCurrentSocket();
+    playerId = null;
+    username = "Player";
+    reconnectAttempt = 0;
+    lastMoveSentAt = Number.NEGATIVE_INFINITY;
+    lastSentMove = null;
+    openSocket(generation);
   }
 
   function setHidden(nextHidden) {
@@ -322,7 +282,9 @@ export function createWorldSocket({ onEvent, onMove, onExperience, onStatusChang
   }
 
   return {
-    playerId,
+    get playerId() {
+      return playerId;
+    },
     get username() {
       return username;
     },
@@ -332,7 +294,14 @@ export function createWorldSocket({ onEvent, onMove, onExperience, onStatusChang
     set onUsernameResult(handler) {
       usernameResultHandler = handler;
     },
+    get onSession() {
+      return sessionResultHandler;
+    },
+    set onSession(handler) {
+      sessionResultHandler = handler;
+    },
     connect,
+    reconnect,
     sendMove,
     setUsername,
     setHidden,

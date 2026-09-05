@@ -98,6 +98,24 @@
           </header>
 
           <div class="settings-room-body">
+            <form class="settings-username-form" id="settings-age-form" hidden>
+              <label class="settings-field-label" for="settings-dob-input">Before choosing a name</label>
+              <p class="settings-status">Tell us your date of birth to unlock player names and other social features.</p>
+              <input
+                id="settings-dob-input"
+                name="dob"
+                type="date"
+                autocomplete="bday"
+                required
+              />
+              <p class="settings-status" id="settings-age-status" aria-live="polite">
+                Your date of birth is used to check which features are available.
+              </p>
+              <div class="settings-field-actions">
+                <button class="settings-leave-button" id="settings-age-cancel-button" type="button">Cancel</button>
+                <button class="settings-save-button" type="submit">Continue</button>
+              </div>
+            </form>
             <form class="settings-username-form" id="settings-username-form">
               <label class="settings-field-label" for="settings-username-input">Your player name</label>
               <input
