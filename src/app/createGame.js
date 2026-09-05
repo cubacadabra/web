@@ -31,6 +31,7 @@ export async function createGame() {
   let buildMode = null;
   const hud = createHudController({ elements, state, gameDefinition: activeWorld });
   const worldSocket = createWorldSocket({
+    gameId: gameDefinition.gameId,
     onEvent: (event) => {
       hud.showWorldEvent(event);
       if (event.type === "player_leave") remotePlayers.delete(event.id);

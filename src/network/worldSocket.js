@@ -29,15 +29,16 @@ function normalizeUsername(value) {
   return username;
 }
 
-function createSocketUrl(worldId) {
+function createSocketUrl(gameId, worldId) {
   const url = new URL(backendConfig.webSocketUrl);
   const basePath = url.pathname.replace(/\/$/, "");
   url.pathname = `${basePath}/world/${encodeURIComponent(worldId)}`;
   url.searchParams.set("client", "web");
+  url.searchParams.set("game", gameId);
   return url;
 }
 
-export function createWorldSocket({ onEvent, onMove, onExperience, onStatusChange }) {
+export function createWorldSocket({ gameId = "first-game", onEvent, onMove, onExperience, onStatusChange }) {
   let playerId = null;
   let username = "Player";
   let sessionResultHandler = null;
@@ -74,7 +75,7 @@ export function createWorldSocket({ onEvent, onMove, onExperience, onStatusChang
     if (destroyed || !worldId || expectedGeneration !== generation) return;
 
     setStatus(reconnectAttempt > 0 ? "reconnecting" : "connecting");
-    const nextSocket = new WebSocket(createSocketUrl(worldId));
+    const nextSocket = new WebSocket(createSocketUrl(gameId, worldId));
     socket = nextSocket;
 
     nextSocket.addEventListener("open", () => {
