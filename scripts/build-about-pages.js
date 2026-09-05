@@ -137,6 +137,7 @@ const createMyCubePage = (source) => {
           <nav class="about-menu" aria-label="My Cube sections">
             <a href="#birthday" data-section="birthday" aria-current="page"><span>Birthday</span></a>
             <a href="#cubes" data-section="cubes" hidden><span>Cubes</span></a>
+            <a href="#blocked-users" data-section="blocked-users" hidden><span>Blocked Users</span></a>
           </nav>`,
   );
   const footer = extractElement(source, '<footer class="about-footer"', "</footer>");

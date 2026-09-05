@@ -6,6 +6,7 @@ const content = document.querySelector(".about-content");
 const menuLinks = [...document.querySelectorAll(".about-menu > a")];
 const sidebarStatus = document.querySelector(".about-sidebar-status");
 const USERNAME_MAX_LENGTH = 24;
+const BLOCKED_USERS_PATH = "/moderation/blocks";
 let currentUser = null;
 
 function calculateAge(dob) {
@@ -172,6 +173,128 @@ function cubesMarkup() {
     </div>`;
 }
 
+function blockedUsersMarkup() {
+  return `
+    <div class="blocked-users-view" id="blocked-users">
+      <div class="blocked-users-intro">
+        <p class="about-label">Your safety settings</p>
+        <h1 id="blocked-users-title">Blocked Users</h1>
+        <p class="about-lede">Manage the people you’ve chosen not to see in cubacadabra.</p>
+      </div>
+
+      <div class="blocked-users-workspace">
+        <section class="blocked-users-guidance" aria-labelledby="blocked-users-guidance-title">
+          <p class="blocked-users-kicker">Your block list</p>
+          <h2 id="blocked-users-guidance-title">A quieter world, on your terms.</h2>
+          <p>Blocked users won’t appear to you in the world. You can change this list whenever you want.</p>
+        </section>
+
+        <section class="blocked-users-list-panel" aria-labelledby="blocked-users-list-title">
+          <div class="blocked-users-list-heading">
+            <div>
+              <p class="blocked-users-kicker">Blocked users</p>
+              <h2 id="blocked-users-list-title">Manage list</h2>
+            </div>
+            <span class="blocked-users-count" aria-live="polite"></span>
+          </div>
+          <p class="blocked-users-status" role="status" aria-live="polite">Loading blocked users…</p>
+          <ul class="blocked-users-list"></ul>
+        </section>
+      </div>
+    </div>`;
+}
+
+function blockedUserLabel(userId) {
+  const suffix = userId.slice(-4).toUpperCase();
+  return suffix ? `Player ${suffix}` : "Blocked user";
+}
+
+async function fetchBlockedUsers() {
+  const response = await fetch(backendApiUrl(BLOCKED_USERS_PATH), {
+    credentials: "include",
+    headers: { Accept: "application/json" },
+  });
+  const result = await response.json().catch(() => null);
+  if (!response.ok) throw new Error(result?.error || "blocked_users_load_failed");
+  return Array.isArray(result?.user_ids)
+    ? result.user_ids.filter((userId) => typeof userId === "string" && userId.trim())
+    : [];
+}
+
+function blockedUsersErrorMessage(error) {
+  if (error.message === "age_required") return "Complete your birthday before viewing blocked users.";
+  if (error.message === "not_authenticated") return "Your session has expired. Please sign in again.";
+  return "We couldn’t load your blocked users. Please try again.";
+}
+
+function renderBlockedUserRows(userIds, status, count) {
+  const list = content.querySelector(".blocked-users-list");
+  list.replaceChildren();
+  count.textContent = `${userIds.length} ${userIds.length === 1 ? "user" : "users"}`;
+
+  if (userIds.length === 0) {
+    const emptyState = document.createElement("li");
+    emptyState.className = "blocked-users-empty";
+    emptyState.textContent = "You haven’t blocked anyone.";
+    list.append(emptyState);
+    return;
+  }
+
+  userIds.forEach((userId) => {
+    const row = document.createElement("li");
+    row.className = "blocked-user-row";
+
+    const identity = document.createElement("div");
+    identity.className = "blocked-user-identity";
+    const mark = document.createElement("span");
+    mark.className = "blocked-user-mark";
+    mark.setAttribute("aria-hidden", "true");
+    mark.textContent = "×";
+    const details = document.createElement("div");
+    details.className = "blocked-user-details";
+    const label = document.createElement("strong");
+    label.textContent = blockedUserLabel(userId);
+    const id = document.createElement("code");
+    id.textContent = userId;
+    details.append(label, id);
+    identity.append(mark, details);
+
+    const unblock = document.createElement("button");
+    unblock.className = "blocked-user-unblock";
+    unblock.type = "button";
+    unblock.textContent = "Unblock";
+    unblock.setAttribute("aria-label", `Unblock ${blockedUserLabel(userId)}`);
+    unblock.addEventListener("click", async () => {
+      unblock.disabled = true;
+      unblock.textContent = "Unblocking…";
+      status.textContent = "Saving your change…";
+      status.dataset.state = "pending";
+
+      try {
+        const response = await fetch(
+          `${backendApiUrl(BLOCKED_USERS_PATH)}/${encodeURIComponent(userId)}`,
+          { method: "DELETE", credentials: "include", headers: { Accept: "application/json" } },
+        );
+        const result = await response.json().catch(() => null);
+        if (!response.ok) throw new Error(result?.error || "unblock_failed");
+
+        const remainingUsers = userIds.filter((blockedUserId) => blockedUserId !== userId);
+        renderBlockedUserRows(remainingUsers, status, count);
+        status.textContent = `${blockedUserLabel(userId)} was unblocked.`;
+        status.dataset.state = "success";
+      } catch (error) {
+        unblock.disabled = false;
+        unblock.textContent = "Unblock";
+        status.textContent = "We couldn’t unblock this user. Please try again.";
+        status.dataset.state = "error";
+      }
+    });
+
+    row.append(identity, unblock);
+    list.append(row);
+  });
+}
+
 function normalizeUsername(value) {
   return value.trim().replace(/\s+/g, " ");
 }
@@ -323,6 +446,26 @@ function renderCubes() {
   content.innerHTML = cubesMarkup();
 }
 
+async function renderBlockedUsers() {
+  setMenuState(false, "blocked-users");
+  content.innerHTML = blockedUsersMarkup();
+
+  const status = content.querySelector(".blocked-users-status");
+  const count = content.querySelector(".blocked-users-count");
+  try {
+    const userIds = await fetchBlockedUsers();
+    renderBlockedUserRows(userIds, status, count);
+    status.textContent = userIds.length > 0
+      ? "These users are hidden from your world."
+      : "Your block list is clear.";
+    status.dataset.state = "success";
+  } catch (error) {
+    count.textContent = "";
+    status.textContent = blockedUsersErrorMessage(error);
+    status.dataset.state = "error";
+  }
+}
+
 menuLinks.forEach((link) => {
   link.addEventListener("click", (event) => {
     if (link.hidden) {
@@ -333,6 +476,9 @@ menuLinks.forEach((link) => {
     if (link.dataset.section === "cubes") {
       event.preventDefault();
       renderCubes();
+    } else if (link.dataset.section === "blocked-users" && currentUser) {
+      event.preventDefault();
+      renderBlockedUsers();
     } else if (link.dataset.section === "basics" && currentUser) {
       event.preventDefault();
       renderBasics(currentUser);
@@ -357,6 +503,8 @@ getCurrentUser().then((user) => {
     renderParentStep();
   } else if (window.location.hash === "#cubes") {
     renderCubes();
+  } else if (window.location.hash === "#blocked-users") {
+    renderBlockedUsers();
   } else {
     renderBasics(user);
   }

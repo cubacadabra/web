@@ -743,6 +743,199 @@
   outline-offset: 5px;
 }
 
+.blocked-users-intro {
+  max-width: 700px;
+}
+
+.blocked-users-intro h1 {
+  max-width: 680px;
+}
+
+.blocked-users-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(340px, 1.15fr);
+  gap: clamp(54px, 8vw, 116px);
+  margin-top: 66px;
+  padding-top: 33px;
+  border-top: 1px solid var(--about-line);
+}
+
+.blocked-users-guidance {
+  max-width: 400px;
+}
+
+.blocked-users-guidance h2 {
+  max-width: 360px;
+  margin: 18px 0 0;
+  color: var(--about-ink);
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 750;
+  letter-spacing: -0.06em;
+  line-height: 1.04;
+}
+
+.blocked-users-guidance p:not(.blocked-users-kicker) {
+  max-width: 370px;
+  margin: 20px 0 0;
+  color: var(--about-soft);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.blocked-users-kicker {
+  margin: 0;
+  color: var(--about-accent);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.blocked-users-list-panel {
+  min-width: 0;
+  padding-top: 28px;
+  border-top: 1px solid rgba(231, 233, 236, 0.25);
+}
+
+.blocked-users-list-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.blocked-users-list-heading h2 {
+  margin: 10px 0 0;
+  color: var(--about-ink);
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
+.blocked-users-count {
+  flex: 0 0 auto;
+  color: var(--about-faint);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+}
+
+.blocked-users-status {
+  min-height: 18px;
+  margin: 17px 0 0;
+  color: var(--about-faint);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.blocked-users-status[data-state="error"] {
+  color: #ef9a88;
+}
+
+.blocked-users-status[data-state="success"] {
+  color: #a8d8a5;
+}
+
+.blocked-users-list {
+  display: grid;
+  gap: 0;
+  margin: 17px 0 0;
+  padding: 0;
+  border-top: 1px solid var(--about-line);
+  list-style: none;
+}
+
+.blocked-user-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  min-height: 74px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--about-line);
+}
+
+.blocked-user-identity {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 13px;
+}
+
+.blocked-user-mark {
+  display: grid;
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid rgba(237, 114, 91, 0.48);
+  border-radius: 50%;
+  color: var(--about-logo-accent);
+  font-size: 17px;
+  line-height: 1;
+}
+
+.blocked-user-details {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+}
+
+.blocked-user-details strong {
+  color: var(--about-ink);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.blocked-user-details code {
+  overflow: hidden;
+  color: var(--about-faint);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 10px;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.blocked-user-unblock {
+  display: inline-flex;
+  min-width: 84px;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  border: 1px solid rgba(231, 233, 236, 0.24);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--about-soft);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  transition: border-color 180ms ease, background 180ms ease, color 180ms ease;
+}
+
+.blocked-user-unblock:hover {
+  border-color: var(--about-accent);
+  background: var(--about-accent-wash);
+  color: var(--about-ink);
+}
+
+.blocked-user-unblock:focus-visible {
+  outline: 3px solid rgba(139, 156, 246, 0.32);
+  outline-offset: 3px;
+}
+
+.blocked-user-unblock:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.blocked-users-empty {
+  padding: 22px 0;
+  color: var(--about-faint);
+  font-size: 13px;
+}
+
 @media (max-width: 960px) {
   .my-cube-page .about-layout {
     grid-template-columns: 200px minmax(0, 1fr);
@@ -756,6 +949,11 @@
 
   .birthday-form {
     justify-self: start;
+  }
+
+  .blocked-users-workspace {
+    grid-template-columns: 1fr;
+    gap: 54px;
   }
 
 }
@@ -775,6 +973,16 @@
     padding-top: 24px;
   }
 
+  .blocked-users-workspace {
+    gap: 44px;
+    margin-top: 52px;
+    padding-top: 28px;
+  }
+
+  .blocked-users-list-panel {
+    padding-top: 24px;
+  }
+
   .cube-table {
     width: 100%;
   }
@@ -782,6 +990,14 @@
   .cube-link {
     grid-template-columns: 132px minmax(0, 1fr);
     gap: 18px;
+  }
+
+  .blocked-user-row {
+    align-items: flex-start;
+  }
+
+  .blocked-user-unblock {
+    flex: 0 0 auto;
   }
 
 }
