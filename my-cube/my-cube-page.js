@@ -136,7 +136,7 @@ function basicsMarkup() {
             <span>Username</span>
             <input id="my-cube-username" name="username" type="text" autocomplete="nickname" minlength="2" maxlength="${USERNAME_MAX_LENGTH}" pattern="[A-Za-z0-9_\\-]+" aria-describedby="my-cube-username-help basics-username-status" spellcheck="false" required />
           </label>
-          <p class="basics-field-help" id="my-cube-username-help">letters, numbers, _ or -.</p>
+          <p class="basics-field-help" id="my-cube-username-help">letters, numbers, _ or -</p>
           <p class="basics-status" id="basics-username-status" role="status" aria-live="polite"></p>
           <button class="basics-submit" type="submit">Save</button>
         </form>
@@ -243,7 +243,7 @@ function renderBasics(user) {
 
     if (!isValidUsername(username)) {
       input.setAttribute("aria-invalid", "true");
-      setFormStatus(status, `Use 2–${USERNAME_MAX_LENGTH} letters, numbers, _ or -.`, "error");
+      setFormStatus(status, `Use 2–${USERNAME_MAX_LENGTH} letters, numbers, _ or -`, "error");
       input.focus();
       return;
     }
