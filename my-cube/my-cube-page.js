@@ -32,7 +32,7 @@ function setMenuState(requiresBirthday) {
   });
 
   if (sidebarStatus) {
-    sidebarStatus.textContent = requiresBirthday ? "Required to continue" : "Your space";
+    sidebarStatus.textContent = requiresBirthday ? "Required to continue" : "";
   }
 }
 
