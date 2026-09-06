@@ -18,7 +18,9 @@ export function createRustEngine(exports) {
         y: snapshot[1],
         z: snapshot[2],
       },
-      yaw: snapshot[3],
+      yaw: exports.engine_player_facing_yaw
+        ? call("engine_player_facing_yaw")
+        : snapshot[3],
       walkCycle: snapshot[4],
       grounded: snapshot[5] > 0.5,
       moving: snapshot[6] > 0.5,
