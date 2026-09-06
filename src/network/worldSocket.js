@@ -38,9 +38,18 @@ function createSocketUrl(gameId, worldId) {
   return url;
 }
 
-export function createWorldSocket({ gameId = "first-game", onEvent, onMove, onExperience, onStatusChange }) {
+export function createWorldSocket({
+  gameId = "first-game",
+  initialUsername = null,
+  onEvent,
+  onMove,
+  onExperience,
+  onStatusChange,
+}) {
   let playerId = null;
-  let username = "Player";
+  const normalizedInitialUsername = normalizeUsername(initialUsername);
+  let username = normalizedInitialUsername ?? "Player";
+  let pendingUsername = normalizedInitialUsername;
   let sessionResultHandler = null;
   let hidden = false;
   let usernameResultHandler = null;
@@ -87,6 +96,12 @@ export function createWorldSocket({ gameId = "first-game", onEvent, onMove, onEx
       setStatus("connected");
       try {
         nextSocket.send(JSON.stringify({ type: "set_hidden", hidden }));
+        if (pendingUsername) {
+          nextSocket.send(JSON.stringify({
+            type: "set_username",
+            username: pendingUsername,
+          }));
+        }
         if (appearance) {
           nextSocket.send(JSON.stringify({ type: "set_appearance", appearance }));
         }
@@ -104,6 +119,7 @@ export function createWorldSocket({ gameId = "first-game", onEvent, onMove, onEx
           if (typeof event.id !== "string" || typeof event.username !== "string") return;
           playerId = event.id;
           username = event.username;
+          if (event.hasUsername === true) pendingUsername = event.username;
           sessionResultHandler?.({
             id: playerId,
             username,
@@ -142,6 +158,7 @@ export function createWorldSocket({ gameId = "first-game", onEvent, onMove, onEx
         if (event.type === "username_updated" || event.type === "username_error") {
           if (event.type === "username_updated" && typeof event.username === "string") {
             username = event.username;
+            pendingUsername = event.username;
           }
           usernameResultHandler?.(event);
           return;
@@ -229,6 +246,7 @@ export function createWorldSocket({ gameId = "first-game", onEvent, onMove, onEx
       return false;
     }
 
+    pendingUsername = normalizedUsername;
     if (!socket || socket.readyState !== WebSocket.OPEN) return true;
 
     try {
@@ -248,7 +266,7 @@ export function createWorldSocket({ gameId = "first-game", onEvent, onMove, onEx
     clearReconnectTimer();
     closeCurrentSocket();
     playerId = null;
-    username = "Player";
+    username = pendingUsername ?? "Player";
     reconnectAttempt = 0;
     lastMoveSentAt = Number.NEGATIVE_INFINITY;
     lastSentMove = null;

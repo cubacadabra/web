@@ -117,6 +117,7 @@ export async function createGame() {
   });
   worldSocket = createWorldSocket({
     gameId: gameDefinition.gameId,
+    initialUsername: currentUser?.username,
     onEvent: (event) => {
       hud.showWorldEvent(event);
       if (event.type === "player_leave") {
