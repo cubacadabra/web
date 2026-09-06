@@ -121,6 +121,10 @@ export function createRustEngine(exports) {
         "engine_load_appearance_buffer",
       );
     },
+    appearanceRevision() {
+      if (typeof exports.engine_appearance_revision !== "function") return 0;
+      return Number(call("engine_appearance_revision")) || 0;
+    },
     applyRemoteUpdate(message) {
       if (typeof message !== "string") return 0;
       if (typeof exports.engine_remote_update_buffer_ptr !== "function") return 0;

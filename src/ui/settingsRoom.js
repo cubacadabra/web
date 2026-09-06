@@ -7,7 +7,6 @@ export function createSettingsRoomController({
   state,
   worldSocket,
   engine,
-  onSessionAppearance,
 }) {
   let isOpen = false;
   let roomState = 0;
@@ -151,7 +150,6 @@ export function createSettingsRoomController({
   worldSocket.onUsernameResult = handleUsernameResult;
   worldSocket.onSession = (nextSession) => {
     session = nextSession;
-    onSessionAppearance?.(nextSession.appearance);
     activeUsername = nextSession.hasUsername ? nextSession.username : "";
     engine.setUsername(nextSession.username);
     if (waitingForAgeGateSession && nextSession.authenticated) {

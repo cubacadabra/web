@@ -42,6 +42,7 @@ export function createWorldSocket({
   gameId = "first-game",
   initialUsername = null,
   onEvent,
+  onSession,
   onMove,
   onExperience,
   onStatusChange,
@@ -120,13 +121,15 @@ export function createWorldSocket({
           playerId = event.id;
           username = event.username;
           if (event.hasUsername === true) pendingUsername = event.username;
-          sessionResultHandler?.({
+          const session = {
             id: playerId,
             username,
             hasUsername: event.hasUsername === true,
             authenticated: event.authenticated === true,
             appearance: event.appearance ?? null,
-          });
+          };
+          onSession?.(session);
+          sessionResultHandler?.(session);
           return;
         }
         if (event?.type === "move") {
