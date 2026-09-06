@@ -125,6 +125,7 @@ export function createWorldSocket({
             username,
             hasUsername: event.hasUsername === true,
             authenticated: event.authenticated === true,
+            appearance: event.appearance ?? null,
           });
           return;
         }

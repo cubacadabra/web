@@ -2,7 +2,13 @@ import { backendApiUrl } from "../config/clientConfig.js";
 
 const USERNAME_MAX_LENGTH = 24;
 
-export function createSettingsRoomController({ elements, state, worldSocket, engine }) {
+export function createSettingsRoomController({
+  elements,
+  state,
+  worldSocket,
+  engine,
+  onSessionAppearance,
+}) {
   let isOpen = false;
   let roomState = 0;
   let activeUsername = "";
@@ -145,6 +151,7 @@ export function createSettingsRoomController({ elements, state, worldSocket, eng
   worldSocket.onUsernameResult = handleUsernameResult;
   worldSocket.onSession = (nextSession) => {
     session = nextSession;
+    onSessionAppearance?.(nextSession.appearance);
     activeUsername = nextSession.hasUsername ? nextSession.username : "";
     engine.setUsername(nextSession.username);
     if (waitingForAgeGateSession && nextSession.authenticated) {

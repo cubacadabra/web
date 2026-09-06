@@ -75,12 +75,16 @@ export async function createGame() {
   const engineCapabilities = engine.getCharacterShowcaseCapabilities?.() ?? {};
   engine.loadGamePackage(gameDefinition.manifestSource);
   let localAppearance = gameDefinition.avatars?.player?.character ?? null;
+  let localAppearanceCustomized = false;
   const appearanceStorageKey = currentUser?.id
     ? `cubacadabra.character-appearance:${encodeURIComponent(currentUser.id)}`
     : "cubacadabra.character-appearance";
   try {
     const storedAppearance = window.localStorage.getItem(appearanceStorageKey);
-    if (storedAppearance) localAppearance = JSON.parse(storedAppearance);
+    if (storedAppearance) {
+      localAppearance = JSON.parse(storedAppearance);
+      localAppearanceCustomized = true;
+    }
   } catch {
     // The bundled package appearance remains the safe offline default.
   }
@@ -107,6 +111,7 @@ export async function createGame() {
     runtimeWorldIds,
     initialAppearance: localAppearance,
     onAppearanceChange: (appearance) => {
+      localAppearanceCustomized = true;
       try {
         window.localStorage.setItem(appearanceStorageKey, JSON.stringify(appearance));
       } catch {
@@ -163,11 +168,11 @@ export async function createGame() {
         appearance: previous?.appearance ?? null,
       };
       remotePlayers.set(event.id, player);
-      if (engineCapabilities.typedRemoteMotion) {
-        pendingMotionUpdates.set(event.id, player);
-      } else {
-        remoteRosterDirty = true;
-      }
+      // Keep the full versioned roster authoritative for every incoming move.
+      // This avoids making one client depend on the optional typed-motion ABI
+      // while another client is still sending normal JSON moves.
+      remoteRosterDirty = true;
+      if (engineCapabilities.typedRemoteMotion) pendingMotionUpdates.set(event.id, player);
     },
     onExperience: (event) => {
       if (event.type === "experience_state") {
@@ -184,12 +189,34 @@ export async function createGame() {
     },
     onStatusChange: hud.setConnectionStatus,
   });
-  worldSocket.setAppearance(localAppearance);
+  if (localAppearanceCustomized) worldSocket.setAppearance(localAppearance);
+
+  function applyServerAppearance(serverAppearance) {
+    const primary = serverAppearance?.colors?.primary;
+    if (typeof primary !== "string") return;
+    if (localAppearanceCustomized) return;
+
+    localAppearance = {
+      ...(localAppearance || {}),
+      colors: {
+        ...(localAppearance?.colors || {}),
+        primary,
+      },
+      revision: Math.max(
+        Number(localAppearance?.revision) || 0,
+        Number(serverAppearance.revision) || 0,
+      ),
+    };
+    engine.setLocalAppearance(JSON.stringify(localAppearance));
+    worldSocket.setAppearance(localAppearance);
+  }
+
   const settingsRoom = createSettingsRoomController({
     elements,
     state,
     worldSocket,
     engine,
+    onSessionAppearance: applyServerAppearance,
   });
   buildMode = createBuildModeController({
     state,
