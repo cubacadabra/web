@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Sign in to cubacadabra with your Google account."
+      content="Sign in to cubacadabra with Google or email and password."
     />
     <meta name="author" content="cubacadabra" />
     <meta name="robots" content="noindex, follow" />
@@ -38,8 +38,8 @@
             <p class="eyebrow">Player access</p>
             <h1 id="login-title">Come back to the world.</h1>
             <p class="about-lede">
-              Sign in with Google to keep your cubacadabra identity close as
-              the world grows.
+              Sign in with Google or email and password to keep your
+              cubacadabra identity close as the world grows.
             </p>
             <div class="login-world-note">
               <span class="meta-line" aria-hidden="true"></span>
@@ -51,8 +51,7 @@
             <p class="about-label">Continue</p>
             <h2 id="login-panel-title">Sign in to cubacadabra</h2>
             <p class="login-panel-copy">
-              Use your Google account to continue. Google handles your
-              password and account security.
+              Choose how you want to continue.
             </p>
 
             <div class="google-button-shell" id="google-button">
@@ -66,6 +65,35 @@
                 <span>Continue with Google</span>
               </button>
             </div>
+
+            <div class="login-divider" role="separator"><span>or</span></div>
+
+            <form class="email-login-form" id="email-login-form">
+              <div class="login-field">
+                <label for="login-email">Email</label>
+                <input
+                  id="login-email"
+                  name="email"
+                  type="email"
+                  value="play-review@cubacadabra.com"
+                  autocomplete="email"
+                  required
+                />
+              </div>
+              <div class="login-field">
+                <label for="login-password">Password</label>
+                <input
+                  id="login-password"
+                  name="password"
+                  type="password"
+                  value="testing"
+                  autocomplete="current-password"
+                  required
+                />
+              </div>
+              <button class="email-login-button" type="submit">Sign in with email</button>
+            </form>
+
             <p class="login-status" id="login-status" role="status" aria-live="polite"></p>
             <p class="login-legal">
               By continuing, you agree to the

@@ -4,6 +4,8 @@ import { getCurrentUser, getPostLoginPath } from "../src/auth/session.js";
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 const googleButton = document.querySelector("#google-button");
 const fallbackButton = document.querySelector(".google-button-fallback");
+const emailLoginForm = document.querySelector("#email-login-form");
+const emailLoginButton = emailLoginForm?.querySelector("button[type='submit']");
 const status = document.querySelector("#login-status");
 const googleScript = document.querySelector("#google-identity-services");
 let googleInitialized = false;
@@ -38,6 +40,17 @@ const finishExistingAppLogin = async () => {
   }
 };
 
+const finishLogin = async (user) => {
+  if (isAppLogin) {
+    await finishAppLogin();
+    return;
+  }
+
+  setStatus(`Welcome back, ${user.name}.`, "success");
+  const destination = getPostLoginPath("/");
+  window.setTimeout(() => window.location.assign(destination), 450);
+};
+
 const handleCredentialResponse = async (response) => {
   if (!response?.credential) {
     setStatus("Google sign-in could not be completed. Please try again.", "error");
@@ -59,16 +72,48 @@ const handleCredentialResponse = async (response) => {
       throw new Error(result?.error || "sign_in_failed");
     }
 
-    if (isAppLogin) {
-      await finishAppLogin();
-      return;
-    }
-
-    setStatus(`Welcome back, ${result.user.name}.`, "success");
-    const destination = getPostLoginPath("/");
-    window.setTimeout(() => window.location.assign(destination), 450);
+    await finishLogin(result.user);
   } catch {
     setStatus("We could not finish signing you in. Please try again.", "error");
+  }
+};
+
+const handleEmailLogin = async (event) => {
+  event.preventDefault();
+  if (!emailLoginForm || !emailLoginButton) return;
+
+  const formData = new FormData(emailLoginForm);
+  emailLoginButton.disabled = true;
+  setStatus("Signing you in…");
+
+  try {
+    const apiResponse = await fetch(backendApiUrl("/auth/email"), {
+      method: "POST",
+      credentials: "include",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        email: formData.get("email"),
+        password: formData.get("password"),
+      }),
+    });
+    const result = await apiResponse.json().catch(() => null);
+
+    if (!apiResponse.ok || !result?.user) {
+      if (result?.error === "invalid_credentials") {
+        throw new Error("invalid_credentials");
+      }
+      throw new Error(result?.error || "sign_in_failed");
+    }
+
+    await finishLogin(result.user);
+  } catch (error) {
+    setStatus(
+      error?.message === "invalid_credentials"
+        ? "That email or password is not correct."
+        : "We could not finish signing you in. Please try again.",
+      "error",
+    );
+    emailLoginButton.disabled = false;
   }
 };
 
@@ -114,6 +159,8 @@ fallbackButton?.addEventListener("click", () => {
     setStatus("Google sign-in is still loading. Please try again in a moment.", "error");
   }
 });
+
+emailLoginForm?.addEventListener("submit", handleEmailLogin);
 
 googleScript?.addEventListener("load", () => initializeGoogleButton());
 waitForGoogle();

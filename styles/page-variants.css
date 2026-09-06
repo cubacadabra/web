@@ -340,6 +340,105 @@
   flex: 0 0 18px;
 }
 
+.login-divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: min(100%, 360px);
+  margin-top: 22px;
+  color: var(--about-faint);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.login-divider::before,
+.login-divider::after {
+  flex: 1;
+  height: 1px;
+  background: var(--about-line);
+  content: "";
+}
+
+.email-login-form {
+  display: grid;
+  gap: 16px;
+  width: min(100%, 360px);
+  margin-top: 22px;
+}
+
+.login-field {
+  display: grid;
+  gap: 7px;
+}
+
+.login-field label {
+  color: var(--about-soft);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.login-field input {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 13px;
+  border: 1px solid rgba(231, 233, 236, 0.2);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--about-ink);
+  font: inherit;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 180ms ease, background 180ms ease;
+}
+
+.login-field input:hover {
+  border-color: rgba(231, 233, 236, 0.36);
+}
+
+.login-field input:focus {
+  border-color: var(--about-accent);
+  background: rgba(139, 156, 246, 0.08);
+  box-shadow: 0 0 0 3px rgba(139, 156, 246, 0.14);
+}
+
+.email-login-button {
+  min-height: 46px;
+  margin-top: 2px;
+  padding: 0 18px;
+  border: 1px solid var(--about-accent);
+  border-radius: 4px;
+  background: var(--about-accent);
+  color: #111315;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+
+.email-login-button:hover {
+  border-color: #aab6ff;
+  background: #aab6ff;
+  transform: translateY(-1px);
+}
+
+.email-login-button:active {
+  transform: translateY(1px);
+}
+
+.email-login-button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+  transform: none;
+}
+
 .login-status {
   min-height: 20px;
   margin: 14px 0 0;
@@ -428,7 +527,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .login-page .google-button-fallback {
+  .login-page .google-button-fallback,
+  .login-page .login-field input,
+  .login-page .email-login-button {
     transition: none;
   }
 }
