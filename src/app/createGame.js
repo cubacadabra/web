@@ -205,7 +205,7 @@ export async function createGame() {
       revision: Math.max(
         Number(localAppearance?.revision) || 0,
         Number(serverAppearance.revision) || 0,
-      ),
+      ) + 1,
     };
     engine.setLocalAppearance(JSON.stringify(localAppearance));
     worldSocket.setAppearance(localAppearance);
