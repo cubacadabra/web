@@ -12,6 +12,7 @@ const aboutInputs = Object.fromEntries(
 
 const siteRoutes = [
   ...aboutRoutes.map(([, route]) => route.path.replace(/\/$/, "")),
+  "/download",
   "/my-cube",
 ];
 
@@ -44,6 +45,7 @@ export default defineConfig({
         main: projectPath("index.html"),
         about: projectPath("about/index.html"),
         ...aboutInputs,
+        download: projectPath("download/index.html"),
         terms: projectPath("terms/index.html"),
         privacy: projectPath("privacy/index.html"),
         login: projectPath("login/index.html"),
