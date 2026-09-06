@@ -24,7 +24,6 @@ export async function createGame() {
   const engineCapabilities = engine.getCharacterShowcaseCapabilities?.() ?? {};
   engine.loadGamePackage(gameDefinition.manifestSource);
   let localAppearance = gameDefinition.avatars?.player?.character ?? null;
-  let localAppearanceCustomized = false;
   const appearanceStorageKey = currentUser?.id
     ? `cubacadabra.character-appearance:${encodeURIComponent(currentUser.id)}`
     : "cubacadabra.character-appearance";
@@ -32,7 +31,6 @@ export async function createGame() {
     const storedAppearance = window.localStorage.getItem(appearanceStorageKey);
     if (storedAppearance) {
       localAppearance = JSON.parse(storedAppearance);
-      localAppearanceCustomized = true;
     }
   } catch {
     // The bundled package appearance remains the safe offline default.
@@ -58,14 +56,29 @@ export async function createGame() {
     manifestSource: gameDefinition.manifestSource,
     runtimeWorldIds,
     initialAppearance: localAppearance,
+    getAppearanceRevision: () => engine.appearanceRevision(),
     onAppearanceChange: (appearance) => {
-      localAppearanceCustomized = true;
+      const primary = localAppearance?.colors?.primary;
+      const nextAppearance = typeof primary === "string"
+        ? {
+          ...appearance,
+          colors: { ...(appearance.colors || {}), primary },
+          revision: Math.max(
+            Number(appearance.revision) || 0,
+            engine.appearanceRevision(),
+          ) + 1,
+        }
+        : appearance;
+      if (nextAppearance !== appearance) {
+        engine.setLocalAppearance(JSON.stringify(nextAppearance));
+      }
+      localAppearance = nextAppearance;
       try {
-        window.localStorage.setItem(appearanceStorageKey, JSON.stringify(appearance));
+        window.localStorage.setItem(appearanceStorageKey, JSON.stringify(nextAppearance));
       } catch {
         // The appearance still applies to the current engine session.
       }
-      worldSocket?.setAppearance(appearance);
+      worldSocket?.setAppearance(nextAppearance);
     },
   });
   worldSocket = createWorldSocket({
@@ -140,12 +153,9 @@ export async function createGame() {
     },
     onStatusChange: hud.setConnectionStatus,
   });
-  if (localAppearanceCustomized) worldSocket.setAppearance(localAppearance);
-
   function applyServerAppearance(serverAppearance) {
     const primary = serverAppearance?.colors?.primary;
     if (typeof primary !== "string") return;
-    if (localAppearanceCustomized) return;
 
     localAppearance = {
       ...(localAppearance || {}),

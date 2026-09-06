@@ -103,6 +103,7 @@ export function createCharacterShowcaseController({
   runtimeWorldIds = [],
   onAppearanceChange = null,
   initialAppearance = null,
+  getAppearanceRevision = null,
 }) {
   const enabled = showcaseRequested() && Boolean(elements.characterShowcasePanel);
   const removeListeners = [];
@@ -144,7 +145,11 @@ export function createCharacterShowcaseController({
           Object.entries(legacyColors).filter(([, value]) => typeof value === "string"),
         ),
       },
-      revision: Math.max(appearanceRevision, previousRevision) + 1,
+      revision: Math.max(
+        appearanceRevision,
+        previousRevision,
+        Number(getAppearanceRevision?.()) || 0,
+      ) + 1,
     };
     appearanceRevision = character.revision;
     return character;
