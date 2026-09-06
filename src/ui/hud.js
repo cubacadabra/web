@@ -118,7 +118,7 @@ export function createHudController({ elements, state, gameDefinition }) {
     elements.worldShell?.classList.remove("is-countdown", "is-launch-complete");
   }
 
-  setWorld(gameDefinition, { lobby: true });
+  setWorld(gameDefinition, { lobby: state.runtime.worldId === "lobby" });
 
   function dismissHint() {
     if (state.runtime.hintDismissed) return;

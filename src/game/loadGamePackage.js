@@ -75,19 +75,27 @@ export async function loadGamePackage() {
       normalizeWorld(world),
     ]),
   ]);
+  const lobbyEnabled = manifest.lobby !== false;
   const startWorld = manifest.startWorld ?? "lobby";
-  const initialWorld = worlds[startWorld];
+  const activeWorldId = lobbyEnabled || startWorld !== "lobby"
+    ? startWorld
+    : manifest.launch?.destinationWorld;
+  if (!activeWorldId) {
+    throw new Error("A game without a lobby must define a launch destination world.");
+  }
+  const initialWorld = worlds[activeWorldId];
   if (!initialWorld) {
-    throw new Error(`The game start world "${startWorld}" was not found.`);
+    throw new Error(`The game start world "${activeWorldId}" was not found.`);
   }
 
   return {
     ...manifest,
     gameId,
+    lobbyEnabled,
     manifestSource,
     script,
     worlds,
     runtimeWorldIds: Object.keys(worlds),
-    activeWorldId: startWorld,
+    activeWorldId,
   };
 }

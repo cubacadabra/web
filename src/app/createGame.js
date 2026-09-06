@@ -39,9 +39,13 @@ export async function createGame() {
   engine.loadGameScript(gameDefinition.script);
   engine.setAuthenticated(Boolean(currentUser));
   const runtimeWorldIds = gameDefinition.runtimeWorldIds;
+  const initialFrame = engine.readFrame();
+  const initialWorldId = runtimeWorldIds[initialFrame.activeWorldIndex]
+    ?? gameDefinition.activeWorldId;
+  const hasLobby = initialWorldId === "lobby" && gameDefinition.lobbyEnabled;
   const state = createGameState();
-  state.runtime.worldId = gameDefinition.activeWorldId;
-  let activeWorld = gameDefinition.worlds[gameDefinition.activeWorldId];
+  state.runtime.worldId = initialWorldId;
+  let activeWorld = gameDefinition.worlds[initialWorldId];
   const remotePlayers = new Map();
   let remoteRosterDirty = true;
   let remoteSequence = 0;
@@ -185,8 +189,9 @@ export async function createGame() {
     engine,
     onReturn: () => {
       pendingSessionWorldId = null;
-      const lobbyIndex = runtimeWorldIds.indexOf("lobby");
-      if (lobbyIndex >= 0) engine.startWorld(lobbyIndex);
+      const returnWorldId = hasLobby ? "lobby" : initialWorldId;
+      const returnIndex = runtimeWorldIds.indexOf(returnWorldId);
+      if (returnIndex >= 0) engine.startWorld(returnIndex);
     },
   });
 
