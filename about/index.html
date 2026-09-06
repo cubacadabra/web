@@ -44,6 +44,7 @@
   </head>
   <body class="about-page" data-about-route="overview">
     <div class="about-shell">
+      <!-- about-shared:header:start -->
       <header class="about-topbar">
         <a class="brand" href="/" aria-label="cubacadabra home">
           <span class="brand-mark" aria-hidden="true"><span></span></span>
@@ -59,9 +60,12 @@
           <button class="about-logout" type="button" data-auth-logout hidden>Sign Out</button>
         </nav>
       </header>
+      <!-- about-shared:header:end -->
 
       <div class="about-layout">
+        <!-- about-shared:sidebar:start -->
         <aside class="about-sidebar">
+          <!-- about-sidebar-content:start -->
           <div class="about-sidebar-heading">
             <span>About cubacadabra</span>
             <span class="about-sidebar-status">Future plans</span>
@@ -97,9 +101,13 @@
             </div>
           </nav>
 
+          <!-- about-sidebar-content:end -->
+
         </aside>
+        <!-- about-shared:sidebar:end -->
 
         <main class="about-content">
+          <!-- about-section:overview:start -->
           <section id="overview" class="about-overview" aria-labelledby="about-title">
             <p class="about-breadcrumb"><span>About</span><span aria-hidden="true">/</span><span>Overview</span></p>
             <h1 id="about-title">pronounced 🪄</h1>
@@ -134,7 +142,9 @@
               </div>
             </div>
           </section>
+          <!-- about-section:overview:end -->
 
+          <!-- about-section:open-source-web:start -->
           <section id="open-source-web" class="about-section about-code-section" aria-labelledby="open-source-web-title">
             <div class="about-section-header">
               <p class="about-kicker">01 / Open Source / web</p>
@@ -184,7 +194,9 @@
               </div>
             </div>
           </section>
+          <!-- about-section:open-source-web:end -->
 
+          <!-- about-section:open-source-rust:start -->
           <section id="open-source-rust" class="about-section about-code-section" aria-labelledby="open-source-rust-title">
             <div class="about-section-header">
               <p class="about-kicker">02 / Open Source / rust</p>
@@ -230,7 +242,9 @@
               </div>
             </div>
           </section>
+          <!-- about-section:open-source-rust:end -->
 
+          <!-- about-section:open-source-ios-app:start -->
           <section id="open-source-ios-app" class="about-section about-code-section" aria-labelledby="open-source-ios-app-title">
             <div class="about-section-header">
               <p class="about-kicker">03 / Open Source / ios_app</p>
@@ -276,7 +290,9 @@
               </div>
             </div>
           </section>
+          <!-- about-section:open-source-ios-app:end -->
 
+          <!-- about-section:open-source-android-app:start -->
           <section id="open-source-android-app" class="about-section about-code-section" aria-labelledby="open-source-android-app-title">
             <div class="about-section-header">
               <p class="about-kicker">04 / Open Source / android_app</p>
@@ -322,7 +338,9 @@
               </div>
             </div>
           </section>
+          <!-- about-section:open-source-android-app:end -->
 
+          <!-- about-section:open-source-first-game:start -->
           <section id="open-source-first-game" class="about-section about-code-section" aria-labelledby="open-source-first-game-title">
             <div class="about-section-header">
               <p class="about-kicker">05 / Open Source / first_game</p>
@@ -368,7 +386,9 @@
               </div>
             </div>
           </section>
+          <!-- about-section:open-source-first-game:end -->
 
+          <!-- about-section:why-another-platform:start -->
           <section id="why-another-platform" class="about-section" aria-labelledby="problem-title">
             <div class="about-section-header">
               <p class="about-kicker">01 / Why build another platform?</p>
@@ -418,7 +438,9 @@
               </div>
             </div>
           </section>
+          <!-- about-section:why-another-platform:end -->
 
+          <!-- about-section:opportunity:start -->
           <section id="opportunity" class="about-section" aria-labelledby="solution-title">
             <div class="about-section-header">
               <p class="about-kicker">02 / The opportunity</p>
@@ -450,7 +472,9 @@
               </div>
             </div>
           </section>
+          <!-- about-section:opportunity:end -->
 
+          <!-- about-section:open-by-design:start -->
           <section id="open-by-design" class="about-section" aria-labelledby="open-title">
             <div class="about-section-header">
               <p class="about-kicker">03 / Open by design</p>
@@ -480,7 +504,9 @@
               <p class="about-callout">Open anything where openness benefits creators, interoperability, trust, or contribution. Keep private anything where secrecy materially raises the cost of abuse.</p>
             </div>
           </section>
+          <!-- about-section:open-by-design:end -->
 
+          <!-- about-section:hard-part:start -->
           <section id="hard-part" class="about-section" aria-labelledby="moat-title">
             <div class="about-section-header">
               <p class="about-kicker">04 / The hard part</p>
@@ -495,7 +521,9 @@
               </div>
             </div>
           </section>
+          <!-- about-section:hard-part:end -->
 
+          <!-- about-section:constituencies:start -->
           <section id="constituencies" class="about-section" aria-labelledby="people-title">
             <div class="about-section-header">
               <p class="about-kicker">05 / Three constituencies</p>
@@ -510,7 +538,9 @@
               </div>
             </div>
           </section>
+          <!-- about-section:constituencies:end -->
 
+          <!-- about-section:where-we-are:start -->
           <section id="where-we-are" class="about-section about-last-section" aria-labelledby="reality-title">
             <div class="about-section-header">
               <p class="about-kicker">06 / Where we are now</p>
@@ -528,9 +558,11 @@
               </div>
             </div>
           </section>
+          <!-- about-section:where-we-are:end -->
         </main>
       </div>
 
+      <!-- about-shared:footer:start -->
       <footer class="about-footer" aria-label="cubacadabra status">
         <nav class="about-social-links" aria-label="Social links">
           <a href="https://www.youtube.com/@cubacadabra" target="_blank" rel="noreferrer">YouTube</a>
@@ -546,6 +578,7 @@
           <a href="/privacy/">Privacy</a>
         </nav>
       </footer>
+      <!-- about-shared:footer:end -->
     </div>
 
     <script type="module" src="./about-page.js"></script>

@@ -1,5 +1,10 @@
 /* About section pages and shared legal-page layout foundations. */
 
+/* The overview source also contains the sections used by generated pages. */
+.about-page[data-about-route="overview"] .about-section {
+  display: none;
+}
+
 /* A section page gets the breadcrumb above the section grid, so its title and
    supporting content share the same reading plane instead of being offset by
    the breadcrumb itself. */

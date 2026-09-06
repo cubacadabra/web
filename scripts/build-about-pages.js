@@ -8,15 +8,35 @@ const projectDirectory = path.dirname(scriptDirectory);
 const aboutDirectory = path.join(projectDirectory, "about");
 const sourcePath = path.join(aboutDirectory, "index.html");
 
-const extractElement = (source, openingTag, closingTag) => {
-  const start = source.indexOf(openingTag);
-  if (start === -1) throw new Error(`Could not find ${openingTag}`);
+const marker = (name, position) => `<!-- ${name}:${position} -->`;
 
-  const end = source.indexOf(closingTag, start);
-  if (end === -1) throw new Error(`Could not find ${closingTag}`);
+const extractMarkedBlock = (source, name) => {
+  const startMarker = marker(name, "start");
+  const endMarker = marker(name, "end");
+  const start = source.indexOf(startMarker);
+  if (start === -1) throw new Error(`Could not find ${startMarker}`);
 
-  return source.slice(start, end + closingTag.length);
+  const contentStart = start + startMarker.length;
+  const end = source.indexOf(endMarker, contentStart);
+  if (end === -1) throw new Error(`Could not find ${endMarker}`);
+
+  return source.slice(contentStart, end).trim();
 };
+
+const replaceMarkedBlock = (source, name, replacement) => {
+  const startMarker = marker(name, "start");
+  const endMarker = marker(name, "end");
+  const start = source.indexOf(startMarker);
+  if (start === -1) throw new Error(`Could not find ${startMarker}`);
+
+  const contentStart = start + startMarker.length;
+  const end = source.indexOf(endMarker, contentStart);
+  if (end === -1) throw new Error(`Could not find ${endMarker}`);
+
+  return `${source.slice(0, start)}${replacement.trim()}${source.slice(end + endMarker.length)}`;
+};
+
+const stripSourceMarkers = (source) => source.replace(/\s*<!-- [^>]+:(?:start|end) -->/g, "");
 
 const escapeHtml = (value) => value
   .replaceAll("&", "&amp;")
@@ -30,13 +50,13 @@ const indentBlock = (value, spaces) => value
   .map((line) => line ? `${" ".repeat(spaces)}${line}` : line)
   .join("\n");
 
-const setActiveRoute = (sidebar, routePath) => sidebar.replace(/<a([^>]*)>/g, (tag, attributes) => {
+const setActiveLink = (markup, routePath, activeClass, ariaCurrent) => markup.replace(/<a([^>]*)>/g, (tag, attributes) => {
   const cleanAttributes = attributes
-    .replace(/\sclass="is-active"/g, "")
-    .replace(/\saria-current="location"/g, "");
+    .replace(new RegExp(`\\sclass="${activeClass}"`, "g"), "")
+    .replace(new RegExp(`\\saria-current="${ariaCurrent}"`, "g"), "");
 
   if (!cleanAttributes.includes(`href="${routePath}"`)) return `<a${cleanAttributes}>`;
-  return `<a class="is-active"${cleanAttributes} aria-current="location">`;
+  return `<a class="${activeClass}"${cleanAttributes} aria-current="${ariaCurrent}">`;
 });
 
 const createHead = (route) => {
@@ -85,13 +105,20 @@ ${structuredData}
 };
 
 const createPage = (source, routeId, route) => {
-  const header = extractElement(source, '<header class="about-topbar">', "</header>");
-  const sidebar = setActiveRoute(
-    extractElement(source, '<aside class="about-sidebar">', "</aside>"),
-    route.path,
+  const header = setActiveLink(
+    extractMarkedBlock(source, "about-shared:header"),
+    "/about/",
+    "is-current",
+    "page",
   );
-  const section = extractElement(source, `<section id="${routeId}"`, "</section>");
-  const footer = extractElement(source, '<footer class="about-footer"', "</footer>");
+  const sidebar = setActiveLink(
+    stripSourceMarkers(extractMarkedBlock(source, "about-shared:sidebar")),
+    route.path,
+    "is-active",
+    "location",
+  );
+  const section = extractMarkedBlock(source, `about-section:${routeId}`);
+  const footer = extractMarkedBlock(source, "about-shared:footer");
   const outputDirectory = path.dirname(path.join(projectDirectory, route.path.slice(1), "index.html"));
   const scriptPath = `${path.relative(outputDirectory, path.join(aboutDirectory, "about-page.js"))}`.replaceAll(path.sep, "/");
 
@@ -122,14 +149,18 @@ ${indentBlock(footer, 6)}
 };
 
 const createMyCubePage = (source) => {
-  const sourceHeader = extractElement(source, '<header class="about-topbar">', "</header>");
-  const header = sourceHeader
-    .replace('class="is-current" href="/about/" aria-current="page"', 'href="/about/"')
-    .replace('<a href="/my-cube/">My Cube</a>', '<a class="is-current" href="/my-cube/" aria-current="page">My Cube</a>');
-  const sourceSidebar = extractElement(source, '<aside class="about-sidebar">', "</aside>");
-  const sidebar = sourceSidebar.replace(
-    /<div class="about-sidebar-heading">[\s\S]*?<\/div>\s*<nav class="about-menu"[\s\S]*?<\/nav>/,
-    `<div class="about-sidebar-heading">
+  const header = setActiveLink(
+    extractMarkedBlock(source, "about-shared:header"),
+    "/my-cube/",
+    "is-current",
+    "page",
+  );
+  const sourceSidebar = extractMarkedBlock(source, "about-shared:sidebar");
+  const sidebar = replaceMarkedBlock(
+    sourceSidebar,
+    "about-sidebar-content",
+    `
+          <div class="about-sidebar-heading">
             <span>My Cube</span>
             <span class="about-sidebar-status">Required to continue</span>
           </div>
@@ -139,9 +170,10 @@ const createMyCubePage = (source) => {
             <a href="#cubes" data-section="cubes" hidden><span>Cubes</span></a>
             <a href="#blocked-users" data-section="blocked-users" hidden><span>Blocked Users</span></a>
             <a href="#subscription" data-section="subscription" hidden><span>Subscription</span></a>
-          </nav>`,
+          </nav>
+          `,
   );
-  const footer = extractElement(source, '<footer class="about-footer"', "</footer>");
+  const footer = extractMarkedBlock(source, "about-shared:footer");
   const outputDirectory = path.dirname(path.join(projectDirectory, "my-cube", "index.html"));
   const scriptPath = `${path.relative(outputDirectory, path.join(projectDirectory, "my-cube", "my-cube-page.js"))}`.replaceAll(path.sep, "/");
 

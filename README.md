@@ -45,6 +45,12 @@ npm install
 npm run dev
 ```
 
+`npm run build:about` generates the deep `/about/.../` pages and `/my-cube/`
+from the shared regions in `about/index.html`. The route metadata in
+`about/about-routes.js` is the source for those pages and for the Vite build
+inputs. This keeps the static GitHub Pages deployment routeable while keeping
+the shared shell in one place.
+
 Development defaults are:
 
 ```text
