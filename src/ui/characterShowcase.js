@@ -339,7 +339,11 @@ export function createCharacterShowcaseController({
 
   function triggerWave() {
     waveCount += 1;
-    setStatus(`Wave ${waveCount} selected · the current Rust host boundary does not expose local emotes yet.`);
+    if (capabilities.localWave && engine.triggerLocalWave()) {
+      setStatus(`Wave ${waveCount} selected.`);
+      return;
+    }
+    setStatus(`Wave ${waveCount} selected · local emotes are unavailable in this engine build.`);
   }
 
   function toggleReducedEffects() {

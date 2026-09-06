@@ -12,7 +12,59 @@ import { createHudController } from "../ui/hud.js";
 import { createCharacterShowcaseController } from "../ui/characterShowcase.js";
 import { getCurrentUser } from "../auth/session.js";
 
+const REMOTE_MOTION_BATCH_VERSION = 1;
+const REMOTE_MOTION_BATCH_HEADER_BYTES = 8;
+const REMOTE_MOTION_RECORD_BYTES = 40;
+const FNV_OFFSET_BASIS = 0xcbf29ce484222325n;
+const FNV_PRIME = 0x100000001b3n;
+
+function stableRemoteIdentity(value) {
+  let hash = FNV_OFFSET_BASIS;
+  for (const byte of new TextEncoder().encode(value)) {
+    hash ^= BigInt(byte);
+    hash = BigInt.asUintN(64, hash * FNV_PRIME);
+  }
+  return hash || 1n;
+}
+
+function writeUint64(view, offset, value) {
+  view.setUint32(offset, Number(value & 0xffffffffn), true);
+  view.setUint32(offset + 4, Number(value >> 32n), true);
+}
+
+function encodeRemoteMotionBatch(players) {
+  const buffer = new ArrayBuffer(
+    REMOTE_MOTION_BATCH_HEADER_BYTES + players.length * REMOTE_MOTION_RECORD_BYTES,
+  );
+  const view = new DataView(buffer);
+  view.setUint32(0, REMOTE_MOTION_BATCH_VERSION, true);
+  view.setUint32(4, players.length, true);
+  players.forEach((player, index) => {
+    const offset = REMOTE_MOTION_BATCH_HEADER_BYTES + index * REMOTE_MOTION_RECORD_BYTES;
+    writeUint64(view, offset, stableRemoteIdentity(player.id));
+    view.setUint32(offset + 8, Number(player.generation) >>> 0, true);
+    writeUint64(
+      view,
+      offset + 12,
+      BigInt(Math.max(0, Number.isSafeInteger(player.motionSequence)
+        ? player.motionSequence
+        : 0)),
+    );
+    view.setFloat32(offset + 20, player.position[0], true);
+    view.setFloat32(offset + 24, player.position[1], true);
+    view.setFloat32(offset + 28, player.position[2], true);
+    view.setFloat32(offset + 32, player.yaw, true);
+    view.setUint32(
+      offset + 36,
+      (player.moving ? 1 : 0) | (player.sprinting ? 2 : 0),
+      true,
+    );
+  });
+  return new Uint8Array(buffer);
+}
+
 export async function createGame() {
+  const currentUser = await getCurrentUser();
   const elements = getDomElements();
   const gameDefinition = await loadGamePackage();
   const isTouchDevice =
@@ -23,20 +75,25 @@ export async function createGame() {
   const engineCapabilities = engine.getCharacterShowcaseCapabilities?.() ?? {};
   engine.loadGamePackage(gameDefinition.manifestSource);
   let localAppearance = gameDefinition.avatars?.player?.character ?? null;
+  const appearanceStorageKey = currentUser?.id
+    ? `cubacadabra.character-appearance:${encodeURIComponent(currentUser.id)}`
+    : "cubacadabra.character-appearance";
   try {
-    const storedAppearance = window.localStorage.getItem("cubacadabra.character-appearance");
+    const storedAppearance = window.localStorage.getItem(appearanceStorageKey);
     if (storedAppearance) localAppearance = JSON.parse(storedAppearance);
   } catch {
     // The bundled package appearance remains the safe offline default.
   }
   if (localAppearance) engine.setLocalAppearance(JSON.stringify(localAppearance));
   engine.loadGameScript(gameDefinition.script);
-  engine.setAuthenticated(Boolean(await getCurrentUser()));
+  engine.setAuthenticated(Boolean(currentUser));
   const runtimeWorldIds = gameDefinition.runtimeWorldIds;
   const state = createGameState();
   state.runtime.worldId = gameDefinition.activeWorldId;
   let activeWorld = gameDefinition.worlds[gameDefinition.activeWorldId];
   const remotePlayers = new Map();
+  const pendingMotionUpdates = new Map();
+  let remoteRosterDirty = true;
   let remoteSequence = 0;
   let worldSocket = null;
   let pendingSessionWorldId = null;
@@ -51,7 +108,7 @@ export async function createGame() {
     initialAppearance: localAppearance,
     onAppearanceChange: (appearance) => {
       try {
-        window.localStorage.setItem("cubacadabra.character-appearance", JSON.stringify(appearance));
+        window.localStorage.setItem(appearanceStorageKey, JSON.stringify(appearance));
       } catch {
         // The appearance still applies to the current engine session.
       }
@@ -62,7 +119,11 @@ export async function createGame() {
     gameId: gameDefinition.gameId,
     onEvent: (event) => {
       hud.showWorldEvent(event);
-      if (event.type === "player_leave") remotePlayers.delete(event.id);
+      if (event.type === "player_leave") {
+        remotePlayers.delete(event.id);
+        pendingMotionUpdates.delete(event.id);
+        remoteRosterDirty = true;
+      }
       if (event.type === "player_join" && !event.isSelf) {
         remotePlayers.set(event.id, {
           id: event.id,
@@ -74,9 +135,11 @@ export async function createGame() {
           appearance: event.appearance ?? null,
           motionSequence: 0,
         });
+        remoteRosterDirty = true;
       }
       if (event.type === "appearance" && remotePlayers.has(event.id)) {
         remotePlayers.get(event.id).appearance = event.appearance ?? null;
+        remoteRosterDirty = true;
       }
     },
     onMove: (event) => {
@@ -86,16 +149,24 @@ export async function createGame() {
         }
         return;
       }
-      remotePlayers.set(event.id, {
+      const previous = remotePlayers.get(event.id);
+      if (!previous) remoteRosterDirty = true;
+      const player = {
         id: event.id,
-        generation: event.generation ?? remotePlayers.get(event.id)?.generation ?? 0,
+        generation: event.generation ?? previous?.generation ?? 0,
         position: [event.x, event.y, event.z],
         yaw: event.yaw,
         moving: event.moving,
         sprinting: event.sprinting,
         motionSequence: event.motionSequence ?? 0,
-        appearance: remotePlayers.get(event.id)?.appearance ?? null,
-      });
+        appearance: previous?.appearance ?? null,
+      };
+      remotePlayers.set(event.id, player);
+      if (engineCapabilities.typedRemoteMotion) {
+        pendingMotionUpdates.set(event.id, player);
+      } else {
+        remoteRosterDirty = true;
+      }
     },
     onExperience: (event) => {
       if (event.type === "experience_state") {
@@ -159,6 +230,9 @@ export async function createGame() {
 
   function syncRemotePlayers() {
     if (state.runtime.worldId === "settings") {
+      if (!remoteRosterDirty) return;
+      remoteRosterDirty = false;
+      pendingMotionUpdates.clear();
       if (engineCapabilities.persistentIdentity) {
         remoteSequence += 1;
         engine.applyRemoteUpdate(JSON.stringify({
@@ -172,8 +246,9 @@ export async function createGame() {
       return;
     }
     const players = [...remotePlayers.values()];
-    if (engineCapabilities.persistentIdentity) {
+    if (engineCapabilities.persistentIdentity && remoteRosterDirty) {
       remoteSequence += 1;
+      remoteRosterDirty = false;
       engine.applyRemoteUpdate(JSON.stringify({
         version: 1,
         sequence: remoteSequence,
@@ -189,8 +264,19 @@ export async function createGame() {
           ...(player.appearance ? { appearance: player.appearance } : {}),
         })),
       }));
+    }
+    if (engineCapabilities.persistentIdentity && engineCapabilities.typedRemoteMotion) {
+      if (pendingMotionUpdates.size) {
+        engine.applyRemoteMotionBatch(
+          encodeRemoteMotionBatch([...pendingMotionUpdates.values()]),
+        );
+        pendingMotionUpdates.clear();
+      }
       return;
     }
+    if (engineCapabilities.persistentIdentity) return;
+    if (!remoteRosterDirty) return;
+    remoteRosterDirty = false;
     engine.setRemotePlayers(players.map((player) => ({
       x: player.position[0],
       y: player.position[1],
@@ -210,6 +296,8 @@ export async function createGame() {
     if (networkWorldId === connectedWorldId) return;
     connectedWorldId = networkWorldId;
     remotePlayers.clear();
+    pendingMotionUpdates.clear();
+    remoteRosterDirty = true;
     remoteSequence = 0;
     engine.resetRemoteSession?.();
     syncRemotePlayers();

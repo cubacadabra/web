@@ -128,6 +128,17 @@ export function createRustEngine(exports) {
         "engine_apply_remote_update_buffer",
       );
     },
+    applyRemoteMotionBatch(bytes) {
+      if (!(bytes instanceof Uint8Array)) return false;
+      if (typeof exports.engine_remote_motion_batch_buffer_ptr !== "function"
+        || typeof exports.engine_apply_remote_motion_batch_buffer !== "function") {
+        return false;
+      }
+      const pointer = call("engine_remote_motion_batch_buffer_ptr", bytes.length);
+      if (!pointer && bytes.length) return false;
+      new Uint8Array(exports.memory.buffer, pointer, bytes.length).set(bytes);
+      return Boolean(call("engine_apply_remote_motion_batch_buffer"));
+    },
     resetRemoteSession() {
       if (typeof exports.engine_reset_remote_session !== "function") return false;
       call("engine_reset_remote_session");
@@ -167,6 +178,11 @@ export function createRustEngine(exports) {
     setAuthenticated(authenticated) {
       call("engine_set_authenticated", authenticated ? 1 : 0);
     },
+    triggerLocalWave() {
+      if (typeof exports.engine_trigger_local_wave !== "function") return false;
+      call("engine_trigger_local_wave");
+      return true;
+    },
     setReducedEffects(reduced) {
       if (typeof exports.engine_set_reduced_effects !== "function") return false;
       call("engine_set_reduced_effects", reduced ? 1 : 0);
@@ -178,6 +194,9 @@ export function createRustEngine(exports) {
         localAppearance: typeof exports.engine_appearance_buffer_ptr === "function"
           && typeof exports.engine_load_appearance_buffer === "function",
         persistentIdentity: typeof exports.engine_remote_update_buffer_ptr === "function",
+        typedRemoteMotion: typeof exports.engine_remote_motion_batch_buffer_ptr === "function"
+          && typeof exports.engine_apply_remote_motion_batch_buffer === "function",
+        localWave: typeof exports.engine_trigger_local_wave === "function",
       };
     },
     uiPointer(pointerId, phase, x, y) {
