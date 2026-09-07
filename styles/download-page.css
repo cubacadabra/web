@@ -1,0 +1,174 @@
+/* Download page: keep the platform list quiet and give the available app one
+   clear download surface. */
+.download-content {
+  padding-top: 58px;
+}
+
+.download-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 304px);
+  align-items: start;
+  gap: clamp(56px, 10vw, 132px);
+  min-height: calc(100svh - 168px);
+}
+
+.download-intro {
+  max-width: 620px;
+}
+
+.download-intro h1 {
+  max-width: 620px;
+  font-size: clamp(52px, 7vw, 96px);
+}
+
+.download-qr {
+  width: min(100%, 304px);
+  margin: 0;
+  justify-self: end;
+}
+
+.download-qr img {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #fff;
+}
+
+.download-qr figcaption {
+  margin-top: 14px;
+  color: var(--about-faint);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.download-layout-android {
+  display: block;
+  min-height: 0;
+}
+
+.download-layout-android .download-intro {
+  max-width: 720px;
+}
+
+.download-steps {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 304px));
+  gap: clamp(36px, 7vw, 76px);
+  margin: 72px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.download-step {
+  min-width: 0;
+  padding-top: 22px;
+  border-top: 1px solid var(--about-line);
+}
+
+.download-step-copy h2 {
+  margin: 12px 0 0;
+  color: var(--about-ink);
+  font-size: clamp(24px, 3vw, 32px);
+  font-weight: 750;
+  letter-spacing: -0.055em;
+  line-height: 1.05;
+}
+
+.download-step-copy p:not(.download-step-label) {
+  max-width: 290px;
+  margin: 16px 0 0;
+  color: var(--about-soft);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.download-step-copy strong {
+  color: var(--about-ink);
+  font-weight: 700;
+}
+
+.download-step-label {
+  margin: 0;
+  color: var(--about-accent);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.download-step .download-qr {
+  width: 100%;
+  margin-top: 30px;
+  justify-self: start;
+}
+
+.download-menu button {
+  display: flex;
+  width: 100%;
+  min-height: 32px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--about-soft);
+  cursor: not-allowed;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.2;
+  text-align: left;
+}
+
+.download-menu button:disabled {
+  color: var(--about-faint);
+  opacity: 0.62;
+}
+
+@media (max-width: 960px) {
+  .download-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 56px;
+    min-height: 0;
+  }
+
+  .download-qr {
+    justify-self: start;
+  }
+
+  .download-steps {
+    gap: 40px;
+  }
+}
+
+@media (max-width: 720px) {
+  .download-content {
+    padding-top: 50px;
+  }
+
+  .download-layout {
+    gap: 44px;
+  }
+
+  .download-steps {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 52px;
+    margin-top: 56px;
+  }
+
+  .download-step .download-qr {
+    width: min(100%, 260px);
+  }
+
+  .download-qr {
+    width: min(100%, 260px);
+  }
+
+  .download-menu button {
+    min-height: 38px;
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+}
+

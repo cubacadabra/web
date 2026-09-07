@@ -1,0 +1,62 @@
+.cube-table {
+  width: min(100%, 580px);
+  margin: 0;
+  border-collapse: collapse;
+}
+
+.cube-table tr {
+  height: 96px;
+}
+
+.cube-table td {
+  padding: 12px 0;
+}
+
+.cube-link {
+  display: grid;
+  grid-template-columns: 168px minmax(0, 1fr);
+  align-items: center;
+  gap: 24px;
+  width: fit-content;
+  max-width: 100%;
+  color: inherit;
+  text-decoration: none;
+}
+
+.cube-thumbnail {
+  display: grid;
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  place-items: center;
+  border: 1px solid var(--about-line);
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--about-faint);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.cube-name {
+  color: var(--about-ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 16px;
+  font-weight: 650;
+  line-height: 1.2;
+}
+
+.cube-link:hover .cube-thumbnail,
+.cube-link:focus-visible .cube-thumbnail {
+  border-color: rgba(139, 156, 246, 0.6);
+  background: var(--about-accent-wash);
+}
+
+.cube-link:hover .cube-name,
+.cube-link:focus-visible .cube-name {
+  color: var(--about-accent);
+}
+
+.cube-link:focus-visible {
+  outline: 3px solid rgba(139, 156, 246, 0.32);
+  outline-offset: 5px;
+}

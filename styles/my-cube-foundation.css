@@ -1,0 +1,28 @@
+/* My Cube: calm, age-aware entry point and lightweight profile basics. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.my-cube-page .about-layout {
+  grid-template-columns: 232px minmax(0, 900px);
+  gap: clamp(52px, 7vw, 104px);
+}
+
+.my-cube-page .about-content {
+  padding-top: 66px;
+}
+
+.my-cube-page .about-menu a[aria-current="page"] {
+  background: var(--about-accent-wash);
+  color: var(--about-accent);
+  font-weight: 700;
+}
+

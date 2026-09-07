@@ -1,0 +1,73 @@
+@media (max-width: 960px) {
+  .my-cube-page .about-layout {
+    grid-template-columns: 200px minmax(0, 1fr);
+    gap: 48px;
+  }
+
+  .birthday-workspace {
+    grid-template-columns: 1fr;
+    gap: 54px;
+  }
+
+  .birthday-form {
+    justify-self: start;
+  }
+
+}
+
+@media (max-width: 720px) {
+  .my-cube-page .about-content {
+    padding-top: 50px;
+  }
+
+  .birthday-workspace {
+    gap: 44px;
+    margin-top: 52px;
+    padding-top: 28px;
+  }
+
+  .birthday-form {
+    padding-top: 24px;
+  }
+
+  .cube-table {
+    width: 100%;
+  }
+
+  .cube-link {
+    grid-template-columns: 132px minmax(0, 1fr);
+    gap: 18px;
+  }
+
+  .blocked-user-unblock {
+    flex: 0 0 auto;
+  }
+
+}
+
+@media (max-width: 420px) {
+  .birthday-fields {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .birthday-field-year {
+    grid-column: 1 / -1;
+  }
+
+  .birthday-guidance h2 {
+    font-size: 30px;
+  }
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .birthday-field input,
+  .parent-email-field input,
+  .birthday-submit,
+  .basics-field input,
+  .basics-avatar-option-content,
+  .basics-submit,
+  .subscription-start {
+    transition: none;
+  }
+}

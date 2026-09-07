@@ -1,0 +1,195 @@
+/* About responsive rules and the focused documentation layout. */
+
+@media (max-width: 960px) {
+  .about-content {
+    width: min(calc(100% - 64px), 720px);
+    padding-top: 132px;
+    padding-bottom: 110px;
+  }
+
+  .about-hero {
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 76px;
+    min-height: 0;
+  }
+
+  .about-hero-rail {
+    max-width: none;
+  }
+
+  .about-section-block {
+    grid-template-columns: 1fr;
+    gap: 52px;
+    padding: 88px 0 92px;
+  }
+
+  .about-problem-list,
+  .about-principles,
+  .about-open-grid,
+  .about-callout,
+  .about-quote-wrap,
+  .about-people-grid,
+  .about-reality-copy {
+    grid-column: auto;
+  }
+
+  .about-problem-list {
+    margin-top: 0;
+  }
+
+  .about-open-grid {
+    margin-top: 0;
+  }
+
+  .about-callout {
+    margin-top: 0;
+  }
+
+  .about-people-grid {
+    margin-top: 0;
+  }
+
+  .about-reality-copy {
+    max-width: none;
+  }
+
+  .about-final-links {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .about-footer {
+    right: 18px;
+    bottom: 18px;
+    left: 18px;
+  }
+
+  .about-nav,
+  .about-legal-links {
+    gap: 14px;
+  }
+}
+
+@media (max-width: 720px) {
+  .about-content {
+    width: min(calc(100% - 36px), 560px);
+    padding-top: 120px;
+    padding-bottom: 100px;
+  }
+
+  .about-content h1 {
+    max-width: 440px;
+    font-size: clamp(48px, 15vw, 76px);
+  }
+
+  .about-lede {
+    margin-top: 22px;
+    font-size: 16px;
+  }
+
+  .about-note {
+    margin-top: 20px;
+  }
+
+  .about-hero {
+    gap: 58px;
+  }
+
+  .about-section-block {
+    gap: 42px;
+    padding: 74px 0 78px;
+  }
+
+  .about-section-heading h2 {
+    font-size: clamp(34px, 11vw, 48px);
+  }
+
+  .about-section-intro p,
+  .about-reality-copy > p,
+  .about-quote-wrap p {
+    font-size: 15px;
+  }
+
+  .about-problem-list,
+  .about-open-grid,
+  .about-people-grid {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+
+  .about-principle {
+    grid-template-columns: 26px minmax(0, 1fr);
+    gap: 15px;
+  }
+
+  .about-quote-wrap blockquote {
+    margin-bottom: 34px;
+  }
+
+  .about-repositories-link {
+    min-height: 44px;
+    align-items: center;
+  }
+
+  .repository-list {
+    grid-template-columns: 1fr;
+  }
+
+  .about-footer {
+    position: relative;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    margin: 0 18px;
+    padding-bottom: 20px;
+  }
+
+  .about-legal-links {
+    gap: 14px;
+  }
+}
+
+@media (max-width: 420px) {
+  .about-topbar {
+    padding: 22px 18px;
+  }
+
+  .about-nav {
+    gap: 12px;
+  }
+
+  .about-nav a {
+    font-size: 9px;
+  }
+
+  .brand {
+    gap: 9px;
+  }
+
+  .brand-name {
+    font-size: 13px;
+  }
+
+  .brand-caption {
+    font-size: 9px;
+  }
+
+  .about-rail-meta {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 7px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
