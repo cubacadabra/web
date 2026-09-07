@@ -4,6 +4,7 @@ import { loadGamePackage } from "../game/loadGamePackage.js";
 import { createWorldSocket } from "../network/worldSocket.js";
 import { bindControls } from "../systems/controls.js";
 import { getMovementInput } from "../systems/player.js";
+import { createGameAudio } from "../systems/audio.js";
 import { createGameState } from "../state/gameState.js";
 import { createSettingsRoomController } from "../ui/settingsRoom.js";
 import { createBuildModeController } from "../ui/buildMode.js";
@@ -32,6 +33,7 @@ export async function createGame() {
   elements.worldShell?.classList.toggle("is-touch-device", isTouchDevice);
   const renderer = await createRustRenderer({ canvas: elements.canvas });
   const engine = createRustEngine(renderer.wasmExports);
+  const gameAudio = createGameAudio(gameDefinition.audioAssets);
   const engineCapabilities = engine.getCharacterShowcaseCapabilities?.() ?? {};
   engine.loadGamePackage(gameDefinition.manifestSource);
   let localAppearance = gameDefinition.avatars?.player?.character ?? null;
@@ -265,6 +267,17 @@ export async function createGame() {
     }
   }
 
+  function flushAudioMessages() {
+    let source;
+    while ((source = engine.pollAudioMessage?.())) {
+      try {
+        gameAudio.play(JSON.parse(source));
+      } catch {
+        // Malformed game-owned commands are ignored without interrupting play.
+      }
+    }
+  }
+
   let connectedWorldId = null;
 
   function syncRemotePlayers() {
@@ -411,6 +424,7 @@ export async function createGame() {
     engine.step(step);
     handleUIEvents();
     flushNetworkMessages();
+    flushAudioMessages();
     elements.worldShell?.classList.toggle(
       "is-shared-modal-open",
       engine.uiSharedModalVisible(),
@@ -469,6 +483,7 @@ export async function createGame() {
     characterShowcase.destroy();
     settingsRoom.destroy();
     buildMode.destroy();
+    gameAudio.destroy();
     renderer.destroy();
     engine.destroy();
     window.removeEventListener("pagehide", dispose);

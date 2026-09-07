@@ -1,5 +1,7 @@
 const DEFAULT_GAME_ID = "first-game";
 const GAME_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const AUDIO_ID_PATTERN = /^[A-Za-z0-9._-]{1,64}$/;
+const AUDIO_PATH_PATTERN = /^assets\/(?:[A-Za-z0-9_-][A-Za-z0-9._-]*\/)*[A-Za-z0-9_-][A-Za-z0-9._-]*\.wav$/i;
 
 function requestedGameId() {
   const gameId = new URLSearchParams(window.location.search).get("game");
@@ -30,6 +32,35 @@ async function loadText(url) {
     throw new Error(`The game script could not be loaded (${response.status}).`);
   }
   return response.text();
+}
+
+function normalizeAudioAssets(assets, baseUrl) {
+  const audio = assets?.audio;
+  if (audio === undefined) return {};
+  if (!audio || typeof audio !== "object" || Array.isArray(audio)) {
+    throw new Error("Game manifest assets.audio must be an object.");
+  }
+
+  return Object.fromEntries(Object.entries(audio).map(([id, definition]) => {
+    if (!AUDIO_ID_PATTERN.test(id)) {
+      throw new Error(`Game audio id "${id}" is invalid.`);
+    }
+    if (!definition || typeof definition !== "object" || Array.isArray(definition)) {
+      throw new Error(`Game audio asset "${id}" must be an object.`);
+    }
+    const path = definition.path;
+    if (typeof path !== "string" || !AUDIO_PATH_PATTERN.test(path)) {
+      throw new Error(`Game audio asset "${id}" must reference a WAV inside assets/.`);
+    }
+    const volume = definition.volume ?? 1;
+    if (!Number.isFinite(volume) || volume < 0 || volume > 1) {
+      throw new Error(`Game audio asset "${id}" volume must be between 0 and 1.`);
+    }
+    return [id, {
+      url: new URL(path, baseUrl).href,
+      volume,
+    }];
+  }));
 }
 
 export async function loadGamePackage() {
@@ -97,5 +128,6 @@ export async function loadGamePackage() {
     worlds,
     runtimeWorldIds: Object.keys(worlds),
     activeWorldId,
+    audioAssets: normalizeAudioAssets(manifest.assets, baseUrl),
   };
 }

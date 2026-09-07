@@ -175,6 +175,14 @@ export function createRustEngine(exports) {
       if (!pointer || !length) return null;
       return new TextDecoder().decode(new Uint8Array(exports.memory.buffer, pointer, length));
     },
+    pollAudioMessage() {
+      if (typeof exports.engine_audio_poll_message !== "function"
+        || !call("engine_audio_poll_message")) return null;
+      const pointer = call("engine_audio_message_ptr");
+      const length = call("engine_audio_message_len");
+      if (!pointer || !length) return null;
+      return new TextDecoder().decode(new Uint8Array(exports.memory.buffer, pointer, length));
+    },
     setUsername(username) {
       const bytes = new TextEncoder().encode(username);
       const pointer = call("engine_username_buffer_ptr", bytes.length);
