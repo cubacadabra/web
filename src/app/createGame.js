@@ -259,10 +259,15 @@ export async function createGame() {
         continue;
       }
       if (!message || typeof message.channel !== "string") continue;
+      const compareSet = Number.isSafeInteger(message.expectedSequence)
+        && message.expectedSequence >= 0;
       worldSocket.sendGameMessage(
-        message.retained ? "game_state_set" : "game_message",
+        compareSet
+          ? "game_state_compare_set"
+          : message.retained ? "game_state_set" : "game_message",
         message.channel,
         message.payload,
+        compareSet ? message.expectedSequence : null,
       );
     }
   }

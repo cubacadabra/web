@@ -6,6 +6,7 @@ const RECONNECT_MAX_DELAY = 8_000;
 const MOVE_SEND_INTERVAL_MS = 1000 / 12;
 const MOVE_POSITION_EPSILON = 0.01;
 const MOVE_YAW_EPSILON = 0.01;
+const GAME_MESSAGE_QUEUE_LIMIT = 64;
 
 function movesAreMeaningfullyDifferent(previousMove, nextMove) {
   if (!previousMove) return true;
@@ -64,6 +65,30 @@ export function createWorldSocket({
   let appearance = null;
   let generation = 0;
   let destroyed = false;
+  let pendingGameMessages = [];
+
+  function queueGameMessage(event) {
+    if (pendingGameMessages.length >= GAME_MESSAGE_QUEUE_LIMIT) {
+      pendingGameMessages.shift();
+    }
+    pendingGameMessages.push({ worldId, event });
+  }
+
+  function flushPendingGameMessages(onSocket) {
+    while (pendingGameMessages.length > 0 && onSocket.readyState === WebSocket.OPEN) {
+      const pending = pendingGameMessages[0];
+      if (pending.worldId !== worldId) {
+        pendingGameMessages.shift();
+        continue;
+      }
+      try {
+        onSocket.send(JSON.stringify(pending.event));
+        pendingGameMessages.shift();
+      } catch {
+        return;
+      }
+    }
+  }
 
   function setStatus(status) {
     onStatusChange?.(status);
@@ -107,6 +132,7 @@ export function createWorldSocket({
         if (appearance) {
           nextSocket.send(JSON.stringify({ type: "set_appearance", appearance }));
         }
+        flushPendingGameMessages(nextSocket);
       } catch {
         // The close handler will schedule a reconnect if the socket is gone.
       }
@@ -213,6 +239,7 @@ export function createWorldSocket({
     }
 
     generation += 1;
+    if (worldId !== normalizedWorldId) pendingGameMessages = [];
     clearReconnectTimer();
     closeCurrentSocket();
     worldId = normalizedWorldId;
@@ -316,14 +343,24 @@ export function createWorldSocket({
     }
   }
 
-  function sendGameMessage(type, channel, payload) {
+  function sendGameMessage(type, channel, payload, expectedSequence = null) {
     if (typeof type !== "string" || typeof channel !== "string"
-      || !socket || socket.readyState !== WebSocket.OPEN) return false;
+      || !worldId) return false;
+    const event = { type, channel, payload };
+    if (type === "game_state_compare_set") {
+      if (!Number.isSafeInteger(expectedSequence) || expectedSequence < 0) return false;
+      event.expectedSequence = expectedSequence;
+    }
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+      queueGameMessage(event);
+      return true;
+    }
     try {
-      socket.send(JSON.stringify({ type, channel, payload }));
+      socket.send(JSON.stringify(event));
       return true;
     } catch {
-      return false;
+      queueGameMessage(event);
+      return true;
     }
   }
 
@@ -332,6 +369,7 @@ export function createWorldSocket({
     destroyed = true;
     generation += 1;
     worldId = null;
+    pendingGameMessages = [];
     clearReconnectTimer();
     closeCurrentSocket();
     setStatus("disconnected");
