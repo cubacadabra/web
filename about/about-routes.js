@@ -66,4 +66,10 @@ export const ABOUT_ROUTES = {
     description: "Where cubacadabra is today and what is still future work.",
     pageTitle: "Where we are now · About cubacadabra",
   },
+  support: {
+    title: "Support cubacadabra",
+    path: "/about/support/",
+    description: "How parents can support cubacadabra through the parent-cadabra subscription.",
+    pageTitle: "Support cubacadabra · About cubacadabra",
+  },
 };
