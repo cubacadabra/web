@@ -224,7 +224,7 @@ function subscriptionMarkup() {
     '  <div class="subscription-plan">',
     '    <strong>parent-cadabra</strong>',
     '    <span>$9.99 USD / month</span>',
-    '    <p>Parents fund the platform directly, so kids can play without casino coins.</p>',
+    '    <p>Parents fund the platform directly, so kids can play without casino coins. Please note cubacadabra is a work in progress and your subscription helps fund it. Cancel anytime but please understand you are not buying a finished product yet only helping to support a new one.</p>',
     '  </div>',
     '  <p class="subscription-status" role="status" aria-live="polite">Checking subscription…</p>',
     '  <button class="subscription-cancel-link" type="button" hidden>Cancel subscription</button>',
