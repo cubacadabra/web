@@ -179,15 +179,13 @@ export async function createGame() {
   });
   function applyServerAppearance(serverAppearance) {
     const primary = serverAppearance?.colors?.primary;
-    const body = playerBodyId(serverAppearance?.body);
-    if (typeof primary !== "string" && !body) return;
+    if (typeof primary !== "string") return;
 
     localAppearance = {
       ...(localAppearance || {}),
-      ...(body ? { body } : {}),
       colors: {
         ...(localAppearance?.colors || {}),
-        ...(typeof primary === "string" ? { primary } : {}),
+        primary,
       },
       revision: Math.max(
         Number(localAppearance?.revision) || 0,

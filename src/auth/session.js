@@ -2,6 +2,11 @@ import { backendApiUrl } from "../config/clientConfig.js";
 
 const requestOptions = {
   credentials: "include",
+  cache: "no-store",
+  headers: {
+    Accept: "application/json",
+    "cache-control": "no-cache",
+  },
 };
 
 export async function getCurrentUser() {
