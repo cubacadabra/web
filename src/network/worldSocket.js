@@ -45,6 +45,7 @@ export function createWorldSocket({
   onSession,
   onMove,
   onExperience,
+  onGameMessage,
   onStatusChange,
 }) {
   let playerId = null;
@@ -147,6 +148,10 @@ export function createWorldSocket({
         }
         if (event?.type === "experience_state" || event?.type === "experience_launch") {
           onExperience?.(event);
+          return;
+        }
+        if (event?.type === "game_state" || event?.type === "game_message") {
+          onGameMessage?.(event);
           return;
         }
         if (
@@ -311,6 +316,17 @@ export function createWorldSocket({
     }
   }
 
+  function sendGameMessage(type, channel, payload) {
+    if (typeof type !== "string" || typeof channel !== "string"
+      || !socket || socket.readyState !== WebSocket.OPEN) return false;
+    try {
+      socket.send(JSON.stringify({ type, channel, payload }));
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   function destroy() {
     if (destroyed) return;
     destroyed = true;
@@ -347,6 +363,7 @@ export function createWorldSocket({
     setUsername,
     setHidden,
     sendExperience,
+    sendGameMessage,
     destroy,
   };
 }

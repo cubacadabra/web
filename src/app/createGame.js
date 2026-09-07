@@ -179,6 +179,9 @@ export async function createGame() {
         if (sessionIndex >= 0) engine.startWorld(sessionIndex);
       }
     },
+    onGameMessage: (event) => {
+      engine.receiveNetworkMessage(JSON.stringify(event));
+    },
     onStatusChange: hud.setConnectionStatus,
   });
   function applyServerAppearance(serverAppearance) {
@@ -241,6 +244,24 @@ export async function createGame() {
         buildMode?.handleUiEvent(event);
       }
       hud.dismissHint();
+    }
+  }
+
+  function flushNetworkMessages() {
+    let source;
+    while ((source = engine.pollNetworkMessage?.())) {
+      let message;
+      try {
+        message = JSON.parse(source);
+      } catch {
+        continue;
+      }
+      if (!message || typeof message.channel !== "string") continue;
+      worldSocket.sendGameMessage(
+        message.retained ? "game_state_set" : "game_message",
+        message.channel,
+        message.payload,
+      );
     }
   }
 
@@ -389,6 +410,7 @@ export async function createGame() {
     syncRemotePlayers();
     engine.step(step);
     handleUIEvents();
+    flushNetworkMessages();
     elements.worldShell?.classList.toggle(
       "is-shared-modal-open",
       engine.uiSharedModalVisible(),

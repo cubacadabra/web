@@ -150,6 +150,31 @@ export function createRustEngine(exports) {
       call("engine_reset_remote_session");
       return true;
     },
+    receiveNetworkMessage(message) {
+      if (typeof message !== "string"
+        || typeof exports.engine_receive_network_message_json !== "function") return 0;
+      if (typeof exports.engine_network_receive_buffer_ptr === "function"
+        && typeof exports.engine_load_network_receive_buffer === "function") {
+        return writeJsonBuffer(
+          "engine_network_receive_buffer_ptr",
+          message,
+          "engine_load_network_receive_buffer",
+        );
+      }
+      const bytes = new TextEncoder().encode(message);
+      const pointer = call("engine_script_buffer_ptr", bytes.length);
+      if (!pointer && bytes.length) return 0;
+      new Uint8Array(exports.memory.buffer, pointer, bytes.length).set(bytes);
+      return call("engine_receive_network_message_json", pointer, bytes.length);
+    },
+    pollNetworkMessage() {
+      if (typeof exports.engine_network_poll_message !== "function"
+        || !call("engine_network_poll_message")) return null;
+      const pointer = call("engine_network_message_ptr");
+      const length = call("engine_network_message_len");
+      if (!pointer || !length) return null;
+      return new TextDecoder().decode(new Uint8Array(exports.memory.buffer, pointer, length));
+    },
     setUsername(username) {
       const bytes = new TextEncoder().encode(username);
       const pointer = call("engine_username_buffer_ptr", bytes.length);
