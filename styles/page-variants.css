@@ -823,6 +823,93 @@
   line-height: 1.45;
 }
 
+.basics-avatar-fieldset {
+  min-width: 0;
+  margin: 30px 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.basics-avatar-fieldset legend {
+  padding: 0;
+  color: var(--about-soft);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.basics-avatar-fieldset > .basics-field-help {
+  margin-top: 8px;
+}
+
+.basics-avatar-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.basics-avatar-option {
+  position: relative;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.basics-avatar-option input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.basics-avatar-option-content {
+  display: grid;
+  align-content: space-between;
+  justify-items: center;
+  min-height: 184px;
+  box-sizing: border-box;
+  padding: 10px 8px 9px;
+  border: 1px solid rgba(231, 233, 236, 0.2);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--about-soft);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-align: center;
+  transition: border-color 180ms ease, background 180ms ease, color 180ms ease;
+}
+
+.basics-avatar-option-content img {
+  display: block;
+  width: auto;
+  height: 146px;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.basics-avatar-option:hover .basics-avatar-option-content {
+  border-color: rgba(231, 233, 236, 0.4);
+  color: var(--about-ink);
+}
+
+.basics-avatar-option input:checked + .basics-avatar-option-content {
+  border-color: var(--about-accent);
+  background: rgba(139, 156, 246, 0.12);
+  color: var(--about-ink);
+}
+
+.basics-avatar-option input:focus-visible + .basics-avatar-option-content {
+  outline: 3px solid rgba(139, 156, 246, 0.32);
+  outline-offset: 3px;
+}
+
+.basics-avatar-option input:disabled + .basics-avatar-option-content {
+  cursor: wait;
+  opacity: 0.65;
+}
+
 .basics-status {
   min-height: 18px;
   margin: 14px 0 0;
@@ -1330,6 +1417,7 @@
   .parent-email-field input,
   .birthday-submit,
   .basics-field input,
+  .basics-avatar-option-content,
   .basics-submit,
   .subscription-start {
     transition: none;

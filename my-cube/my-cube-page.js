@@ -7,6 +7,12 @@ const content = document.querySelector(".about-content");
 const menuLinks = [...document.querySelectorAll(".about-menu > a")];
 const sidebarStatus = document.querySelector(".about-sidebar-status");
 const USERNAME_MAX_LENGTH = 24;
+const DEFAULT_BODY_ID = "cuba:person.v1";
+const AVATAR_OPTIONS = [
+  { bodyId: DEFAULT_BODY_ID, label: "Boy", image: "/images/player_boy_001.png" },
+  { bodyId: "cuba:person-girl.v1", label: "Girl", image: "/images/player_girl_001.png" },
+  { bodyId: "cuba:person-nb.v1", label: "Nonbinary", image: "/images/player_nb_001.png" },
+];
 const BLOCKED_USERS_PATH = "/moderation/blocks";
 const SUBSCRIPTION_PATH = "/subscription";
 let currentUser = null;
@@ -53,6 +59,10 @@ function setMenuState(requiresBirthday, activeSection = requiresBirthday ? "birt
 function setFormStatus(statusElement, message, state = "") {
   statusElement.textContent = message;
   statusElement.dataset.state = state;
+}
+
+function avatarBodyId(value) {
+  return AVATAR_OPTIONS.some((option) => option.bodyId === value) ? value : DEFAULT_BODY_ID;
 }
 
 function birthdayFormMarkup() {
@@ -134,6 +144,15 @@ function parentStepMarkup() {
 }
 
 function basicsMarkup() {
+  const avatarOptions = AVATAR_OPTIONS.map((option) => `
+            <label class="basics-avatar-option">
+              <input type="radio" name="body_id" value="${option.bodyId}" />
+              <span class="basics-avatar-option-content">
+                <img src="${option.image}" alt="${option.label} avatar" />
+                <span>${option.label}</span>
+              </span>
+            </label>`).join("");
+
   return `
     <div class="basics-view" id="item1">
       <div class="basics-workspace">
@@ -143,6 +162,13 @@ function basicsMarkup() {
             <input id="my-cube-username" name="username" type="text" autocomplete="nickname" minlength="2" maxlength="${USERNAME_MAX_LENGTH}" pattern="[A-Za-z0-9_\\-]+" aria-describedby="my-cube-username-help basics-username-status" spellcheck="false" required />
           </label>
           <p class="basics-field-help" id="my-cube-username-help">letters, numbers, _ or -</p>
+          <fieldset class="basics-avatar-fieldset">
+            <legend>Avatar</legend>
+            <p class="basics-field-help">Choose how you appear in a game.</p>
+            <div class="basics-avatar-options" role="radiogroup" aria-label="Avatar">
+${avatarOptions}
+            </div>
+          </fieldset>
           <p class="basics-status" id="basics-username-status" role="status" aria-live="polite"></p>
           <button class="basics-submit" type="submit">Save</button>
         </form>
@@ -462,7 +488,12 @@ function renderBasics(user) {
   const input = content.querySelector("#my-cube-username");
   const status = content.querySelector("#basics-username-status");
   const submit = form.querySelector(".basics-submit");
+  const avatarInputs = [...form.querySelectorAll('input[name="body_id"]')];
   input.value = typeof user.username === "string" ? user.username : "";
+  const selectedBodyId = avatarBodyId(user.body_id);
+  avatarInputs.forEach((avatarInput) => {
+    avatarInput.checked = avatarInput.value === selectedBodyId;
+  });
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -478,23 +509,42 @@ function renderBasics(user) {
 
     input.removeAttribute("aria-invalid");
     submit.disabled = true;
-    setFormStatus(status, "Saving your username…", "pending");
+    avatarInputs.forEach((avatarInput) => {
+      avatarInput.disabled = true;
+    });
+    const bodyId = form.elements.body_id.value;
+    setFormStatus(status, "Saving your basics…", "pending");
 
     try {
-      const response = await fetch(backendApiUrl("/auth/username"), {
+      const usernameResponse = await fetch(backendApiUrl("/auth/username"), {
         method: "POST",
         credentials: "include",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ username }),
       });
-      const result = await response.json().catch(() => null);
-      if (!response.ok || typeof result?.user?.username !== "string") {
-        throw new Error(result?.error || "username_save_failed");
+      const usernameResult = await usernameResponse.json().catch(() => null);
+      if (!usernameResponse.ok || typeof usernameResult?.user?.username !== "string") {
+        throw new Error(usernameResult?.error || "username_save_failed");
       }
 
-      input.value = result.user.username;
-      currentUser = { ...currentUser, username: result.user.username };
-      setFormStatus(status, "Username saved.", "success");
+      const avatarResponse = await fetch(backendApiUrl("/auth/avatar"), {
+        method: "POST",
+        credentials: "include",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ body_id: bodyId }),
+      });
+      const avatarResult = await avatarResponse.json().catch(() => null);
+      if (!avatarResponse.ok || avatarResult?.user?.body_id !== bodyId) {
+        throw new Error(avatarResult?.error || "avatar_save_failed");
+      }
+
+      input.value = usernameResult.user.username;
+      currentUser = {
+        ...currentUser,
+        username: usernameResult.user.username,
+        body_id: avatarResult.user.body_id,
+      };
+      setFormStatus(status, "Basics saved.", "success");
     } catch (error) {
       setFormStatus(
         status,
@@ -504,13 +554,20 @@ function renderBasics(user) {
             ? "That username isn’t available. Try another."
             : error.message === "invalid_username"
               ? `Use 2–${USERNAME_MAX_LENGTH} letters, numbers, _ or -.`
+            : error.message === "invalid_body_id"
+              ? "Choose one of the available avatars."
+            : error.message === "avatar_save_failed"
+              ? "We couldn’t save your avatar. Please try again."
             : error.message === "age_required"
-              ? "Complete the birthday step before choosing a username."
-              : "We couldn’t save your username. Please try again.",
+              ? "Complete the birthday step before choosing your basics."
+              : "We couldn’t save your basics. Please try again.",
         "error",
       );
     } finally {
       submit.disabled = false;
+      avatarInputs.forEach((avatarInput) => {
+        avatarInput.disabled = false;
+      });
     }
   });
 

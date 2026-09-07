@@ -12,6 +12,17 @@ import { createHudController } from "../ui/hud.js";
 import { createCharacterShowcaseController } from "../ui/characterShowcase.js";
 import { getCurrentUser } from "../auth/session.js";
 
+const DEFAULT_BODY_ID = "cuba:person.v1";
+const PLAYER_BODY_IDS = new Set([
+  DEFAULT_BODY_ID,
+  "cuba:person-girl.v1",
+  "cuba:person-nb.v1",
+]);
+
+function playerBodyId(value) {
+  return PLAYER_BODY_IDS.has(value) ? value : null;
+}
+
 export async function createGame() {
   const currentUser = await getCurrentUser();
   const elements = getDomElements();
@@ -34,6 +45,15 @@ export async function createGame() {
     }
   } catch {
     // The bundled package appearance remains the safe offline default.
+  }
+  const selectedBodyId = playerBodyId(currentUser?.body_id);
+  if (selectedBodyId) {
+    localAppearance = {
+      ...(localAppearance || {}),
+      version: 1,
+      body: selectedBodyId,
+      revision: Math.max(Number(localAppearance?.revision) || 0, 0) + 1,
+    };
   }
   if (localAppearance) engine.setLocalAppearance(JSON.stringify(localAppearance));
   engine.loadGameScript(gameDefinition.script);
@@ -159,13 +179,15 @@ export async function createGame() {
   });
   function applyServerAppearance(serverAppearance) {
     const primary = serverAppearance?.colors?.primary;
-    if (typeof primary !== "string") return;
+    const body = playerBodyId(serverAppearance?.body);
+    if (typeof primary !== "string" && !body) return;
 
     localAppearance = {
       ...(localAppearance || {}),
+      ...(body ? { body } : {}),
       colors: {
         ...(localAppearance?.colors || {}),
-        primary,
+        ...(typeof primary === "string" ? { primary } : {}),
       },
       revision: Math.max(
         Number(localAppearance?.revision) || 0,
