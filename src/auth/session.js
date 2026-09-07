@@ -5,7 +5,6 @@ const requestOptions = {
   cache: "no-store",
   headers: {
     Accept: "application/json",
-    "cache-control": "no-cache",
   },
 };
 
