@@ -1,8 +1,13 @@
 const SPECIES = [
-  { id: "person", label: "Person", stableId: "cuba:person.v1" },
+  { id: "person", label: "Boy", stableId: "cuba:person.v1", skin: "#e8ae86" },
+  { id: "person-girl", label: "Girl", stableId: "cuba:person-girl.v1", skin: "#efb083" },
+  { id: "person-nb", label: "Nonbinary", stableId: "cuba:person-nb.v1", skin: "#c98245" },
   { id: "cat", label: "Cat", stableId: "cuba:cat.v1" },
   { id: "dragon", label: "Dragon", stableId: "cuba:dragon.v1" },
 ];
+
+const PERSON_IDS = SPECIES.filter(({ stableId }) => stableId.startsWith("cuba:person"))
+  .map(({ id }) => id);
 
 const EXPRESSIONS = [
   "neutral", "happy", "surprised", "determined", "sad", "laughing",
@@ -52,7 +57,7 @@ const OUTFITS = [
     label: "Fuzzy pajamas",
     stableId: "cuba:fuzzy-pajamas.v1",
     pairing: "Person",
-    supported: ["person"],
+    supported: PERSON_IDS,
   },
 ];
 
@@ -144,6 +149,7 @@ export function createCharacterShowcaseController({
         ...Object.fromEntries(
           Object.entries(legacyColors).filter(([, value]) => typeof value === "string"),
         ),
+        ...(currentSpecies().skin ? { skin: currentSpecies().skin } : {}),
       },
       revision: Math.max(
         appearanceRevision,
@@ -407,11 +413,11 @@ export function createCharacterShowcaseController({
     }
     if (!open) return false;
     if (event.repeat) {
-      const showcaseKey = ["Digit1", "Digit2", "Digit3", "KeyE", "KeyO", "KeyH", "KeyF"].includes(event.code);
+      const showcaseKey = ["Digit1", "Digit2", "Digit3", "Digit4", "Digit5", "KeyE", "KeyO", "KeyH", "KeyF"].includes(event.code);
       if (showcaseKey) event.preventDefault();
       return showcaseKey;
     }
-    if (event.code === "Digit1" || event.code === "Digit2" || event.code === "Digit3") {
+    if (["Digit1", "Digit2", "Digit3", "Digit4", "Digit5"].includes(event.code)) {
       event.preventDefault();
       const species = SPECIES[Number(event.code.slice(-1)) - 1];
       species && selectSpecies(species.id);
