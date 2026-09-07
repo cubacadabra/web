@@ -54,6 +54,11 @@
     max-width: none;
   }
 
+  .about-support-grid {
+    grid-template-columns: 1fr;
+    gap: 42px;
+  }
+
   .about-final-links {
     align-items: flex-start;
     flex-direction: column;
@@ -135,6 +140,10 @@
 
   .repository-list {
     grid-template-columns: 1fr;
+  }
+
+  .about-support-facts div {
+    grid-template-columns: 84px minmax(0, 1fr);
   }
 
   .about-footer {

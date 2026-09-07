@@ -2,7 +2,7 @@ import { getCurrentUser, initializeLogoutButton } from "../src/auth/session.js";
 import { backendApiUrl } from "../src/config/clientConfig.js";
 import { mountStripeEmbeddedCheckout } from "../src/payments/stripeEmbeddedCheckout.js";
 
-const loginPath = `/login/?returnTo=${encodeURIComponent(`${window.location.pathname}${window.location.search}`)}`;
+const loginPath = `/login/?returnTo=${encodeURIComponent(`${window.location.pathname}${window.location.search}${window.location.hash}`)}`;
 const content = document.querySelector(".about-content");
 const menuLinks = [...document.querySelectorAll(".about-menu > a")];
 const sidebarStatus = document.querySelector(".about-sidebar-status");
