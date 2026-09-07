@@ -1,0 +1,452 @@
+<!--
+  Source fragments for the generated About section pages.
+  The browser does not load this file directly; scripts/build-about-pages.js
+  extracts one marked section per route into its own static HTML page.
+-->
+
+<!-- about-section:open-source-web:start -->
+          <section id="open-source-web" class="about-section about-code-section" aria-labelledby="open-source-web-title">
+            <div class="about-section-header">
+              <p class="about-kicker">01 / Open Source / web</p>
+              <h2 id="open-source-web-title">The browser client keeps the platform playable.</h2>
+              <p class="about-section-side-copy">Vanilla JavaScript owns the shell and the adapters. Rust and WebAssembly own the simulation and frame.</p>
+            </div>
+            <div class="about-section-body">
+              <div class="about-code-intro">
+                <p>The <code>web</code> repository is the browser client and the static host for the current game package. It deliberately stays small: the DOM, input, HUD, loading, and WebSocket connection live in JavaScript, while the platform runtime is loaded as generated WebAssembly.</p>
+                <p>The useful mental model is a frame loop with explicit seams. <code>createGame()</code> loads the package, creates the Rust engine and renderer, wires the socket and controls, then advances the engine on every <code>requestAnimationFrame</code>. The browser reads a frame snapshot, updates the HUD, sends local movement, and asks the renderer to draw.</p>
+              </div>
+
+              <dl class="about-code-map">
+                <div><dt>Entry point</dt><dd><code>src/main.js</code> → <code>src/app/createGame.js</code></dd></div>
+                <div><dt>Package host</dt><dd><code>/games/first-game/</code>, populated from the sibling <code>first-game</code> repo</dd></div>
+                <div><dt>Runtime boundary</dt><dd><code>src/engine/wasm.js</code> writes buffers and reads the flat Rust snapshot</dd></div>
+                <div><dt>Network boundary</dt><dd><code>src/network/worldSocket.js</code> joins <code>/world/:worldId</code> and publishes changed movement at 12 Hz</dd></div>
+              </dl>
+
+              <div class="about-code-columns">
+                <article class="about-code-block">
+                  <p class="about-code-label">The runtime loop</p>
+                  <h3>One authoritative local tick.</h3>
+                  <ol class="about-code-flow">
+                    <li><span>01</span><p>Read keyboard, pointer, wheel, or touch input into mutable game state.</p></li>
+                    <li><span>02</span><p>Pass movement, camera deltas, jump, and remote player transforms into Rust.</p></li>
+                    <li><span>03</span><p>Step simulation, follow world transitions, and read the player, pads, agents, and camera snapshot.</p></li>
+                    <li><span>04</span><p>Update DOM presentation and sync the <code>wgpu</code> renderer for the frame.</p></li>
+                  </ol>
+                </article>
+                <article class="about-code-block">
+                  <p class="about-code-label">Developer workflow</p>
+                  <h3>Build the seams, not a framework.</h3>
+                  <ul class="about-code-list">
+                    <li><code>npm run dev</code> syncs the game package and builds the browser renderer before Vite starts.</li>
+                    <li><code>npm run build:renderer</code> invokes the Rust WASM build and <code>wasm-bindgen</code> output step.</li>
+                    <li>Change content in <code>../first-game</code>; change simulation in <code>../rust</code>; keep this repo for browser behavior.</li>
+                    <li>The browser currently preserves the game-script seam, but does not run the native Luau host in WASM yet.</li>
+                  </ul>
+                </article>
+              </div>
+
+              <p class="about-callout">A browser bug should be traceable to one of three places: input and presentation here, the shared engine, or the package and network contract. That separation is the main feature of this repository.</p>
+              <div class="about-final-links">
+                <a class="about-primary-link" href="https://github.com/cubacadabra/web" target="_blank" rel="noreferrer"><span>Open web on GitHub</span><span aria-hidden="true">↗</span></a>
+                <a class="about-inline-link" href="/about/open-source/rust/"><span>Next: rust</span><span aria-hidden="true">→</span></a>
+              </div>
+            </div>
+          </section>
+          <!-- about-section:open-source-web:end -->
+
+<!-- about-section:open-source-rust:start -->
+          <section id="open-source-rust" class="about-section about-code-section" aria-labelledby="open-source-rust-title">
+            <div class="about-section-header">
+              <p class="about-kicker">02 / Open Source / rust</p>
+              <h2 id="open-source-rust-title">The common runtime is a Rust engine with native and WASM faces.</h2>
+              <p class="about-section-side-copy">Simulation, world rules, scripting hooks, snapshots, and primitive rendering live below every client.</p>
+            </div>
+            <div class="about-section-body">
+              <div class="about-code-intro">
+                <p>The <code>rust</code> repository is the platform-neutral core. It owns the player controller, collision against axis-aligned blocks, camera state, launch-pad countdowns, portals, world transitions, remote-player presentation, and the frame data clients need to draw.</p>
+                <p>It is compiled three ways from the same crate: as a Rust library for checks, a static library for iOS, and a <code>cdylib</code> wrapped for Android and the browser. The client never needs to know how the engine stores a player or resolves a collision; it sends inputs and consumes the stable ABI.</p>
+              </div>
+
+              <dl class="about-code-map">
+                <div><dt>Core type</dt><dd><code>src/engine.rs</code> → <code>Engine</code>, with capped remote players and world state</dd></div>
+                <div><dt>Package model</dt><dd><code>src/game_package.rs</code> uses <code>serde</code> and camelCase JSON defaults</dd></div>
+                <div><dt>Rendering</dt><dd><code>wgpu</code> plus WGSL produces the shared primitive renderer for Metal, Vulkan/GLES, and WebGPU/WebGL</dd></div>
+                <div><dt>Public seam</dt><dd><code>src/ffi.rs</code> exposes C-compatible lifecycle calls, buffers, snapshots, and renderer methods</dd></div>
+              </dl>
+
+              <div class="about-code-columns">
+                <article class="about-code-block">
+                  <p class="about-code-label">Simulation contract</p>
+                  <h3>Input in. Snapshot out.</h3>
+                  <p>The engine clamps each step to 50 ms, ticks the game script, smooths camera motion, updates the player and portals, advances remote walk cycles, updates launch pads, and writes a fixed-stride float snapshot. The snapshot contains the local player first, followed by agent records; metadata accessors expose pads, camera, world, and settings state.</p>
+                  <p>Remote players are supplied by a client because the Rust crate does not open sockets. This keeps network policy and identity platform-specific while keeping their rendered representation consistent.</p>
+                </article>
+                <article class="about-code-block">
+                  <p class="about-code-label">Feature split</p>
+                  <h3>Native scripting, portable rendering.</h3>
+                  <ul class="about-code-list">
+                    <li>Native targets use <code>mlua</code> with vendored Luau; the browser uses the pure-Rust <code>luaur-rt</code> Luau host.</li>
+                    <li>WASM uses the same lifecycle host plus browser bindings and <code>wgpu</code> WebGPU/WebGL dependencies instead of native window handles.</li>
+                    <li>iOS passes a Metal layer; Android passes an <code>ANativeWindow</code>; the browser passes an HTML canvas.</li>
+                    <li>Native and browser Rust engines execute the same lifecycle callbacks through target-specific Luau runtimes.</li>
+                  </ul>
+                </article>
+              </div>
+
+              <p class="about-callout">When changing the engine, verify the three consumers together: the C header and native adapters, the generated WASM binding, and the snapshot layout. A field added to one side is an ABI change, even if the Rust code compiles.</p>
+              <div class="about-final-links">
+                <a class="about-primary-link" href="https://github.com/cubacadabra/rust" target="_blank" rel="noreferrer"><span>Open rust on GitHub</span><span aria-hidden="true">↗</span></a>
+                <a class="about-inline-link" href="/about/open-source/ios-app/"><span>Next: ios_app</span><span aria-hidden="true">→</span></a>
+              </div>
+            </div>
+          </section>
+          <!-- about-section:open-source-rust:end -->
+
+<!-- about-section:open-source-ios-app:start -->
+          <section id="open-source-ios-app" class="about-section about-code-section" aria-labelledby="open-source-ios-app-title">
+            <div class="about-section-header">
+              <p class="about-kicker">03 / Open Source / ios_app</p>
+              <h2 id="open-source-ios-app-title">iOS is a SwiftUI client wrapped around the same engine.</h2>
+              <p class="about-section-side-copy">Swift owns lifecycle, touch, identity, and platform presentation. Rust still owns the world.</p>
+            </div>
+            <div class="about-section-body">
+              <div class="about-code-intro">
+                <p>The <code>ios_app</code> repository is intentionally an adapter rather than a second game implementation. SwiftUI drives loading and screen state, <code>GameViewModel</code> owns the engine lifecycle and 60 Hz tick, and the app sends the same package data and world-socket messages as the browser.</p>
+                <p>The app can start with a bundled manifest and script, use a cached manifest on the next launch, and refresh declarative content from the web host for a later launch. Executable rules remain bundled; this gives content some update room without downloading arbitrary native behavior.</p>
+              </div>
+
+              <dl class="about-code-map">
+                <div><dt>App state</dt><dd><code>ContentView.swift</code> → <code>GameViewModel</code> with published loading, frame, world, socket, identity, and moderation state</dd></div>
+                <div><dt>Package loader</dt><dd><code>GamePackage.swift</code> decodes the manifest, validates the start world, and manages bundled/cached content</dd></div>
+                <div><dt>Engine bridge</dt><dd><code>EngineBridge.swift</code> copies UTF-8 buffers into the C ABI and decodes the float snapshot into Swift value types</dd></div>
+                <div><dt>Metal surface</dt><dd><code>RustGameSurface.swift</code> hosts an <code>MTKView</code>; its delegate syncs and draws the Rust renderer</dd></div>
+              </dl>
+
+              <div class="about-code-columns">
+                <article class="about-code-block">
+                  <p class="about-code-label">Frame and lifecycle</p>
+                  <h3>Swift owns the clock.</h3>
+                  <p>A Combine timer ticks the view model at 60 Hz when the game is presented. The view model guards the first tick, clamps the delta, pauses movement while the username editor is open, passes remote players into Rust, steps the engine, follows the active world index, sends movement, and publishes the next frame for SwiftUI.</p>
+                  <p>The <code>MTKViewDelegate</code> owns the platform render cadence. It creates the renderer from the view's <code>CAMetalLayer</code>, resizes it when drawable dimensions change, syncs the engine, draws, and tears it down with the view.</p>
+                </article>
+                <article class="about-code-block">
+                  <p class="about-code-label">Networking and configuration</p>
+                  <h3>Native identity, shared protocol.</h3>
+                  <ul class="about-code-list">
+                    <li><code>WorldSocketClient</code> uses <code>URLSessionWebSocketTask</code>, sends movement only when meaningfully changed and no faster than 12 Hz, and reconnects with bounded backoff.</li>
+                    <li>Player IDs and usernames persist in <code>UserDefaults</code>; settings-room visibility is sent separately from movement.</li>
+                    <li>Debug builds default to localhost; Release builds default to the deployed package and Worker, with environment overrides for LAN testing.</li>
+                    <li>The Xcode build phase compiles the sibling Rust crate for the selected simulator or device target and links the static library.</li>
+                  </ul>
+                </article>
+              </div>
+
+              <p class="about-callout">The native integration is intentionally boring at the boundary: copy bytes in, call the engine, decode a known snapshot, and let SwiftUI handle platform UX. That makes iOS-specific work safer to review.</p>
+              <div class="about-final-links">
+                <a class="about-primary-link" href="https://github.com/cubacadabra/ios_app" target="_blank" rel="noreferrer"><span>Open ios_app on GitHub</span><span aria-hidden="true">↗</span></a>
+                <a class="about-inline-link" href="/about/open-source/android-app/"><span>Next: android_app</span><span aria-hidden="true">→</span></a>
+              </div>
+            </div>
+          </section>
+          <!-- about-section:open-source-ios-app:end -->
+
+<!-- about-section:open-source-android-app:start -->
+          <section id="open-source-android-app" class="about-section about-code-section" aria-labelledby="open-source-android-app-title">
+            <div class="about-section-header">
+              <p class="about-kicker">04 / Open Source / android_app</p>
+              <h2 id="open-source-android-app-title">Android brings the same runtime through Compose and JNI.</h2>
+              <p class="about-section-side-copy">Kotlin owns state and touch. A small native shim turns an Android surface into the Rust renderer's window.</p>
+            </div>
+            <div class="about-section-body">
+              <div class="about-code-intro">
+                <p>The <code>android_app</code> repository is the Kotlin/Jetpack Compose port of the iOS client. <code>GameViewModel</code> is the single state holder: it loads and validates the package, creates the native engine, ticks simulation, owns the socket, and exposes a <code>StateFlow</code> for the Compose UI.</p>
+                <p>Android's platform-specific complexity is concentrated in the build and surface bridge. Gradle builds Rust for the selected ABIs, CMake links a JNI shim, and the shim keeps an <code>ANativeWindow</code> alive long enough for <code>wgpu</code> to create and destroy its surface safely.</p>
+              </div>
+
+              <dl class="about-code-map">
+                <div><dt>App state</dt><dd><code>game/GameViewModel.kt</code> owns loading, ticking, world transitions, remote players, username, and renderer handles</dd></div>
+                <div><dt>Compose loop</dt><dd><code>GameScreen</code> uses <code>LaunchedEffect</code> and <code>withFrameNanos</code> for tick → draw, while UI state stays declarative</dd></div>
+                <div><dt>Native bridge</dt><dd><code>nativebridge/NativeEngine.kt</code> declares the small JNI API backed by <code>jni_bridge.c</code></dd></div>
+                <div><dt>Build targets</dt><dd>Gradle builds Rust <code>cdylib</code>s for <code>arm64-v8a</code> and <code>x86_64</code>, then packages generated <code>jniLibs</code></dd></div>
+              </dl>
+
+              <div class="about-code-columns">
+                <article class="about-code-block">
+                  <p class="about-code-label">Surface lifetime</p>
+                  <h3>Keep the window valid until the renderer is gone.</h3>
+                  <p>The Compose screen embeds a native <code>SurfaceView</code>. Surface callbacks create the renderer, forward size changes, and destroy it when the surface disappears. The JNI layer owns the native holder and calls the same engine renderer functions as iOS, while Rust maps the retained window to an Android raw-window handle.</p>
+                  <p>This ordering matters: destroying or replacing the surface before the renderer releases its swapchain can create platform-specific GPU failures. The callback is the lifecycle authority.</p>
+                </article>
+                <article class="about-code-block">
+                  <p class="about-code-label">Kotlin and networking</p>
+                  <h3>One data source, no unnecessary layers.</h3>
+                  <ul class="about-code-list">
+                    <li>The package loader fetches <code>manifest.json</code> and <code>game.luau</code> over HTTP, parses JSON explicitly, and validates the start world.</li>
+                    <li><code>WorldSocketClient</code> uses OkHttp, persists Android identity, sends the shared movement and username messages, and reconnects with bounded backoff.</li>
+                    <li>Gradle properties override package and backend URLs for a device on the dev LAN; Release uses deployed endpoints.</li>
+                    <li>The JNI frame read returns Rust's snapshot plus metadata for counts, world, camera, and launch-pad state, which Kotlin decodes into value types.</li>
+                  </ul>
+                </article>
+              </div>
+
+              <p class="about-callout">If an Android rendering issue appears, inspect the full chain—Gradle ABI output, CMake library loading, JNI surface lifetime, and Rust <code>wgpu</code> backend—before changing Compose code.</p>
+              <div class="about-final-links">
+                <a class="about-primary-link" href="https://github.com/cubacadabra/android_app" target="_blank" rel="noreferrer"><span>Open android_app on GitHub</span><span aria-hidden="true">↗</span></a>
+                <a class="about-inline-link" href="/about/open-source/first-game/"><span>Next: first_game</span><span aria-hidden="true">→</span></a>
+              </div>
+            </div>
+          </section>
+          <!-- about-section:open-source-android-app:end -->
+
+<!-- about-section:open-source-first-game:start -->
+          <section id="open-source-first-game" class="about-section about-code-section" aria-labelledby="open-source-first-game-title">
+            <div class="about-section-header">
+              <p class="about-kicker">05 / Open Source / first_game</p>
+              <h2 id="open-source-first-game-title">The first game is a portable package, not a client fork.</h2>
+              <p class="about-section-side-copy">JSON describes worlds. Luau supplies game-specific rules. Every client consumes the same package.</p>
+            </div>
+            <div class="about-section-body">
+              <div class="about-code-intro">
+                <p>The <code>first-game</code> repository is content and rules only. It has no browser, Swift, Kotlin, Rust, or server code. That constraint is what lets the same lobby and session travel across the web, iOS, and Android clients.</p>
+                <p><code>manifest.json</code> describes presentation-independent world data: palette, bounds, spawn points, clouds, blocks, portals, launch pads, settings room, avatars, and the runtime world map. The game source lives under <code>first-game/src/</code>; the package builder assembles its Luau modules into the single <code>game.luau</code> entry consumed by the host.</p>
+              </div>
+
+              <dl class="about-code-map">
+                <div><dt>Package schema</dt><dd><code>manifest.json</code> with <code>startWorld: "lobby"</code>, a launch route, and nested <code>worlds</code></dd></div>
+                <div><dt>Lobby</dt><dd>Three colored launch pads, shared 8-second countdowns, a settings portal, and a max-player hint of 18</dd></div>
+                <div><dt>Session</dt><dd><code>real-game</code> becomes “The Clearing” after the launch and removes the lobby pads</dd></div>
+                <div><dt>Rules</dt><dd><code>game.luau</code> exports <code>on_start(api)</code> and <code>on_tick(api, delta)</code>; the host API is the portability boundary</dd></div>
+              </dl>
+
+              <div class="about-code-columns">
+                <article class="about-code-block">
+                  <p class="about-code-label">Data model</p>
+                  <h3>Content stays declarative.</h3>
+                  <p>Top-level fields define the lobby. The nested <code>worlds</code> map defines additional scenes with their own palette, grid, spawn, blocks, portals, and signs. Clients synthesize the lobby world from the top-level values and sort runtime world IDs so a world transition can be represented as a stable engine index.</p>
+                  <p>Keep fields compatible with all three loaders: the browser normalizer in <code>web/src/game/</code>, <code>GamePackage.swift</code>, and Android's explicit JSON parser. A schema change is a cross-repository change.</p>
+                </article>
+                <article class="about-code-block">
+                  <p class="about-code-label">Rules and delivery</p>
+                  <h3>Ship data through the web host.</h3>
+                  <ul class="about-code-list">
+                    <li><code>web/scripts/sync_games.sh</code> builds the sibling game sources and writes each manifest, generated script, metadata, and optional assets into <code>public/games/&lt;game-id&gt;/</code>.</li>
+                    <li>iOS and Android bundle the same generated package, then fetch and cache a validated manifest/script pair for the next launch.</li>
+                    <li>Native and browser Rust engines execute the same lifecycle callbacks through target-specific Luau runtimes.</li>
+                    <li>Platform behavior belongs in the runtime or host API. Keep package rules portable and free of client-specific imports.</li>
+                  </ul>
+                </article>
+              </div>
+
+              <p class="about-callout">This repository is the test of the architecture: if a world or rule needs a platform-specific rewrite, the boundary is in the wrong place—or the package contract needs to become more explicit.</p>
+              <div class="about-final-links">
+                <a class="about-primary-link" href="https://github.com/cubacadabra/first-game" target="_blank" rel="noreferrer"><span>Open first_game on GitHub</span><span aria-hidden="true">↗</span></a>
+                <a class="about-inline-link" href="/about/open-source/web/"><span>Back to web</span><span aria-hidden="true">↺</span></a>
+              </div>
+            </div>
+          </section>
+          <!-- about-section:open-source-first-game:end -->
+
+<!-- about-section:why-another-platform:start -->
+          <section id="why-another-platform" class="about-section" aria-labelledby="problem-title">
+            <div class="about-section-header">
+              <p class="about-kicker">01 / Why build another platform?</p>
+              <h2 id="problem-title">Roblox has the network. That is exactly why it is hard to change.</h2>
+              <p class="about-section-side-copy">
+                We do not need to win by having everything on day one. We need to
+                be meaningfully better for the first small group that is willing
+                to move.
+              </p>
+            </div>
+            <div class="about-section-body">
+              <div class="about-prose">
+                <p>
+                  The goal is not to attack Roblox for existing or pretend that a
+                  new platform can instantly replace a world with millions of
+                  players, creators, friends, games, and years of accumulated
+                  content.
+                </p>
+                <p>
+                  The opportunity is to be more opinionated from the beginning. A
+                  new platform does not have to preserve every compromise made to
+                  serve kids, teens, adults, developers, brands, investors, and an
+                  enormous legacy system all at once.
+                </p>
+              </div>
+              <div class="about-item-grid">
+                <article class="about-item">
+                  <span class="about-index">01</span>
+                  <h3>Scale becomes baggage.</h3>
+                  <p>Incumbents carry legacy architecture, aging UX decisions, and systems that are difficult to replace without disrupting the ecosystem already built on top of them. A new platform can set better defaults before the compromises harden.</p>
+                </article>
+                <article class="about-item">
+                  <span class="about-index">02</span>
+                  <h3>Creators become tenants.</h3>
+                  <p>When your game only exists inside someone else’s walled garden, the platform owns too much of the relationship. Discovery, economics, identity, and access can feel opaque or arbitrary.</p>
+                </article>
+                <article class="about-item">
+                  <span class="about-index">03</span>
+                  <h3>Safety gets bolted on.</h3>
+                  <p>Moderation controversies and unrestricted stranger contact are not problems that a nicer warning screen can solve. Social architecture, age boundaries, reporting, and appeals need to be part of the system’s design.</p>
+                </article>
+                <article class="about-item">
+                  <span class="about-index">04</span>
+                  <h3>One product serves everyone.</h3>
+                  <p>A platform that must satisfy children, parents, professional developers, casual players, brands, and investors will always make tradeoffs. cubacadabra can choose a clearer center of gravity: creators first, with families in mind.</p>
+                </article>
+              </div>
+            </div>
+          </section>
+          <!-- about-section:why-another-platform:end -->
+
+<!-- about-section:opportunity:start -->
+          <section id="opportunity" class="about-section" aria-labelledby="solution-title">
+            <div class="about-section-header">
+              <p class="about-kicker">02 / The opportunity</p>
+              <h2 id="solution-title">The answer is not a prettier clone.</h2>
+              <p class="about-section-side-copy">
+                Safety gets a family’s attention. A better relationship with the
+                people who build the worlds gives them a reason to stay.
+              </p>
+            </div>
+            <div class="about-section-body">
+              <div class="about-prose">
+                <p>
+                  “Roblox but safer” is an important starting point, but safety is
+                  primarily a reason for parents to approve. The stronger idea is a
+                  platform where several advantages reinforce each other.
+                </p>
+                <p>
+                  Kids get fun worlds and friends. Parents get substantially safer
+                  social architecture. Creators get tools, ownership, economics,
+                  and a relationship that treats them like developers building an
+                  ecosystem—not tenants renting space in someone else’s mall.
+                </p>
+              </div>
+              <div class="about-principles">
+                <article class="about-principle"><span class="about-index">A</span><div><h3>Trust and safety by design</h3><p>Tighter age separation, no unrestricted adult-to-child contact, transparent moderation metrics, strong community reporting, safety research, and real appeals are future design goals—not features we claim to have today.</p></div></article>
+                <article class="about-principle"><span class="about-index">B</span><div><h3>A better creator deal</h3><p>We want simpler revenue share, clearer economics, fewer arbitrary platform taxes, easier cash-out, and transparent discovery. The creator should understand how the platform works and what they can expect from it.</p></div></article>
+                <article class="about-principle"><span class="about-index">C</span><div><h3>A better developer experience</h3><p>Modern rendering, native scripting and development workflows, proper package management, reproducible builds, local servers, sane debugging, and documented formats and APIs can make building feel like development again.</p></div></article>
+                <article class="about-principle"><span class="about-index">D</span><div><h3>More room to build</h3><p>Native clients, better performance, richer physics and networking, portable assets and worlds, and fewer historical constraints could give creators a higher technical ceiling.</p></div></article>
+              </div>
+            </div>
+          </section>
+          <!-- about-section:opportunity:end -->
+
+<!-- about-section:open-by-design:start -->
+          <section id="open-by-design" class="about-section" aria-labelledby="open-title">
+            <div class="about-section-header">
+              <p class="about-kicker">03 / Open by design</p>
+              <h2 id="open-title">Your cubacadabra game should not be trapped inside cubacadabra.</h2>
+              <p class="about-section-side-copy">Creator-first should describe the architecture, not just the marketing.</p>
+            </div>
+            <div class="about-section-body">
+              <div class="about-prose">
+                <p>
+                  Openness is not just a philosophy here. It can be part of the
+                  competitive strategy. If creators can inspect the engine,
+                  understand networking, use documented file formats and scripting
+                  APIs, and submit fixes, the relationship changes from “trust our
+                  black box” to “help shape the tools you depend on.”
+                </p>
+                <p>
+                  If the runtime and formats are open, a creator also has more
+                  confidence that their work will remain usable if the company ever
+                  changes direction. That is a real answer to platform risk: the
+                  work does not simply disappear behind a proprietary executable.
+                </p>
+              </div>
+              <div class="about-open-grid">
+                <div class="about-boundary"><p class="about-boundary-label">Open where openness helps</p><ul><li>Rust engine and common runtime</li><li>Web, iOS, and Android clients</li><li>SDKs, Luau bindings, and creator tools</li><li>World and asset formats</li><li>Protocol definitions and local servers</li><li>Sample games and public documentation</li></ul></div>
+                <div class="about-boundary"><p class="about-boundary-label">Private where secrecy protects</p><ul><li>Production safety models and abuse heuristics</li><li>Anti-cheat detection and ban-evasion signals</li><li>Fraud rules, payment risk, and private operations</li><li>Moderator and law-enforcement tooling</li><li>Credentials, secrets, and infrastructure details</li></ul></div>
+              </div>
+              <p class="about-callout">Open anything where openness benefits creators, interoperability, trust, or contribution. Keep private anything where secrecy materially raises the cost of abuse.</p>
+            </div>
+          </section>
+          <!-- about-section:open-by-design:end -->
+
+<!-- about-section:hard-part:start -->
+          <section id="hard-part" class="about-section" aria-labelledby="moat-title">
+            <div class="about-section-header">
+              <p class="about-kicker">04 / The hard part</p>
+              <h2 id="moat-title">The source code is not the moat.</h2>
+              <p class="about-section-side-copy">Openness makes the foundation more useful. Trust, people, and great worlds are what make a platform worth choosing.</p>
+            </div>
+            <div class="about-section-body">
+              <div class="about-quote-wrap">
+                <blockquote>“Even though Roblox has everybody, this is so much better for what I do that I’m moving.”</blockquote>
+                <p>Roblox’s network effect is real. An open renderer or a better local server does not create millions of players overnight. The moat we eventually have to earn is players, creators, friends, games, a world catalog, trust, moderation operations, discovery data, and an economy that people actually want to participate in.</p>
+                <p>Someone could fork the code and call it CubeBlox. They would not automatically get cubacadabra’s players, popular games, creator relationships, reputation, or safety operation. If the code is good enough that people want to fork it, that is evidence that it became useful.</p>
+              </div>
+            </div>
+          </section>
+          <!-- about-section:hard-part:end -->
+
+<!-- about-section:constituencies:start -->
+          <section id="constituencies" class="about-section" aria-labelledby="people-title">
+            <div class="about-section-header">
+              <p class="about-kicker">05 / Three constituencies</p>
+              <h2 id="people-title">Different reasons to choose the same world.</h2>
+              <p class="about-section-side-copy">The best outcome is not asking one audience to compromise for another. It is giving each audience a reason to prefer the same place.</p>
+            </div>
+            <div class="about-section-body">
+              <div class="about-people-grid">
+                <article class="about-person"><span class="about-index">01</span><h3>Kids and players</h3><p>Fun worlds, expressive play, friends, and reasons to come back.</p></article>
+                <article class="about-person"><span class="about-index">02</span><h3>Parents</h3><p>A social environment designed to be substantially safer and easier to understand.</p></article>
+                <article class="about-person"><span class="about-index">03</span><h3>Creators</h3><p>A platform that treats the people making the worlds much better.</p></article>
+              </div>
+            </div>
+          </section>
+          <!-- about-section:constituencies:end -->
+
+<!-- about-section:where-we-are:start -->
+          <section id="where-we-are" class="about-section about-last-section" aria-labelledby="reality-title">
+            <div class="about-section-header">
+              <p class="about-kicker">06 / Where we are now</p>
+              <h2 id="reality-title">Early enough to change the rules.</h2>
+              <p class="about-section-side-copy">The project is small enough to be honest, ambitious, and still able to make foundational choices carefully.</p>
+            </div>
+            <div class="about-section-body">
+              <div class="about-prose">
+                <p>Today, cubacadabra is still a tiny shared world in progress: a small lobby, an open baseplate, and the beginning of a common runtime. The platform described above is future work. The economics, safety architecture, creator tooling, portable formats, mobile clients, and broader ecosystem are not done.</p>
+                <p>That is also the reason to make the direction explicit now. The choices made early can determine whether creators feel like participants or tenants, whether families can understand the social system, and whether the code becomes a wall or a foundation.</p>
+              </div>
+              <div class="about-final-links">
+                <a class="about-primary-link" href="/"><span>Return to the first world</span><span aria-hidden="true">↗</span></a>
+                <a class="about-inline-link" href="https://github.com/orgs/cubacadabra/repositories" target="_blank" rel="noreferrer"><span>Follow the work on GitHub</span><span aria-hidden="true">↗</span></a>
+              </div>
+            </div>
+          </section>
+          <!-- about-section:where-we-are:end -->
+
+<!-- about-section:support:start -->
+          <section id="support" class="about-section about-last-section" aria-labelledby="support-title">
+            <div class="about-section-header">
+              <p class="about-kicker">07 / Support cubacadabra</p>
+              <h2 id="support-title">Support cubacadabra</h2>
+              <p class="about-section-side-copy">A simple monthly subscription lets parents support the work directly, without putting the cost of play on kids.</p>
+            </div>
+            <div class="about-section-body">
+              <div class="about-support-grid">
+                <div class="about-support-copy">
+                  <div class="about-prose">
+                    <a class="about-support-image-link" href="/my-cube/#subscription" aria-label="Open the parent-cadabra subscription in My Cube">
+                      <img src="/images/card.jpg" alt="Payment card fields for the parent-cadabra subscription" loading="lazy" />
+                      <span>Open parent-cadabra in My Cube <span aria-hidden="true">→</span></span>
+                    </a>
+                    <p>cubacadabra is being built as a place for children to play, parents to understand, and creators to build. <strong>parent-cadabra</strong> is the simplest version of that relationship: parents who want to help fund the platform can contribute $9.99 USD a month directly.</p>
+                    <p>That support keeps the incentives straightforward. Kids do not need to buy casino coins to participate, and the platform can grow around a relationship with families rather than extracting from play.</p>
+                    <p>The subscription is available in <a class="about-inline-link about-support-inline-link" href="/my-cube/#subscription"><span>My Cube</span><span aria-hidden="true">↗</span></a> after you sign in. You can review the plan, see your current status, and continue to secure checkout there.</p>
+                  </div>
+                  <dl class="about-support-facts">
+                    <div><dt>Plan</dt><dd>parent-cadabra</dd></div>
+                    <div><dt>Cost</dt><dd>$9.99 USD / month</dd></div>
+                    <div><dt>Available</dt><dd>My Cube → Subscription</dd></div>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </section>
+          <!-- about-section:support:end -->
+
