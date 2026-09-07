@@ -58,6 +58,7 @@ export async function createGame() {
   if (localAppearance) engine.setLocalAppearance(JSON.stringify(localAppearance));
   engine.loadGameScript(gameDefinition.script);
   engine.setAuthenticated(Boolean(currentUser));
+  if (currentUser?.username) engine.setUsername(currentUser.username);
   const runtimeWorldIds = gameDefinition.runtimeWorldIds;
   const initialFrame = engine.readFrame();
   const initialWorldId = runtimeWorldIds[initialFrame.activeWorldIndex]
@@ -108,7 +109,10 @@ export async function createGame() {
   worldSocket = createWorldSocket({
     gameId: gameDefinition.gameId,
     initialUsername: currentUser?.username,
-    onSession: (session) => applyServerAppearance(session.appearance),
+    onSession: (session) => {
+      if (session.username) engine.setUsername(session.username);
+      applyServerAppearance(session.appearance);
+    },
     onEvent: (event) => {
       hud.showWorldEvent(event);
       if (event.type === "player_leave") {
