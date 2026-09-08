@@ -15,8 +15,10 @@ const AVATAR_OPTIONS = [
 ];
 const BLOCKED_USERS_PATH = "/moderation/blocks";
 const SUBSCRIPTION_PATH = "/subscription";
+const CUBES_PATH = "/cubes";
 const CUBE_UPLOAD_PATH = "/cubes/upload";
 const MAX_CUBE_ZIP_BYTES = 25 * 1024 * 1024;
+const CUBE_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 let currentUser = null;
 let subscriptionCheckoutCleanup = null;
 
@@ -199,7 +201,34 @@ function cubesMarkup() {
               </a>
             </td>
           </tr>
+          <tr class="cube-more-row">
+            <td colspan="2">
+              <a class="cube-link cube-more-link" href="#more-cubes">
+                <div class="cube-thumbnail" aria-hidden="true"><span>More</span></div>
+                <div class="cube-copy">
+                  <span class="cube-name">More</span>
+                  <span class="cube-detail">Browse uploaded cubes</span>
+                </div>
+              </a>
+            </td>
+          </tr>
         </tbody>
+      </table>
+    </div>`;
+}
+
+function moreCubesMarkup() {
+  return `
+    <div class="cubes-view more-cubes-view" id="more-cubes">
+      <div class="more-cubes-heading">
+        <a class="cubes-back-link" href="#cubes">← All cubes</a>
+        <h1>More</h1>
+        <p>Browse uploaded cubes.</p>
+      </div>
+      <p class="more-cubes-status" role="status" aria-live="polite">Loading cubes…</p>
+      <button class="more-cubes-retry" type="button" hidden>Try again</button>
+      <table class="cube-table more-cube-table" aria-label="Uploaded cubes">
+        <tbody class="more-cube-table-body"></tbody>
       </table>
     </div>`;
 }
@@ -209,7 +238,7 @@ function cubeUploadMarkup() {
     <div class="cube-upload-view" id="upload-cube">
       <div class="cube-upload-heading">
         <h1>Upload a Cube</h1>
-        <p>Upload a built Cubacadabra cube package. The ZIP must include its manifest and game script.</p>
+        <p>Upload a built cubacadabra cube package. The ZIP must include its manifest and game script.</p>
       </div>
       <form class="cube-upload-form" novalidate>
         <label class="cube-upload-field" for="cube-upload-file">
@@ -340,6 +369,69 @@ async function fetchBlockedUsers() {
   return Array.isArray(result?.user_ids)
     ? result.user_ids.filter((userId) => typeof userId === "string" && userId.trim())
     : [];
+}
+
+function normalizeCubeCatalog(cubes) {
+  const seenIds = new Set();
+  return (Array.isArray(cubes) ? cubes : []).filter((cube) => {
+    if (!cube || typeof cube.cubeId !== "string" || !CUBE_ID_PATTERN.test(cube.cubeId)) {
+      return false;
+    }
+    if (seenIds.has(cube.cubeId)) return false;
+    seenIds.add(cube.cubeId);
+    return true;
+  });
+}
+
+async function fetchCubeCatalog() {
+  const url = new URL(backendApiUrl(CUBES_PATH));
+  url.searchParams.set("page", "1");
+  url.searchParams.set("page_size", "20");
+  const response = await fetch(url, {
+    headers: { Accept: "application/json" },
+  });
+  const result = await response.json().catch(() => null);
+  if (!response.ok) throw new Error(result?.error || "cube_catalog_load_failed");
+  return normalizeCubeCatalog(result?.cubes);
+}
+
+function cubeGameUrl(cubeId) {
+  const url = new URL("/", window.location.origin);
+  url.searchParams.set("game", cubeId);
+  return url.href;
+}
+
+function createRemoteCubeRow(cube) {
+  const row = document.createElement("tr");
+  const cell = document.createElement("td");
+  cell.colSpan = 2;
+  const link = document.createElement("a");
+  link.className = "cube-link";
+  link.href = cubeGameUrl(cube.cubeId);
+
+  const thumbnail = document.createElement("div");
+  thumbnail.className = "cube-thumbnail";
+  thumbnail.setAttribute("aria-hidden", "true");
+  const thumbnailLabel = document.createElement("span");
+  thumbnailLabel.textContent = "Cube";
+  thumbnail.append(thumbnailLabel);
+
+  const copy = document.createElement("div");
+  copy.className = "cube-copy";
+  const name = document.createElement("span");
+  name.className = "cube-name";
+  name.textContent = typeof cube.displayName === "string" && cube.displayName.trim()
+    ? cube.displayName.trim()
+    : cube.cubeId;
+  const detail = document.createElement("span");
+  detail.className = "cube-detail";
+  detail.textContent = `${cube.cubeId} · v${cube.version ?? "?"}`;
+  copy.append(name, detail);
+
+  link.append(thumbnail, copy);
+  cell.append(link);
+  row.append(cell);
+  return row;
 }
 
 function blockedUsersErrorMessage(error) {
@@ -599,6 +691,49 @@ function renderBasics(user) {
 function renderCubes() {
   setMenuState(false, "cubes");
   content.innerHTML = cubesMarkup();
+  content.querySelector(".cube-more-link")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    renderMoreCubes();
+  });
+}
+
+function renderMoreCubes() {
+  setMenuState(false, "cubes");
+  content.innerHTML = moreCubesMarkup();
+
+  const back = content.querySelector(".cubes-back-link");
+  const status = content.querySelector(".more-cubes-status");
+  const retry = content.querySelector(".more-cubes-retry");
+  const tableBody = content.querySelector(".more-cube-table-body");
+
+  const load = async () => {
+    status.textContent = "Loading cubes…";
+    status.dataset.state = "pending";
+    retry.hidden = true;
+    tableBody.replaceChildren();
+    try {
+      const cubes = await fetchCubeCatalog();
+      if (cubes.length === 0) {
+        status.textContent = "No uploaded cubes yet.";
+        status.dataset.state = "";
+        return;
+      }
+      cubes.forEach((cube) => tableBody.append(createRemoteCubeRow(cube)));
+      status.textContent = "";
+      status.dataset.state = "";
+    } catch (error) {
+      status.textContent = "We couldn’t load the uploaded cubes. Please try again.";
+      status.dataset.state = "error";
+      retry.hidden = false;
+    }
+  };
+
+  back?.addEventListener("click", (event) => {
+    event.preventDefault();
+    renderCubes();
+  });
+  retry.addEventListener("click", load);
+  load();
 }
 
 function cubeUploadErrorMessage(error) {
@@ -938,6 +1073,8 @@ getCurrentUser().then((user) => {
     renderParentStep();
   } else if (window.location.hash === "#cubes") {
     renderCubes();
+  } else if (window.location.hash === "#more-cubes") {
+    renderMoreCubes();
   } else if (window.location.hash === "#blocked-users") {
     renderBlockedUsers();
   } else if (window.location.hash === "#subscription") {

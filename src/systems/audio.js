@@ -8,7 +8,7 @@ export function createGameAudio(audioAssets = {}) {
 
   for (const [id, definition] of Object.entries(audioAssets)) {
     const template = new Audio(definition.url);
-    template.preload = "auto";
+    template.preload = "none";
     templates.set(id, { template, volume: definition.volume });
   }
 

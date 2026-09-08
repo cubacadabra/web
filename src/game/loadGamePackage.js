@@ -1,5 +1,10 @@
+import { backendApiUrl } from "../config/clientConfig.js";
+
 const DEFAULT_GAME_ID = "first-game";
 const GAME_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const LOCAL_GAME_IDS = new Set(["first-game", "second-game", "third-game"]);
+const CUBE_CATALOG_PAGE_SIZE = 50;
+const MAX_CUBE_CATALOG_PAGES = 200;
 const AUDIO_ID_PATTERN = /^[A-Za-z0-9._-]{1,64}$/;
 const AUDIO_PATH_PATTERN = /^assets\/(?:[A-Za-z0-9_-][A-Za-z0-9._-]*\/)*[A-Za-z0-9_-][A-Za-z0-9._-]*\.wav$/i;
 const IMAGE_ID_PATTERN = /^[A-Za-z0-9._-]{1,64}$/;
@@ -34,6 +39,39 @@ async function loadText(url) {
     throw new Error(`The game script could not be loaded (${response.status}).`);
   }
   return response.text();
+}
+
+async function loadUploadedCubeBaseUrl(gameId) {
+  const backendRoot = new URL(backendApiUrl("/"));
+  for (let page = 1; page <= MAX_CUBE_CATALOG_PAGES; page += 1) {
+    const catalogUrl = new URL(backendApiUrl("/cubes"));
+    catalogUrl.searchParams.set("page", String(page));
+    catalogUrl.searchParams.set("page_size", String(CUBE_CATALOG_PAGE_SIZE));
+    const response = await fetch(catalogUrl, {
+      headers: { Accept: "application/json" },
+    });
+    const result = await response.json().catch(() => null);
+    if (!response.ok) {
+      throw new Error(result?.error || `The cube catalog could not be loaded (${response.status}).`);
+    }
+
+    const cube = Array.isArray(result?.cubes)
+      ? result.cubes.find((entry) => entry?.cubeId === gameId)
+      : null;
+    if (cube) {
+      if (typeof cube.packagePath !== "string" || !cube.packagePath.startsWith("/cubes/")) {
+        throw new Error("The uploaded cube package path is invalid.");
+      }
+      const packageUrl = new URL(cube.packagePath, backendRoot);
+      if (packageUrl.origin !== backendRoot.origin || !packageUrl.pathname.startsWith("/cubes/")) {
+        throw new Error("The uploaded cube package origin is invalid.");
+      }
+      return packageUrl;
+    }
+    if (result?.hasNextPage !== true) break;
+  }
+
+  throw new Error(`The uploaded cube "${gameId}" could not be found.`);
 }
 
 function normalizeAudioAssets(assets, baseUrl) {
@@ -93,10 +131,15 @@ function normalizeImageAssets(assets, baseUrl) {
 
 export async function loadGamePackage() {
   const gameId = requestedGameId();
-  const baseUrl = new URL(`games/${gameId}/`, document.baseURI);
+  const baseUrl = LOCAL_GAME_IDS.has(gameId)
+    ? new URL(`games/${gameId}/`, document.baseURI)
+    : await loadUploadedCubeBaseUrl(gameId);
   const { source: manifestSource, manifest } = await loadManifest(
     new URL("manifest.json", baseUrl),
   );
+  if (manifest?.id !== gameId) {
+    throw new Error("The game package ID does not match the requested cube.");
+  }
   const script = await loadText(new URL("game.luau", baseUrl));
   if (!script.trim()) {
     throw new Error("The game script is empty.");
