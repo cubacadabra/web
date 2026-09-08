@@ -177,7 +177,11 @@ export function createWorldSocket({
           onExperience?.(event);
           return;
         }
-        if (event?.type === "game_state" || event?.type === "game_message") {
+        if (
+          event?.type === "game_state"
+          || event?.type === "game_message"
+          || event?.type === "player_state"
+        ) {
           onGameMessage?.(event);
           return;
         }
