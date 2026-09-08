@@ -277,6 +277,8 @@ export async function createGame() {
         state.movement.jumpQueued = true;
       } else if (event.action === "player.run" && event.phase === "activate") {
         state.movement.mobileSprint = !state.movement.mobileSprint;
+      } else if (event.action === "player.climb" && event.phase === "activate") {
+        state.movement.climb = !state.movement.climb;
       } else if (event.action === "shared.about.open" && event.phase === "activate") {
         // The web pointer-up handler navigates synchronously to preserve
         // browser user activation and avoid popup blockers.
@@ -460,6 +462,7 @@ export async function createGame() {
       movement.strafe,
       movement.sprinting,
       state.runtime.settingsOpen ? false : state.movement.jumpQueued,
+      state.runtime.settingsOpen ? false : state.movement.climb,
       state.runtime.settingsOpen ? 0 : state.movement.lookX,
       state.runtime.settingsOpen ? 0 : state.movement.lookY,
       state.runtime.settingsOpen ? 0 : state.movement.zoomDelta,

@@ -193,13 +193,14 @@ export function createRustEngine(exports) {
       new Uint8Array(exports.memory.buffer, pointer, bytes.length).set(bytes);
       return Boolean(call("engine_load_username_buffer"));
     },
-    setInput(forward, strafe, sprint, jump, lookX, lookY, zoomDelta) {
+    setInput(forward, strafe, sprint, jump, climb, lookX, lookY, zoomDelta) {
       call(
         "engine_set_input",
         forward,
         strafe,
         sprint ? 1 : 0,
         jump ? 1 : 0,
+        climb ? 1 : 0,
         lookX,
         lookY,
         zoomDelta,

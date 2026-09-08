@@ -5,6 +5,7 @@ export function createGameState() {
       joystickX: 0,
       joystickY: 0,
       mobileSprint: false,
+      climb: false,
       jumpQueued: false,
       lookX: 0,
       lookY: 0,
