@@ -11,6 +11,7 @@ The repositories work together as follows:
 ```text
 first-game  -> src/ + manifest.json (game package)
 second-game -> src/ + manifest.json (game package)
+third-game  -> src/ + manifest.json (SDK capability probe)
 rust        -> simulation and renderer compiled to WebAssembly
 web         -> this browser shell and package host
 backend     -> multiplayer Worker at /world/:worldId
@@ -54,8 +55,8 @@ overview page small while keeping the shared shell in one place.
 Development defaults are:
 
 ```text
-Game packages: http://localhost:5173/games/first-game/ and
-http://localhost:5173/games/second-game/
+Game packages: http://localhost:5173/games/first-game/, /games/second-game/,
+and /games/third-game/
 Backend:      ws://127.0.0.1:8787
 ```
 
@@ -159,5 +160,7 @@ quality policy does not change simulation or character identity.
 - [first-game/README.md](../first-game/README.md) — package schema and first
   game behavior
 - [second-game/README.md](../second-game/README.md) — second game behavior
+- [third-game/README.md](../third-game/README.md) — preview SDK capability probe
+- [tools/docs/cubacadabra-game-developer-guide-preview-0.3.md](../tools/docs/cubacadabra-game-developer-guide-preview-0.3.md) — game developer guide
 - [rust/README.md](../rust/README.md) — simulation and WASM renderer
 - [backend/README.md](../backend/README.md) — local/LAN/production multiplayer

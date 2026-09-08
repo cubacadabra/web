@@ -10,7 +10,7 @@ if [ ! -f "$tools_dir/pyproject.toml" ] || [ ! -d "$tools_dir/src/cubacadabra" ]
   exit 1
 fi
 
-for game_id in first-game second-game; do
+for game_id in first-game second-game third-game; do
   game_dir="$web_dir/../$game_id"
   public_dir="$web_dir/public/games/$game_id"
 

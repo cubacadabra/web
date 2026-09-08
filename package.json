@@ -1,7 +1,7 @@
 {
   "name": "cubacadabra-web",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.3.0",
   "type": "module",
   "scripts": {
     "sync:games": "sh scripts/sync_games.sh",
