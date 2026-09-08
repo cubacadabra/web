@@ -19,6 +19,7 @@ const PLAYER_BODY_IDS = new Set([
   "cuba:person-girl.v1",
   "cuba:person-nb.v1",
 ]);
+const MOVEMENT_DEBUG = new URLSearchParams(window.location.search).get("debugMovement") === "1";
 
 async function decodePackageImage(url) {
   const response = await fetch(url);
@@ -298,6 +299,16 @@ export async function createGame() {
     onMove: (event) => {
       if (event.isSelf) {
         if (event.corrected) {
+          if (MOVEMENT_DEBUG) {
+            const local = engine.readFrame().player.position;
+            console.debug("[cubacadabra movement correction]", {
+              reason: event.correctionReason ?? "unknown",
+              distance: event.correctionDistance ?? null,
+              validationElapsedMs: event.validationElapsedMs ?? null,
+              local,
+              server: { x: event.x, y: event.y, z: event.z },
+            });
+          }
           engine.reconcilePlayer({ x: event.x, y: event.y, z: event.z }, event.yaw);
         }
         return;
