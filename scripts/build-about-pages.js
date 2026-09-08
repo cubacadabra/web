@@ -89,13 +89,13 @@ const createHead = (route) => {
     <meta property="og:url" content="${canonicalUrl}" />
     <meta property="og:title" content="${title}" />
     <meta property="og:description" content="${description}" />
-    <meta property="og:image" content="https://cubacadabra.com/og-image.png" />
+    <meta property="og:image" content="https://cubacadabra.com/og-image.jpg" />
     <meta property="og:image:type" content="image/png" />
     <meta property="og:image:alt" content="cubacadabra World 01 — Empty baseplate" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${title}" />
     <meta name="twitter:description" content="${description}" />
-    <meta name="twitter:image" content="https://cubacadabra.com/og-image.png" />
+    <meta name="twitter:image" content="https://cubacadabra.com/og-image.jpg" />
     <meta name="twitter:image:alt" content="cubacadabra World 01 — Empty baseplate" />
     <script type="application/ld+json">
 ${structuredData}
