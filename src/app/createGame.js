@@ -57,6 +57,69 @@ async function decodePackageImage(url) {
   }
 }
 
+function nextPowerOfTwo(value) {
+  let result = 1;
+  while (result < value) result *= 2;
+  return result;
+}
+
+function createPackageImageAtlas(images) {
+  const maxDimension = 2048;
+  const padding = 2;
+  const placements = [];
+  let x = padding;
+  let y = padding;
+  let rowHeight = 0;
+
+  for (const image of images) {
+    if (image.width + padding * 2 > maxDimension || image.height + padding * 2 > maxDimension) {
+      throw new Error(`The game image "${image.id}" is too large for the world texture atlas.`);
+    }
+    if (x + image.width + padding > maxDimension) {
+      x = padding;
+      y += rowHeight + padding;
+      rowHeight = 0;
+    }
+    if (y + image.height + padding > maxDimension) {
+      throw new Error("The game images do not fit in the 2048px world texture atlas.");
+    }
+    placements.push({ image, x, y });
+    x += image.width + padding;
+    rowHeight = Math.max(rowHeight, image.height);
+  }
+
+  const width = maxDimension;
+  const height = Math.min(maxDimension, nextPowerOfTwo(y + rowHeight + padding));
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext("2d", { willReadFrequently: true });
+  if (!context) throw new Error("The game image atlas canvas is unavailable.");
+
+  const regions = {};
+  for (const { image, x: left, y: top } of placements) {
+    const imageData = new ImageData(
+      new Uint8ClampedArray(image.pixels),
+      image.width,
+      image.height,
+    );
+    context.putImageData(imageData, left, top);
+    regions[image.id] = [
+      (left + 0.5) / width,
+      (top + 0.5) / height,
+      Math.max(1, image.width - 1) / width,
+      Math.max(1, image.height - 1) / height,
+    ];
+  }
+  const atlas = context.getImageData(0, 0, width, height);
+  return {
+    width,
+    height,
+    pixels: new Uint8Array(atlas.data),
+    regions,
+  };
+}
+
 function playerBodyId(value) {
   return PLAYER_BODY_IDS.has(value) ? value : null;
 }
@@ -70,10 +133,21 @@ export async function createGame() {
   elements.worldShell?.classList.toggle("is-touch-device", isTouchDevice);
   const renderer = await createRustRenderer({ canvas: elements.canvas });
   const engine = createRustEngine(renderer.wasmExports);
-  for (const [id, definition] of Object.entries(gameDefinition.imageAssets)) {
-    const image = await decodePackageImage(definition.url);
-    if (!renderer.setPackageImage(id, image.width, image.height, image.pixels)) {
-      throw new Error(`The game image "${id}" exceeds the renderer limits.`);
+  const packageImages = await Promise.all(
+    Object.entries(gameDefinition.imageAssets).map(async ([id, definition]) => ({
+      id,
+      ...(await decodePackageImage(definition.url)),
+    })),
+  );
+  if (packageImages.length > 0) {
+    const atlas = createPackageImageAtlas(packageImages);
+    if (!renderer.setPackageImageAtlas(
+      atlas.width,
+      atlas.height,
+      atlas.pixels,
+      JSON.stringify(atlas.regions),
+    )) {
+      throw new Error("The game images could not be uploaded to the world texture atlas.");
     }
   }
   const gameAudio = createGameAudio(gameDefinition.audioAssets);

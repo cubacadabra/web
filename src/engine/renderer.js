@@ -28,6 +28,10 @@ export async function createRustRenderer({ canvas }) {
       if (destroyed) return false;
       return renderer.set_package_image(id, width, height, pixels);
     },
+    setPackageImageAtlas(width, height, pixels, regions) {
+      if (destroyed) return false;
+      return renderer.set_package_image_atlas(width, height, pixels, regions);
+    },
     render(engineHandle) {
       if (destroyed) return;
       renderer.sync_engine(engineHandle);

@@ -115,8 +115,8 @@ function normalizeImageAssets(assets, baseUrl) {
     throw new Error("Game manifest assets.images must be an object.");
   }
   const entries = Object.entries(images);
-  if (entries.length > 1) {
-    throw new Error("A game package may declare at most one world image in Preview 0.3.");
+  if (entries.length > 16) {
+    throw new Error("A game package may declare at most 16 world images.");
   }
 
   return Object.fromEntries(entries.map(([id, definition]) => {
