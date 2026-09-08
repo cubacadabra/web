@@ -1,9 +1,10 @@
+#!/bin/sh
+set -eu
+
 GENERATE_SOURCEMAP=false npm run build:release
 rm -rf ../deployed
 mkdir ../deployed
-echo "cubacadabra.com" > ../deployed/CNAME
-echo "# deployed" > ../deployed/README.md
-cp -r dist/* ../deployed/
+cp -R dist/. ../deployed/
 cd ../deployed
 git init
 git add .

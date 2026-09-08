@@ -46,13 +46,17 @@ npm install
 npm run dev
 ```
 
-`/about/.../` pages and `/my-cube/` are generated as temporary Vite build
-inputs from the shared shell in `about/index.html`, the route sections in
-`about/about-sections.html`, and the metadata in `about/about-routes.js`.
-They are served at their normal URLs during development and emitted as static
-`index.html` files in `dist/`; no generated route pages are written into the
-source tree. `npm run build:about` remains available when you want to inspect
-the generated pages in the ignored `.generated/` directory.
+Every routable HTML document, including the root world SPA, is generated from
+the dry sources in `site/`. `site/site-routes.js` owns route metadata and
+site-wide metadata such as the social image. `site/content/` contains only
+page-specific body content. `scripts/build-site-pages.js` owns the shared
+document head, header, footer, and static-page layouts.
+
+Vite generates temporary HTML inputs under its ignored cache, serves them at
+their normal URLs during development, and emits static `index.html` files to
+`dist/` during a production build. No routable HTML is checked into this
+repository. Run `npm run build:pages` only when you want to inspect the
+generated pages in the ignored `.generated/` directory.
 
 Development defaults are:
 
@@ -111,10 +115,11 @@ npm run preview
 ```
 
 That preview serves the package locally but uses the production Worker because
-the build is a production build. The deployment helper `./deploy.sh` builds
-the site, adds the GitHub Pages `404.html` fallback, and publishes the
-complete `dist/` output to the sibling `deployed` repository; use it only
-when you intend to update the public site.
+the build is a production build. `dist/` is the complete GitHub Pages
+artifact, including the generated route tree, sitemap, `CNAME`, `.nojekyll`,
+and `404.html` fallback. The deployment helper `./deploy.sh` rebuilds the
+site and publishes that artifact unchanged to the sibling `deployed`
+repository; use it only when you intend to update the public site.
 
 ## Structure
 
@@ -126,6 +131,9 @@ when you intend to update the public site.
 - `src/state/` — mutable game state
 - `src/systems/` — browser input adapters
 - `src/ui/` — DOM access and HUD updates
+- `site/site-routes.js` — all route and shared metadata
+- `site/content/` — page-specific HTML fragments
+- `scripts/build-site-pages.js` — shared HTML templates and page generator
 - `scripts/sync_games.sh` — builds the sibling game packages into `public/`
 
 The project intentionally remains JavaScript-only. Do not add TypeScript or a

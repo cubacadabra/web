@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "sync:games": "sh scripts/sync_games.sh",
-    "build:about": "node scripts/build-about-pages.js",
+    "build:pages": "node scripts/build-site-pages.js",
     "dev": "npm run sync:games && npm run build:renderer && vite",
     "dev:lan": "npm run sync:games && npm run build:renderer && vite --host 0.0.0.0",
     "build:renderer": "sh ../rust/scripts/build_web_renderer.sh",
