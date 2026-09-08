@@ -20,6 +20,43 @@ const PLAYER_BODY_IDS = new Set([
   "cuba:person-nb.v1",
 ]);
 
+async function decodePackageImage(url) {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`The game image could not be loaded (${response.status}).`);
+  }
+  const blob = await response.blob();
+  let bitmap;
+  let objectUrl;
+  try {
+    if (typeof createImageBitmap === "function") {
+      bitmap = await createImageBitmap(blob);
+    } else {
+      objectUrl = URL.createObjectURL(blob);
+      const image = new Image();
+      image.decoding = "async";
+      image.src = objectUrl;
+      await image.decode();
+      bitmap = image;
+    }
+    const canvas = document.createElement("canvas");
+    canvas.width = bitmap.width;
+    canvas.height = bitmap.height;
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+    if (!context) throw new Error("The game image canvas is unavailable.");
+    context.drawImage(bitmap, 0, 0);
+    const imageData = context.getImageData(0, 0, bitmap.width, bitmap.height);
+    return {
+      width: bitmap.width,
+      height: bitmap.height,
+      pixels: new Uint8Array(imageData.data),
+    };
+  } finally {
+    bitmap?.close?.();
+    if (objectUrl) URL.revokeObjectURL(objectUrl);
+  }
+}
+
 function playerBodyId(value) {
   return PLAYER_BODY_IDS.has(value) ? value : null;
 }
@@ -33,6 +70,12 @@ export async function createGame() {
   elements.worldShell?.classList.toggle("is-touch-device", isTouchDevice);
   const renderer = await createRustRenderer({ canvas: elements.canvas });
   const engine = createRustEngine(renderer.wasmExports);
+  for (const [id, definition] of Object.entries(gameDefinition.imageAssets)) {
+    const image = await decodePackageImage(definition.url);
+    if (!renderer.setPackageImage(id, image.width, image.height, image.pixels)) {
+      throw new Error(`The game image "${id}" exceeds the renderer limits.`);
+    }
+  }
   const gameAudio = createGameAudio(gameDefinition.audioAssets);
   const engineCapabilities = engine.getCharacterShowcaseCapabilities?.() ?? {};
   engine.loadGamePackage(gameDefinition.manifestSource);

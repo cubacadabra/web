@@ -2,6 +2,8 @@ const DEFAULT_GAME_ID = "first-game";
 const GAME_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const AUDIO_ID_PATTERN = /^[A-Za-z0-9._-]{1,64}$/;
 const AUDIO_PATH_PATTERN = /^assets\/(?:[A-Za-z0-9_-][A-Za-z0-9._-]*\/)*[A-Za-z0-9_-][A-Za-z0-9._-]*\.wav$/i;
+const IMAGE_ID_PATTERN = /^[A-Za-z0-9._-]{1,64}$/;
+const IMAGE_PATH_PATTERN = /^assets\/(?:[A-Za-z0-9_-][A-Za-z0-9._-]*\/)*[A-Za-z0-9_-][A-Za-z0-9._-]*\.(?:jpg|jpeg|png)$/i;
 
 function requestedGameId() {
   const gameId = new URLSearchParams(window.location.search).get("game");
@@ -60,6 +62,32 @@ function normalizeAudioAssets(assets, baseUrl) {
       url: new URL(path, baseUrl).href,
       volume,
     }];
+  }));
+}
+
+function normalizeImageAssets(assets, baseUrl) {
+  const images = assets?.images;
+  if (images === undefined) return {};
+  if (!images || typeof images !== "object" || Array.isArray(images)) {
+    throw new Error("Game manifest assets.images must be an object.");
+  }
+  const entries = Object.entries(images);
+  if (entries.length > 1) {
+    throw new Error("A game package may declare at most one world image in Preview 0.3.");
+  }
+
+  return Object.fromEntries(entries.map(([id, definition]) => {
+    if (!IMAGE_ID_PATTERN.test(id)) {
+      throw new Error(`Game image id "${id}" is invalid.`);
+    }
+    if (!definition || typeof definition !== "object" || Array.isArray(definition)) {
+      throw new Error(`Game image asset "${id}" must be an object.`);
+    }
+    const path = definition.path;
+    if (typeof path !== "string" || !IMAGE_PATH_PATTERN.test(path)) {
+      throw new Error(`Game image asset "${id}" must reference a JPG, JPEG, or PNG inside assets/.`);
+    }
+    return [id, { url: new URL(path, baseUrl).href }];
   }));
 }
 
@@ -129,5 +157,6 @@ export async function loadGamePackage() {
     runtimeWorldIds: Object.keys(worlds),
     activeWorldId,
     audioAssets: normalizeAudioAssets(manifest.assets, baseUrl),
+    imageAssets: normalizeImageAssets(manifest.assets, baseUrl),
   };
 }

@@ -24,6 +24,10 @@ export async function createRustRenderer({ canvas }) {
       size = pixelSize();
       renderer.resize(size.width, size.height);
     },
+    setPackageImage(id, width, height, pixels) {
+      if (destroyed) return false;
+      return renderer.set_package_image(id, width, height, pixels);
+    },
     render(engineHandle) {
       if (destroyed) return;
       renderer.sync_engine(engineHandle);
