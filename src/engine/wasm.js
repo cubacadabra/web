@@ -70,6 +70,9 @@ export function createRustEngine(exports) {
       isFull: agentCount >= 17,
       launchPads,
       playerLaunchPad: call("engine_player_launch_pad"),
+      playerRespawnEventId: exports.engine_player_respawn_event_id
+        ? call("engine_player_respawn_event_id")
+        : 0,
       launchEventId: call("engine_launch_event_id"),
       lastLaunchPad: call("engine_last_launch_pad"),
       lastLaunchOccupants: call("engine_last_launch_occupants"),

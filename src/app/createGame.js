@@ -491,6 +491,7 @@ export async function createGame() {
         yaw: frame.player.yaw,
         moving: frame.player.moving,
         sprinting: frame.player.sprinting,
+        respawnEventId: frame.playerRespawnEventId,
       });
     }
     if (state.runtime.worldId === "lobby") {

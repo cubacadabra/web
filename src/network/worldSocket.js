@@ -13,6 +13,7 @@ function movesAreMeaningfullyDifferent(previousMove, nextMove) {
 
   return previousMove.moving !== nextMove.moving
     || previousMove.sprinting !== nextMove.sprinting
+    || previousMove.respawnEventId !== nextMove.respawnEventId
     || Math.abs(previousMove.x - nextMove.x) > MOVE_POSITION_EPSILON
     || Math.abs(previousMove.y - nextMove.y) > MOVE_POSITION_EPSILON
     || Math.abs(previousMove.z - nextMove.z) > MOVE_POSITION_EPSILON
@@ -249,7 +250,7 @@ export function createWorldSocket({
     openSocket(generation);
   }
 
-  function sendMove({ x, y, z, yaw, moving, sprinting }) {
+  function sendMove({ x, y, z, yaw, moving, sprinting, respawnEventId = 0 }) {
     if (!socket || socket.readyState !== WebSocket.OPEN) return;
 
     const event = {
@@ -260,6 +261,7 @@ export function createWorldSocket({
       yaw,
       moving: Boolean(moving),
       sprinting: Boolean(sprinting),
+      respawnEventId,
     };
     if (!movesAreMeaningfullyDifferent(lastSentMove, event)) return;
 
