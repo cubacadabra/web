@@ -63,15 +63,50 @@ function nextPowerOfTwo(value) {
   return result;
 }
 
+function fitPackageImageForAtlas(image, maxDimension) {
+  const sourceDimension = Math.max(image.width, image.height);
+  if (sourceDimension <= maxDimension) return image;
+
+  const scale = maxDimension / sourceDimension;
+  const width = Math.max(1, Math.round(image.width * scale));
+  const height = Math.max(1, Math.round(image.height * scale));
+  const sourceCanvas = document.createElement("canvas");
+  sourceCanvas.width = image.width;
+  sourceCanvas.height = image.height;
+  const sourceContext = sourceCanvas.getContext("2d", { willReadFrequently: true });
+  if (!sourceContext) throw new Error("The game image resize canvas is unavailable.");
+  sourceContext.putImageData(
+    new ImageData(new Uint8ClampedArray(image.pixels), image.width, image.height),
+    0,
+    0,
+  );
+
+  const targetCanvas = document.createElement("canvas");
+  targetCanvas.width = width;
+  targetCanvas.height = height;
+  const targetContext = targetCanvas.getContext("2d", { willReadFrequently: true });
+  if (!targetContext) throw new Error("The game image resize canvas is unavailable.");
+  targetContext.drawImage(sourceCanvas, 0, 0, width, height);
+  return {
+    ...image,
+    width,
+    height,
+    pixels: new Uint8Array(targetContext.getImageData(0, 0, width, height).data),
+  };
+}
+
 function createPackageImageAtlas(images) {
   const maxDimension = 2048;
   const padding = 2;
+  // Two large material images should still fit on a shelf. The source image
+  // remains package-owned; this is only the renderer upload resolution.
+  const atlasImages = images.map((image) => fitPackageImageForAtlas(image, 1020));
   const placements = [];
   let x = padding;
   let y = padding;
   let rowHeight = 0;
 
-  for (const image of images) {
+  for (const image of atlasImages) {
     if (image.width + padding * 2 > maxDimension || image.height + padding * 2 > maxDimension) {
       throw new Error(`The game image "${image.id}" is too large for the world texture atlas.`);
     }
