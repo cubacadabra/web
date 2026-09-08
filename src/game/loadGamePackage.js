@@ -7,6 +7,7 @@ const LOCAL_GAME_IDS = new Set([
   "second-game",
   "third-game",
   "survival-101",
+  "adventure-101",
 ]);
 const CUBE_CATALOG_PAGE_SIZE = 50;
 const MAX_CUBE_CATALOG_PAGES = 200;

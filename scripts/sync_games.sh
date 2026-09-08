@@ -33,3 +33,11 @@ if [ -f "$game_dir/manifest.json" ] && [ -f "$game_dir/src/main.luau" ]; then
   PYTHONPATH="$tools_dir/src${PYTHONPATH:+:$PYTHONPATH}" \
     python3 -m cubacadabra build-game "$game_dir" --output "$public_dir"
 fi
+
+game_id=adventure-101
+game_dir="$web_dir/../examples/$game_id"
+public_dir="$web_dir/public/games/$game_id"
+if [ -f "$game_dir/manifest.json" ] && [ -f "$game_dir/src/main.luau" ]; then
+  PYTHONPATH="$tools_dir/src${PYTHONPATH:+:$PYTHONPATH}" \
+    python3 -m cubacadabra build-game "$game_dir" --output "$public_dir"
+fi

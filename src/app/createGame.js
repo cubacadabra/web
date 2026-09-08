@@ -269,7 +269,7 @@ export async function createGame() {
       applyServerAppearance(session.appearance);
     },
     onEvent: (event) => {
-      hud.showWorldEvent(event);
+      if (!event.npc) hud.showWorldEvent(event);
       if (event.type === "player_leave") {
         remotePlayers.delete(event.id);
         remoteRosterDirty = true;
@@ -284,6 +284,7 @@ export async function createGame() {
           moving: false,
           sprinting: false,
           appearance: event.appearance ?? null,
+          npc: event.npc === true,
         });
         remoteRosterDirty = true;
       }
