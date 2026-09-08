@@ -200,7 +200,7 @@ export const SITE_PAGES = [
     kind: "shell-content",
     content: "privacy",
     pageTitle: "Privacy · cubacadabra",
-    description: "How cubacadabra handles information while you visit its tiny shared world.",
+    description: "How cubacadabra handles information while you visit.",
     htmlClass: "about-document",
     bodyClass: "about-page",
     themeColor: "#e8e4cd",
