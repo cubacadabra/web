@@ -120,8 +120,6 @@ const createPage = (source, sectionsSource, routeId, route) => {
   );
   const section = extractMarkedBlock(sectionsSource, `about-section:${routeId}`);
   const footer = extractMarkedBlock(source, "about-shared:footer");
-  const outputDirectory = path.dirname(path.join(projectDirectory, route.path.slice(1), "index.html"));
-  const scriptPath = `${path.relative(outputDirectory, path.join(aboutDirectory, "about-page.js"))}`.replaceAll(path.sep, "/");
 
   return `<!doctype html>
 <html lang="en" class="about-document">
@@ -143,7 +141,7 @@ ${indentBlock(section, 10)}
 ${indentBlock(footer, 6)}
     </div>
 
-    <script type="module" src="${scriptPath}"></script>
+    <script type="module" src="/about/about-page.js"></script>
   </body>
 </html>
 `;
@@ -176,8 +174,6 @@ const createMyCubePage = (source) => {
           `,
   );
   const footer = extractMarkedBlock(source, "about-shared:footer");
-  const outputDirectory = path.dirname(path.join(projectDirectory, "my-cube", "index.html"));
-  const scriptPath = `${path.relative(outputDirectory, path.join(projectDirectory, "my-cube", "my-cube-page.js"))}`.replaceAll(path.sep, "/");
 
   return `<!doctype html>
 <html lang="en" class="about-document">
@@ -206,30 +202,42 @@ ${indentBlock(sidebar, 8)}
 ${indentBlock(footer, 6)}
     </div>
 
-    <script type="module" src="${scriptPath}"></script>
+    <script type="module" src="/my-cube/my-cube-page.js"></script>
   </body>
 </html>
 `;
 };
 
-const build = async () => {
+export const buildAboutPages = async ({ outputDirectory }) => {
+  if (!outputDirectory) throw new Error("An output directory is required");
   const source = await fs.readFile(sourcePath, "utf8");
   const sectionsSource = await fs.readFile(sectionsSourcePath, "utf8");
 
   for (const [routeId, route] of Object.entries(ABOUT_ROUTES)) {
     if (routeId === "overview") continue;
 
-    const outputPath = path.join(projectDirectory, route.path.slice(1), "index.html");
+    const outputPath = path.join(outputDirectory, route.path.slice(1), "index.html");
     await fs.mkdir(path.dirname(outputPath), { recursive: true });
     await fs.writeFile(outputPath, createPage(source, sectionsSource, routeId, route));
   }
 
-  const myCubeDirectory = path.join(projectDirectory, "my-cube");
+  const myCubeDirectory = path.join(outputDirectory, "my-cube");
   await fs.mkdir(myCubeDirectory, { recursive: true });
   await fs.writeFile(path.join(myCubeDirectory, "index.html"), createMyCubePage(source));
+
+  return outputDirectory;
 };
 
-build().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+const isMainModule = process.argv[1]
+  && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+
+if (isMainModule) {
+  const outputDirectory = process.env.CUBACADABRA_PAGES_DIR
+    ? path.resolve(process.env.CUBACADABRA_PAGES_DIR)
+    : path.join(projectDirectory, ".generated");
+
+  buildAboutPages({ outputDirectory }).catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
+}

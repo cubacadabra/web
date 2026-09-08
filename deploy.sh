@@ -3,8 +3,6 @@ rm -rf ../deployed
 mkdir ../deployed
 echo "cubacadabra.com" > ../deployed/CNAME
 echo "# deployed" > ../deployed/README.md
-cp dist/index.html ../deployed
-cp dist/index.html ../deployed/404.html
 cp -r dist/* ../deployed/
 cd ../deployed
 git init

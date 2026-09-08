@@ -46,11 +46,13 @@ npm install
 npm run dev
 ```
 
-`npm run build:about` generates the deep `/about/.../` pages and `/my-cube/`
-from the shared shell in `about/index.html` and the route sections in
-`about/about-sections.html`. The route metadata in `about/about-routes.js` is
-the source for those pages and for the Vite build inputs. This keeps the
-overview page small while keeping the shared shell in one place.
+`/about/.../` pages and `/my-cube/` are generated as temporary Vite build
+inputs from the shared shell in `about/index.html`, the route sections in
+`about/about-sections.html`, and the metadata in `about/about-routes.js`.
+They are served at their normal URLs during development and emitted as static
+`index.html` files in `dist/`; no generated route pages are written into the
+source tree. `npm run build:about` remains available when you want to inspect
+the generated pages in the ignored `.generated/` directory.
 
 Development defaults are:
 
@@ -110,8 +112,9 @@ npm run preview
 
 That preview serves the package locally but uses the production Worker because
 the build is a production build. The deployment helper `./deploy.sh` builds
-the site and publishes its `dist/` output to the sibling `deployed`
-repository; use it only when you intend to update the public site.
+the site, adds the GitHub Pages `404.html` fallback, and publishes the
+complete `dist/` output to the sibling `deployed` repository; use it only
+when you intend to update the public site.
 
 ## Structure
 

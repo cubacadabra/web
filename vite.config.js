@@ -1,12 +1,30 @@
+import fs from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
 import { ABOUT_ROUTES } from "./about/about-routes.js";
+import { buildAboutPages } from "./scripts/build-about-pages.js";
 
 const projectPath = (relativePath) => new URL(`./${relativePath}`, import.meta.url).pathname;
+const projectDirectory = path.dirname(fileURLToPath(import.meta.url));
 const aboutRoutes = Object.entries(ABOUT_ROUTES).filter(([routeId]) => routeId !== "overview");
+const generatedPagesDirectory = path.join(
+  projectDirectory,
+  "node_modules/.cache/cubacadabra-pages",
+);
+await fs.rm(generatedPagesDirectory, { recursive: true, force: true });
+await fs.mkdir(generatedPagesDirectory, { recursive: true });
+await buildAboutPages({ outputDirectory: generatedPagesDirectory });
+
+const generatedPagePath = (routePath) => path.join(
+  generatedPagesDirectory,
+  routePath.slice(1),
+  "index.html",
+);
 const aboutInputs = Object.fromEntries(
   aboutRoutes.map(([routeId, route]) => [
     `about_${routeId.replaceAll("-", "_")}`,
-    projectPath(`${route.path.slice(1)}index.html`),
+    generatedPagePath(route.path),
   ]),
 );
 
@@ -38,8 +56,38 @@ const aboutRouteRedirect = () => ({
   },
 });
 
+const generatedPageServer = () => ({
+  name: "generated-page-server",
+  configureServer(server) {
+    server.middlewares.use(async (request, response, next) => {
+      const pathname = new URL(request.url ?? "/", "http://localhost").pathname;
+      const pagePath = pathname.endsWith("/") ? pathname : pathname + "/";
+      const generatedPath = pagePath === "/my-cube/"
+        ? generatedPagePath("/my-cube/")
+        : aboutRoutes.some(([, route]) => route.path === pagePath)
+          ? generatedPagePath(pagePath)
+          : null;
+
+      if (!generatedPath) {
+        next();
+        return;
+      }
+
+      try {
+        const source = await fs.readFile(generatedPath, "utf8");
+        const html = await server.transformIndexHtml(pathname, source);
+        response.statusCode = 200;
+        response.setHeader("Content-Type", "text/html");
+        response.end(html);
+      } catch (error) {
+        next(error);
+      }
+    });
+  },
+});
+
 export default defineConfig({
-  plugins: [aboutRouteRedirect()],
+  plugins: [aboutRouteRedirect(), generatedPageServer()],
   build: {
     rollupOptions: {
       input: {
@@ -51,7 +99,7 @@ export default defineConfig({
         terms: projectPath("terms/index.html"),
         privacy: projectPath("privacy/index.html"),
         login: projectPath("login/index.html"),
-        myCube: projectPath("my-cube/index.html"),
+        myCube: generatedPagePath("/my-cube/"),
       },
     },
   },
