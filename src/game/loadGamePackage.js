@@ -2,7 +2,12 @@ import { backendApiUrl } from "../config/clientConfig.js";
 
 const DEFAULT_GAME_ID = "first-game";
 const GAME_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const LOCAL_GAME_IDS = new Set(["first-game", "second-game", "third-game"]);
+const LOCAL_GAME_IDS = new Set([
+  "first-game",
+  "second-game",
+  "third-game",
+  "survival-101",
+]);
 const CUBE_CATALOG_PAGE_SIZE = 50;
 const MAX_CUBE_CATALOG_PAGES = 200;
 const AUDIO_ID_PATTERN = /^[A-Za-z0-9._-]{1,64}$/;
