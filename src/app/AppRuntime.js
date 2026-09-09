@@ -1,0 +1,80 @@
+// Feature-independent WASM adapter. No account rules or API codecs belong here.
+export class AppRuntime {
+  constructor(model, request) {
+    this.model = model;
+    this.request = request;
+    this.listeners = new Set();
+    this.requests = new Map();
+    this.closed = false;
+    this.readSnapshot();
+  }
+
+  readSnapshot() {
+    const value = JSON.parse(this.model.snapshot_json());
+    const p = value.profile;
+    if (value.protocol_version !== 1 || !Number.isInteger(value.session_id)
+      || !(value.account_id === null || typeof value.account_id === "string")
+      || !p || !(p.username === null || typeof p.username === "string")
+      || typeof p.username_draft !== "string"
+      || !["username_is_dirty", "username_can_save", "username_is_saving"].every((key) => typeof p[key] === "boolean")
+      || !(p.username_validation_error === null || typeof p.username_validation_error === "string")
+      || !(p.username_feedback === null || (["success", "error"].includes(p.username_feedback?.kind)
+        && typeof p.username_feedback.message === "string"))) {
+      throw new Error("Unsupported app snapshot");
+    }
+    this.snapshot = value;
+    for (const listener of this.listeners) listener(value);
+  }
+
+  subscribe(listener) {
+    this.listeners.add(listener);
+    listener(this.snapshot);
+    return () => this.listeners.delete(listener);
+  }
+
+  dispatch(action) {
+    if (this.closed) throw new Error("App runtime is closed");
+    this.model.dispatch_json(JSON.stringify(action));
+    if (action.type === "replace_session") {
+      for (const controller of this.requests.values()) controller.abort();
+      this.requests.clear();
+    }
+    this.readSnapshot();
+    const pending = [];
+    for (let source; (source = this.model.poll_effect_json()) != null;) {
+      const effect = JSON.parse(source);
+      if (effect.type !== "http_request" || !Number.isInteger(effect.effect_id)
+        || !["account_id", "method", "path", "body"].every((key) => typeof effect[key] === "string")) {
+        throw new Error("Unsupported app effect");
+      }
+      pending.push(this.perform(effect));
+    }
+    return Promise.all(pending).then(() => this.snapshot);
+  }
+
+  async perform(effect) {
+    const controller = new AbortController();
+    this.requests.set(effect.effect_id, controller);
+    let action;
+    try {
+      if (effect.account_id !== this.snapshot.account_id) throw new Error("Replaced account");
+      // Start transport now: do not defer credential selection to a later session.
+      const response = await this.request(effect, controller.signal);
+      action = { type: "http_completed", effect_id: effect.effect_id, status: response.status, body: response.body };
+    } catch {
+      action = { type: "http_failed", effect_id: effect.effect_id };
+    } finally {
+      this.requests.delete(effect.effect_id);
+    }
+    if (!this.closed) await this.dispatch(action);
+  }
+
+  close() {
+    if (this.closed) return;
+    this.closed = true;
+    for (const controller of this.requests.values()) controller.abort();
+    this.requests.clear();
+    this.listeners.clear();
+    this.model.free();
+  }
+}

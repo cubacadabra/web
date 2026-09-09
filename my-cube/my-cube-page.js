@@ -1,3 +1,4 @@
+import { initializeAccountRuntime, clearAccountSession } from "../src/app/accountRuntime.js";
 import { getCurrentUser, initializeLogoutButton } from "../src/auth/session.js";
 import { backendApiUrl } from "../src/config/clientConfig.js";
 import { mountStripeEmbeddedCheckout } from "../src/payments/stripeEmbeddedCheckout.js";
@@ -6,7 +7,6 @@ const loginPath = `/login/?returnTo=${encodeURIComponent(`${window.location.path
 const content = document.querySelector(".about-content");
 const menuLinks = [...document.querySelectorAll(".about-menu > a")];
 const sidebarStatus = document.querySelector(".about-sidebar-status");
-const USERNAME_MAX_LENGTH = 24;
 const DEFAULT_BODY_ID = "cuba:person.v1";
 const AVATAR_OPTIONS = [
   { bodyId: DEFAULT_BODY_ID, label: "Boy", image: "/images/player_boy_001.png" },
@@ -20,6 +20,8 @@ const CUBE_UPLOAD_PATH = "/cubes/upload";
 const MAX_CUBE_ZIP_BYTES = 25 * 1024 * 1024;
 const CUBE_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 let currentUser = null;
+let accountReady;
+let basicsCleanup;
 let subscriptionCheckoutCleanup = null;
 
 function calculateAge(dob) {
@@ -34,6 +36,8 @@ function calculateAge(dob) {
 }
 
 function setMenuState(requiresBirthday, activeSection = requiresBirthday ? "birthday" : "basics") {
+  basicsCleanup?.();
+  basicsCleanup = null;
   const firstLink = menuLinks[0];
   if (firstLink) {
     firstLink.href = requiresBirthday ? "#birthday" : "#item1";
@@ -163,9 +167,9 @@ function basicsMarkup() {
         <form class="basics-form" novalidate>
           <label class="basics-field" for="my-cube-username">
             <span>Username</span>
-            <input id="my-cube-username" name="username" type="text" autocomplete="nickname" minlength="2" maxlength="${USERNAME_MAX_LENGTH}" pattern="[A-Za-z0-9_\\-]+" aria-describedby="my-cube-username-help basics-username-status" spellcheck="false" required />
+            <input id="my-cube-username" name="username" type="text" autocomplete="nickname" aria-describedby="my-cube-username-help basics-username-status" spellcheck="false" required />
           </label>
-          <p class="basics-field-help" id="my-cube-username-help">letters, numbers, _ or -</p>
+          <p class="basics-field-help" id="my-cube-username-help">Use 2–24 letters, numbers, _ or -.</p>
           <fieldset class="basics-avatar-fieldset">
             <legend>Avatar</legend>
             <p class="basics-field-help">Choose how you appear in a game.</p>
@@ -511,16 +515,6 @@ function renderBlockedUserRows(userIds, status, count) {
   });
 }
 
-function normalizeUsername(value) {
-  return value.trim().replace(/\s+/g, " ");
-}
-
-function isValidUsername(username) {
-  return username.length >= 2
-    && username.length <= USERNAME_MAX_LENGTH
-    && /^[A-Za-z0-9_-]+$/.test(username);
-}
-
 function renderBirthdayForm() {
   setMenuState(true);
   content.innerHTML = birthdayFormMarkup();
@@ -556,11 +550,13 @@ function renderBirthdayForm() {
       const result = await response.json().catch(() => null);
       if (!response.ok || !result?.user?.dob) throw new Error(result?.error || "birthday_save_failed");
 
+      if (!currentUser || result.user.id !== currentUser.id) return;
+      currentUser = { ...currentUser, dob: result.user.dob };
       const age = Number.isInteger(result.age) ? result.age : calculateAge(result.user.dob);
       if (age < 13) {
         renderParentStep();
       } else {
-        renderBasics(result.user);
+        renderBasics(currentUser);
       }
     } catch (error) {
       submit.disabled = false;
@@ -593,97 +589,107 @@ function renderParentStep() {
   email.focus();
 }
 
-function renderBasics(user) {
+async function renderBasics(user) {
   setMenuState(false);
   content.innerHTML = basicsMarkup();
-
   const form = content.querySelector(".basics-form");
   const input = content.querySelector("#my-cube-username");
   const status = content.querySelector("#basics-username-status");
   const submit = form.querySelector(".basics-submit");
   const avatarInputs = [...form.querySelectorAll('input[name="body_id"]')];
-  input.value = typeof user.username === "string" ? user.username : "";
+  for (const control of form.elements) control.disabled = true;
+  setFormStatus(status, "Loading profile…");
+
+  let runtime;
+  try { runtime = await accountReady; }
+  catch {
+    if (!form.isConnected) return;
+    setFormStatus(status, "We couldn’t load your profile. Please reload and try again.", "error");
+    submit.disabled = false;
+    submit.textContent = "Reload";
+    form.addEventListener("submit", (event) => { event.preventDefault(); window.location.reload(); });
+    return;
+  }
+  if (!form.isConnected) return;
+  runtime.dispatch({ type: "begin_username_edit" });
+  const sessionId = runtime.snapshot.session_id;
+  const activeSession = () => runtime.snapshot.session_id === sessionId
+    && runtime.snapshot.account_id !== null && runtime.snapshot.account_id === currentUser?.id;
   const selectedBodyId = avatarBodyId(user.body_id);
-  avatarInputs.forEach((avatarInput) => {
-    avatarInput.checked = avatarInput.value === selectedBodyId;
+  avatarInputs.forEach((control) => { control.checked = control.value === selectedBodyId; });
+  let savingBasics = false;
+  let basicsFeedback = null;
+
+  const render = ({ profile }) => {
+    if (!form.isConnected) return;
+    const active = activeSession();
+    if (input.value !== profile.username_draft) input.value = profile.username_draft;
+    input.disabled = !active;
+    input.setAttribute("aria-invalid", String(profile.username_feedback?.kind === "error"
+      && profile.username_validation_error !== null));
+    avatarInputs.forEach((control) => { control.disabled = !active || savingBasics; });
+    const avatarDirty = form.elements.body_id.value !== avatarBodyId(currentUser?.body_id);
+    submit.disabled = !active || savingBasics || profile.username_is_saving
+      || !(profile.username_can_save || (avatarDirty && profile.username_validation_error === null));
+    const feedback = basicsFeedback ?? profile.username_feedback;
+    setFormStatus(status,
+      !active ? "Please sign in again."
+        : feedback?.kind === "error" ? feedback.message
+          : savingBasics || profile.username_is_saving ? "Saving your basics…"
+            : feedback?.message ?? "",
+      !active ? "error" : feedback?.kind === "error" ? "error"
+        : savingBasics || profile.username_is_saving ? "pending" : feedback?.kind ?? "");
+  };
+  basicsCleanup = runtime.subscribe(render);
+  input.addEventListener("input", () => {
+    basicsFeedback = null;
+    runtime.dispatch({ type: "username_changed", value: input.value });
   });
+  avatarInputs.forEach((control) => control.addEventListener("change", () => {
+    basicsFeedback = null;
+    render(runtime.snapshot);
+  }));
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
-    const username = normalizeUsername(input.value);
-    input.value = username;
-
-    if (!isValidUsername(username)) {
-      input.setAttribute("aria-invalid", "true");
-      setFormStatus(status, `Use 2–${USERNAME_MAX_LENGTH} letters, numbers, _ or -`, "error");
-      input.focus();
-      return;
-    }
-
-    input.removeAttribute("aria-invalid");
-    submit.disabled = true;
-    avatarInputs.forEach((avatarInput) => {
-      avatarInput.disabled = true;
-    });
+    if (!activeSession() || savingBasics || runtime.snapshot.profile.username_is_saving) return;
     const bodyId = form.elements.body_id.value;
-    setFormStatus(status, "Saving your basics…", "pending");
-
+    savingBasics = true;
+    basicsFeedback = null;
+    render(runtime.snapshot);
     try {
-      const usernameResponse = await fetch(backendApiUrl("/auth/username"), {
-        method: "POST",
-        credentials: "include",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ username }),
-      });
-      const usernameResult = await usernameResponse.json().catch(() => null);
-      if (!usernameResponse.ok || typeof usernameResult?.user?.username !== "string") {
-        throw new Error(usernameResult?.error || "username_save_failed");
+      // Rust handles validation, unchanged names, pending work and all username errors.
+      await runtime.dispatch({ type: "save_username" });
+      const profile = runtime.snapshot.profile;
+      if (!activeSession() || !form.isConnected || profile.username_validation_error
+        || profile.username_is_dirty || profile.username_feedback?.kind === "error") return;
+      if (bodyId !== avatarBodyId(currentUser.body_id)) {
+        const response = await fetch(backendApiUrl("/auth/avatar"), {
+          method: "POST", credentials: "include",
+          headers: { "content-type": "application/json" }, body: JSON.stringify({ body_id: bodyId }),
+        });
+        const result = await response.json().catch(() => null);
+        if (!activeSession()) return;
+        if (!response.ok || result?.user?.id !== currentUser.id || result?.user?.body_id !== bodyId) {
+          throw new Error(result?.error || "avatar_save_failed");
+        }
+        // Merge only avatar data: this response cannot roll back an accepted username.
+        currentUser = { ...currentUser, body_id: result.user.body_id };
       }
-
-      const avatarResponse = await fetch(backendApiUrl("/auth/avatar"), {
-        method: "POST",
-        credentials: "include",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ body_id: bodyId }),
-      });
-      const avatarResult = await avatarResponse.json().catch(() => null);
-      if (!avatarResponse.ok || avatarResult?.user?.body_id !== bodyId) {
-        throw new Error(avatarResult?.error || "avatar_save_failed");
-      }
-
-      input.value = usernameResult.user.username;
-      currentUser = {
-        ...currentUser,
-        username: usernameResult.user.username,
-        body_id: avatarResult.user.body_id,
-      };
-      setFormStatus(status, "Basics saved.", "success");
+      basicsFeedback = runtime.snapshot.profile.username_is_dirty
+        ? null : { kind: "success", message: "Basics saved." };
     } catch (error) {
-      setFormStatus(
-        status,
-          error.message === "username_taken"
-          ? "That username is already in use. Try another."
-          : error.message === "username_not_allowed"
-            ? "That username isn’t available. Try another."
-            : error.message === "invalid_username"
-              ? `Use 2–${USERNAME_MAX_LENGTH} letters, numbers, _ or -.`
-            : error.message === "invalid_body_id"
-              ? "Choose one of the available avatars."
-            : error.message === "avatar_save_failed"
-              ? "We couldn’t save your avatar. Please try again."
-            : error.message === "age_required"
-              ? "Complete the birthday step before choosing your basics."
-              : "We couldn’t save your basics. Please try again.",
-        "error",
-      );
+      basicsFeedback = {
+        kind: "error",
+        message: error.message === "invalid_body_id" ? "Choose one of the available avatars."
+          : error.message === "age_required" ? "Complete the birthday step before choosing your basics."
+            : "We couldn’t save your basics. Please try again.",
+      };
     } finally {
-      submit.disabled = false;
-      avatarInputs.forEach((avatarInput) => {
-        avatarInput.disabled = false;
-      });
+      savingBasics = false;
+      render(runtime.snapshot);
     }
   });
-
   input.focus();
   input.select();
 }
@@ -1062,6 +1068,17 @@ getCurrentUser().then((user) => {
 
   initializeLogoutButton(user);
   currentUser = user;
+  accountReady = initializeAccountRuntime(user).then((runtime) => {
+    runtime.subscribe((snapshot) => {
+      if (snapshot.account_id === null) currentUser = null;
+      else if (currentUser?.id === snapshot.account_id) {
+        currentUser = { ...currentUser, username: snapshot.profile.username };
+      }
+    });
+    return runtime;
+  });
+  // Other account sections remain available if the username module cannot load.
+  accountReady.catch(() => {});
   document.body.dataset.authenticated = "true";
 
   const age = calculateAge(user.dob);
@@ -1083,3 +1100,7 @@ getCurrentUser().then((user) => {
     renderBasics(user);
   }
 });
+
+// A restored document must re-read cookie authentication before accepting edits.
+window.addEventListener("pagehide", () => clearAccountSession());
+window.addEventListener("pageshow", (event) => { if (event.persisted) window.location.reload(); });

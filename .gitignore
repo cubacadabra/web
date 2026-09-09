@@ -1,6 +1,7 @@
 node_modules
 public/wasm/cubacadabra_engine.wasm
 public/wasm/renderer
+public/wasm/app
 package-lock.json
 dist
 .generated

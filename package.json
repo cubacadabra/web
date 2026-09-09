@@ -4,6 +4,7 @@
   "version": "0.3.0",
   "type": "module",
   "scripts": {
+    "check:app": "node scripts/check-app-contract.mjs",
     "sync:games": "sh scripts/sync_games.sh",
     "build:pages": "node scripts/build-site-pages.js",
     "dev": "npm run sync:games && npm run build:renderer && vite",

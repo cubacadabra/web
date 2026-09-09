@@ -1,4 +1,5 @@
 import { backendApiUrl } from "../config/clientConfig.js";
+import { clearAccountSession } from "../app/accountRuntime.js";
 
 const requestOptions = {
   credentials: "include",
@@ -21,6 +22,7 @@ export async function getCurrentUser() {
 }
 
 export async function logout() {
+  clearAccountSession();
   const response = await fetch(backendApiUrl("/auth/logout"), {
     ...requestOptions,
     method: "POST",
