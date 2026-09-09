@@ -69,10 +69,6 @@ function setFormStatus(statusElement, message, state = "") {
   statusElement.dataset.state = state;
 }
 
-function avatarBodyId(value) {
-  return AVATAR_OPTIONS.some((option) => option.bodyId === value) ? value : DEFAULT_BODY_ID;
-}
-
 function birthdayFormMarkup() {
   return `
     <div class="birthday-view" id="birthday">
@@ -615,8 +611,6 @@ async function renderBasics(user) {
   const sessionId = runtime.snapshot.session_id;
   const activeSession = () => runtime.snapshot.session_id === sessionId
     && runtime.snapshot.account_id !== null && runtime.snapshot.account_id === currentUser?.id;
-  const selectedBodyId = avatarBodyId(user.body_id);
-  avatarInputs.forEach((control) => { control.checked = control.value === selectedBodyId; });
   let savingBasics = false;
   let basicsFeedback = null;
 
@@ -627,18 +621,20 @@ async function renderBasics(user) {
     input.disabled = !active;
     input.setAttribute("aria-invalid", String(profile.username_feedback?.kind === "error"
       && profile.username_validation_error !== null));
-    avatarInputs.forEach((control) => { control.disabled = !active || savingBasics; });
-    const avatarDirty = form.elements.body_id.value !== avatarBodyId(currentUser?.body_id);
+    avatarInputs.forEach((control) => {
+      control.disabled = !active || savingBasics || profile.body_is_saving;
+      control.checked = control.value === profile.body_draft;
+    });
     submit.disabled = !active || savingBasics || profile.username_is_saving
-      || !(profile.username_can_save || (avatarDirty && profile.username_validation_error === null));
-    const feedback = basicsFeedback ?? profile.username_feedback;
+      || profile.body_is_saving || !(profile.username_can_save || profile.body_can_save);
+    const feedback = basicsFeedback ?? profile.body_feedback ?? profile.username_feedback;
     setFormStatus(status,
       !active ? "Please sign in again."
         : feedback?.kind === "error" ? feedback.message
-          : savingBasics || profile.username_is_saving ? "Saving your basics…"
+          : savingBasics || profile.username_is_saving || profile.body_is_saving ? "Saving your basics…"
             : feedback?.message ?? "",
       !active ? "error" : feedback?.kind === "error" ? "error"
-        : savingBasics || profile.username_is_saving ? "pending" : feedback?.kind ?? "");
+        : savingBasics || profile.username_is_saving || profile.body_is_saving ? "pending" : feedback?.kind ?? "");
   };
   basicsCleanup = runtime.subscribe(render);
   input.addEventListener("input", () => {
@@ -647,13 +643,13 @@ async function renderBasics(user) {
   });
   avatarInputs.forEach((control) => control.addEventListener("change", () => {
     basicsFeedback = null;
-    render(runtime.snapshot);
+    runtime.dispatch({ type: "body_changed", body_id: control.value });
   }));
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
-    if (!activeSession() || savingBasics || runtime.snapshot.profile.username_is_saving) return;
-    const bodyId = form.elements.body_id.value;
+    if (!activeSession() || savingBasics || runtime.snapshot.profile.username_is_saving
+      || runtime.snapshot.profile.body_is_saving) return;
     savingBasics = true;
     basicsFeedback = null;
     render(runtime.snapshot);
@@ -663,21 +659,11 @@ async function renderBasics(user) {
       const profile = runtime.snapshot.profile;
       if (!activeSession() || !form.isConnected || profile.username_validation_error
         || profile.username_is_dirty || profile.username_feedback?.kind === "error") return;
-      if (bodyId !== avatarBodyId(currentUser.body_id)) {
-        const response = await fetch(backendApiUrl("/auth/avatar"), {
-          method: "POST", credentials: "include",
-          headers: { "content-type": "application/json" }, body: JSON.stringify({ body_id: bodyId }),
-        });
-        const result = await response.json().catch(() => null);
-        if (!activeSession()) return;
-        if (!response.ok || result?.user?.id !== currentUser.id || result?.user?.body_id !== bodyId) {
-          throw new Error(result?.error || "avatar_save_failed");
-        }
-        // Merge only avatar data: this response cannot roll back an accepted username.
-        currentUser = { ...currentUser, body_id: result.user.body_id };
-      }
-      basicsFeedback = runtime.snapshot.profile.username_is_dirty
-        ? null : { kind: "success", message: "Basics saved." };
+      await runtime.dispatch({ type: "save_body" });
+      const finalProfile = runtime.snapshot.profile;
+      if (!activeSession() || finalProfile.body_feedback?.kind === "error") return;
+      currentUser = { ...currentUser, username: finalProfile.username, body_id: finalProfile.body_id };
+      basicsFeedback = { kind: "success", message: "Basics saved." };
     } catch (error) {
       basicsFeedback = {
         kind: "error",
