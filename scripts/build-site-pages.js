@@ -61,7 +61,7 @@ const createStructuredData = (page) => {
           "@id": `${SITE.origin}/#website`,
           url: `${SITE.origin}/`,
           name: SITE.name,
-          description: "A tiny open-source 3D multiplayer world for creators and players.",
+          description: "An open-source 3D multiplayer world for creators and players.",
         },
         {
           "@type": "Organization",
@@ -75,7 +75,7 @@ const createStructuredData = (page) => {
           "@type": "VideoGame",
           name: "cubacadabra World 01",
           url: `${SITE.origin}/`,
-          description: "A tiny open-source 3D multiplayer world you can explore in the browser.",
+          description: "An open-source 3D multiplayer world you can explore in the browser.",
           gamePlatform: "Web browser",
           genre: ["Sandbox", "Multiplayer"],
         },

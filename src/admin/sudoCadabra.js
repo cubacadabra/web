@@ -11,7 +11,7 @@ const SUDO_PAGES = {
     navLabel: "Overview",
     eyebrow: "Operations / capacity",
     title: "Sudo-cadabra",
-    subtitle: "A live view of the tiny cloud behind the worlds.",
+    subtitle: "A live view of the cloud behind the worlds.",
   },
   lobbies: {
     key: "lobbies",

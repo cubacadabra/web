@@ -4,7 +4,7 @@
 
 ## Start here
 
-- [Play World 01](https://cubacadabra.com/): Explore the current tiny shared world in a web browser.
+- [Play World 01](https://cubacadabra.com/): Explore the current shared world in a web browser.
 - [About cubacadabra](https://cubacadabra.com/about/): Project purpose, architecture, open-source plans, and current status.
 - [Download cubacadabra](https://cubacadabra.com/download/): Download the iPhone and iPad app, with more platforms to come.
 - [Where we are now](https://cubacadabra.com/about/where-we-are/): What exists today and what remains future work.
