@@ -168,7 +168,12 @@ export async function createGame() {
     typeof navigator !== "undefined" && navigator.maxTouchPoints > 0;
   elements.worldShell?.classList.toggle("is-touch-device", isTouchDevice);
   const renderer = await createRustRenderer({ canvas: elements.canvas });
-  const engine = createRustEngine(renderer.wasmExports);
+  const engine = createRustEngine(
+    renderer.wasmExports,
+    renderer.bindings,
+    gameDefinition.manifestSource,
+    gameDefinition.script,
+  );
   const packageImages = await Promise.all(
     Object.entries(gameDefinition.imageAssets).map(async ([id, definition]) => ({
       id,
@@ -187,8 +192,6 @@ export async function createGame() {
     }
   }
   const gameAudio = createGameAudio(gameDefinition.audioAssets);
-  const engineCapabilities = engine.getCharacterShowcaseCapabilities?.() ?? {};
-  engine.loadGamePackage(gameDefinition.manifestSource);
   let localAppearance = gameDefinition.avatars?.player?.character ?? null;
   const appearanceStorageKey = currentUser?.id
     ? `cubacadabra.character-appearance:${encodeURIComponent(currentUser.id)}`
@@ -211,7 +214,6 @@ export async function createGame() {
     };
   }
   if (localAppearance) engine.setLocalAppearance(JSON.stringify(localAppearance));
-  engine.loadGameScript(gameDefinition.script);
   engine.setAuthenticated(Boolean(currentUser));
   if (currentUser?.username) engine.setUsername(currentUser.username);
   const runtimeWorldIds = gameDefinition.runtimeWorldIds;
@@ -222,11 +224,8 @@ export async function createGame() {
   const state = createGameState();
   state.runtime.worldId = initialWorldId;
   let activeWorld = gameDefinition.worlds[initialWorldId];
-  const remotePlayers = new Map();
-  let remoteRosterDirty = true;
-  let remoteSequence = 0;
   let worldSocket = null;
-  let pendingSessionWorldId = null;
+  let clientTransportConnected = false;
   let buildMode = null;
   const hud = createHudController({ elements, state, gameDefinition: activeWorld });
   const characterShowcase = createCharacterShowcaseController({
@@ -270,32 +269,6 @@ export async function createGame() {
     },
     onEvent: (event) => {
       if (!event.npc) hud.showWorldEvent(event);
-      if (event.type === "player_leave") {
-        remotePlayers.delete(event.id);
-        remoteRosterDirty = true;
-      }
-      if (event.type === "player_join" && !event.isSelf) {
-        remotePlayers.set(event.id, {
-          id: event.id,
-          username: event.username ?? event.id,
-          generation: event.generation ?? 0,
-          position: [0, 0, 0],
-          yaw: 0,
-          moving: false,
-          sprinting: false,
-          appearance: event.appearance ?? null,
-          npc: event.npc === true,
-        });
-        remoteRosterDirty = true;
-      }
-      if (event.type === "appearance" && remotePlayers.has(event.id)) {
-        remotePlayers.get(event.id).appearance = event.appearance ?? null;
-        remoteRosterDirty = true;
-      }
-      if (event.type === "player_name" && remotePlayers.has(event.id)) {
-        remotePlayers.get(event.id).username = event.username;
-        remoteRosterDirty = true;
-      }
     },
     onMove: (event) => {
       if (event.isSelf) {
@@ -310,27 +283,9 @@ export async function createGame() {
               server: { x: event.x, y: event.y, z: event.z },
             });
           }
-          engine.reconcilePlayer({ x: event.x, y: event.y, z: event.z }, event.yaw);
         }
         return;
       }
-      const previous = remotePlayers.get(event.id);
-      if (!previous) remoteRosterDirty = true;
-      const player = {
-        id: event.id,
-        username: previous?.username ?? event.id,
-        generation: event.generation ?? previous?.generation ?? 0,
-        position: [event.x, event.y, event.z],
-        yaw: event.yaw,
-        moving: event.moving,
-        sprinting: event.sprinting,
-        appearance: previous?.appearance ?? null,
-      };
-      remotePlayers.set(event.id, player);
-      // Keep the full versioned roster authoritative for every incoming move.
-      // This avoids making one client depend on the optional typed-motion ABI
-      // while another client is still sending normal JSON moves.
-      remoteRosterDirty = true;
     },
     onExperience: (event) => {
       if (event.type === "experience_state") {
@@ -338,17 +293,21 @@ export async function createGame() {
         buildMode?.handleState(event);
         return;
       }
-      if (event.type === "experience_launch") {
-        if (!event.playerIds?.includes(worldSocket.playerId)) return;
-        pendingSessionWorldId = event.sessionWorldId;
-        const sessionIndex = runtimeWorldIds.indexOf("real-game");
-        if (sessionIndex >= 0) engine.startWorld(sessionIndex);
+    },
+    onGameMessage: () => {},
+    onRawMessage: (source) => {
+      engine.receiveTransportMessage(source);
+    },
+    onStatusChange: (status) => {
+      if (status === "connected" && !clientTransportConnected) {
+        clientTransportConnected = true;
+        engine.transportConnected();
+      } else if (status !== "connected" && clientTransportConnected) {
+        clientTransportConnected = false;
+        engine.transportDisconnected();
       }
+      hud.setConnectionStatus(status);
     },
-    onGameMessage: (event) => {
-      engine.receiveNetworkMessage(JSON.stringify(event));
-    },
-    onStatusChange: hud.setConnectionStatus,
   });
   function applyServerAppearance(serverAppearance) {
     const primary = serverAppearance?.colors?.primary;
@@ -381,7 +340,6 @@ export async function createGame() {
     worldSocket,
     engine,
     onReturn: () => {
-      pendingSessionWorldId = null;
       const returnWorldId = hasLobby ? "lobby" : initialWorldId;
       const returnIndex = runtimeWorldIds.indexOf(returnWorldId);
       if (returnIndex >= 0) engine.startWorld(returnIndex);
@@ -415,26 +373,11 @@ export async function createGame() {
     }
   }
 
-  function flushNetworkMessages() {
-    let source;
-    while ((source = engine.pollNetworkMessage?.())) {
-      let message;
-      try {
-        message = JSON.parse(source);
-      } catch {
-        continue;
-      }
-      if (!message || typeof message.channel !== "string") continue;
-      const compareSet = Number.isSafeInteger(message.expectedSequence)
-        && message.expectedSequence >= 0;
-      worldSocket.sendGameMessage(
-        compareSet
-          ? "game_state_compare_set"
-          : message.retained ? "game_state_set" : "game_message",
-        message.channel,
-        message.payload,
-        compareSet ? message.expectedSequence : null,
-      );
+  function dispatchClientActions() {
+    engine.setIgnoredPlayerIds([]);
+    for (const action of engine.pollClientActions()) {
+      if (action.type === "set_world") worldSocket.connect(action.worldId);
+      if (action.type === "send_text") worldSocket.sendRawText(action.source);
     }
   }
 
@@ -449,75 +392,8 @@ export async function createGame() {
     }
   }
 
-  let connectedWorldId = null;
-
-  function syncRemotePlayers() {
-    if (state.runtime.worldId === "settings") {
-      if (!remoteRosterDirty) return;
-      remoteRosterDirty = false;
-      if (engineCapabilities.persistentIdentity) {
-        remoteSequence += 1;
-        engine.applyRemoteUpdate(JSON.stringify({
-          version: 1,
-          sequence: remoteSequence,
-          players: [],
-        }));
-      } else {
-        engine.setRemotePlayers([]);
-      }
-      return;
-    }
-    const players = [...remotePlayers.values()];
-    if (engineCapabilities.persistentIdentity && remoteRosterDirty) {
-      remoteSequence += 1;
-      remoteRosterDirty = false;
-      engine.applyRemoteUpdate(JSON.stringify({
-        version: 1,
-        sequence: remoteSequence,
-        worldId: state.runtime.worldId,
-        players: players.map((player) => ({
-          id: player.id,
-          username: player.username,
-          generation: player.generation,
-          position: player.position,
-          yaw: player.yaw,
-          moving: player.moving,
-          sprinting: player.sprinting,
-          ...(player.appearance ? { appearance: player.appearance } : {}),
-        })),
-      }));
-    }
-    if (engineCapabilities.persistentIdentity) return;
-    if (!remoteRosterDirty) return;
-    remoteRosterDirty = false;
-    engine.setRemotePlayers(players.map((player) => ({
-      x: player.position[0],
-      y: player.position[1],
-      z: player.position[2],
-      yaw: player.yaw,
-      moving: player.moving,
-      sprinting: player.sprinting,
-    })));
-  }
-
-  function connectWorld(worldId) {
-    const networkWorldId = worldId === "settings"
-      ? "lobby"
-      : worldId === "real-game" && pendingSessionWorldId
-        ? pendingSessionWorldId
-        : worldId;
-    if (networkWorldId === connectedWorldId) return;
-    connectedWorldId = networkWorldId;
-    remotePlayers.clear();
-    remoteRosterDirty = true;
-    remoteSequence = 0;
-    engine.resetRemoteSession?.();
-    syncRemotePlayers();
-    worldSocket.connect(networkWorldId);
-  }
-
   worldSocket.setHidden(state.runtime.worldId === "settings");
-  connectWorld(state.runtime.worldId);
+  dispatchClientActions();
 
   const controls = bindControls({
     elements,
@@ -570,7 +446,7 @@ export async function createGame() {
       lobby: worldId === "lobby",
       immersive: worldId === "settings",
     });
-    connectWorld(worldId);
+    dispatchClientActions();
   }
 
   function render(delta) {
@@ -592,10 +468,10 @@ export async function createGame() {
     state.movement.lookX = 0;
     state.movement.lookY = 0;
     state.movement.zoomDelta = 0;
-    syncRemotePlayers();
+    dispatchClientActions();
     engine.step(step);
+    dispatchClientActions();
     handleUIEvents();
-    flushNetworkMessages();
     flushAudioMessages();
     elements.worldShell?.classList.toggle(
       "is-shared-modal-open",

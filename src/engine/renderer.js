@@ -18,6 +18,7 @@ export async function createRustRenderer({ canvas }) {
   const renderer = await bindings.WebRenderer.create(canvas, size.width, size.height);
 
   return {
+    bindings,
     wasmExports,
     resize() {
       if (destroyed) return;

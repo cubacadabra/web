@@ -1,5 +1,6 @@
-export function createRustEngine(exports) {
-  const handle = exports.engine_create();
+export function createRustEngine(exports, bindings, manifestSource, scriptSource) {
+  const client = new bindings.WebClient(manifestSource, scriptSource);
+  const handle = client.engine_handle();
   if (!handle) throw new Error("The cubacadabra engine could not be created.");
 
   function call(name, ...args) {
@@ -93,27 +94,23 @@ export function createRustEngine(exports) {
   }
 
   return {
-    loadGameScript(source) {
-      const bytes = new TextEncoder().encode(source);
-      const pointer = call("engine_script_buffer_ptr", bytes.length);
-      if (!pointer && bytes.length) {
-        throw new Error("The game script buffer could not be allocated.");
-      }
-      new Uint8Array(exports.memory.buffer, pointer, bytes.length).set(bytes);
-      if (!call("engine_load_script_buffer")) {
-        throw new Error("The game script could not be compiled.");
-      }
+    transportConnected() {
+      client.transport_connected();
     },
-    loadGamePackage(source) {
-      const bytes = new TextEncoder().encode(source);
-      const pointer = call("engine_package_buffer_ptr", bytes.length);
-      if (!pointer && bytes.length) {
-        throw new Error("The game package buffer could not be allocated.");
-      }
-      new Uint8Array(exports.memory.buffer, pointer, bytes.length).set(bytes);
-      if (!call("engine_load_package_buffer")) {
-        throw new Error("The game manifest could not be loaded by Rust.");
-      }
+    transportDisconnected() {
+      client.transport_disconnected();
+    },
+    requestTransport() {
+      client.request_transport();
+    },
+    receiveTransportMessage(source) {
+      return typeof source === "string" && client.receive_text(source);
+    },
+    setIgnoredPlayerIds(playerIds) {
+      return client.set_ignored_player_ids_json(JSON.stringify(playerIds));
+    },
+    pollClientActions() {
+      return JSON.parse(client.poll_actions_json());
     },
     setLocalAppearance(source) {
       if (typeof source !== "string") return 0;
@@ -127,56 +124,6 @@ export function createRustEngine(exports) {
     appearanceRevision() {
       if (typeof exports.engine_appearance_revision !== "function") return 0;
       return Number(call("engine_appearance_revision")) || 0;
-    },
-    applyRemoteUpdate(message) {
-      if (typeof message !== "string") return 0;
-      if (typeof exports.engine_remote_update_buffer_ptr !== "function") return 0;
-      return writeJsonBuffer(
-        "engine_remote_update_buffer_ptr",
-        message,
-        "engine_apply_remote_update_buffer",
-      );
-    },
-    applyRemoteMotionBatch(bytes) {
-      if (!(bytes instanceof Uint8Array)) return false;
-      if (typeof exports.engine_remote_motion_batch_buffer_ptr !== "function"
-        || typeof exports.engine_apply_remote_motion_batch_buffer !== "function") {
-        return false;
-      }
-      const pointer = call("engine_remote_motion_batch_buffer_ptr", bytes.length);
-      if (!pointer && bytes.length) return false;
-      new Uint8Array(exports.memory.buffer, pointer, bytes.length).set(bytes);
-      return Boolean(call("engine_apply_remote_motion_batch_buffer"));
-    },
-    resetRemoteSession() {
-      if (typeof exports.engine_reset_remote_session !== "function") return false;
-      call("engine_reset_remote_session");
-      return true;
-    },
-    receiveNetworkMessage(message) {
-      if (typeof message !== "string"
-        || typeof exports.engine_receive_network_message_json !== "function") return 0;
-      if (typeof exports.engine_network_receive_buffer_ptr === "function"
-        && typeof exports.engine_load_network_receive_buffer === "function") {
-        return writeJsonBuffer(
-          "engine_network_receive_buffer_ptr",
-          message,
-          "engine_load_network_receive_buffer",
-        );
-      }
-      const bytes = new TextEncoder().encode(message);
-      const pointer = call("engine_script_buffer_ptr", bytes.length);
-      if (!pointer && bytes.length) return 0;
-      new Uint8Array(exports.memory.buffer, pointer, bytes.length).set(bytes);
-      return call("engine_receive_network_message_json", pointer, bytes.length);
-    },
-    pollNetworkMessage() {
-      if (typeof exports.engine_network_poll_message !== "function"
-        || !call("engine_network_poll_message")) return null;
-      const pointer = call("engine_network_message_ptr");
-      const length = call("engine_network_message_len");
-      if (!pointer || !length) return null;
-      return new TextDecoder().decode(new Uint8Array(exports.memory.buffer, pointer, length));
     },
     pollAudioMessage() {
       if (typeof exports.engine_audio_poll_message !== "function"
@@ -236,9 +183,6 @@ export function createRustEngine(exports) {
         reducedEffects: typeof exports.engine_set_reduced_effects === "function",
         localAppearance: typeof exports.engine_appearance_buffer_ptr === "function"
           && typeof exports.engine_load_appearance_buffer === "function",
-        persistentIdentity: typeof exports.engine_remote_update_buffer_ptr === "function",
-        typedRemoteMotion: typeof exports.engine_remote_motion_batch_buffer_ptr === "function"
-          && typeof exports.engine_apply_remote_motion_batch_buffer === "function",
         localWave: typeof exports.engine_trigger_local_wave === "function",
       };
     },
@@ -261,21 +205,6 @@ export function createRustEngine(exports) {
       if (!pointer || !length) return null;
       const bytes = new Uint8Array(exports.memory.buffer, pointer, length);
       return JSON.parse(new TextDecoder().decode(bytes));
-    },
-    setRemotePlayers(players) {
-      call("engine_set_remote_player_count", players.length);
-      players.forEach((player, index) => {
-        call(
-          "engine_set_remote_player",
-          index,
-          player.x,
-          player.y,
-          player.z,
-          player.yaw,
-          player.moving ? 1 : 0,
-          player.sprinting ? 1 : 0,
-        );
-      });
     },
     startWorld(index) {
       return Boolean(call("engine_start_world", index));
@@ -311,7 +240,7 @@ export function createRustEngine(exports) {
       return handle;
     },
     destroy() {
-      call("engine_destroy");
+      client.free();
     },
   };
 }

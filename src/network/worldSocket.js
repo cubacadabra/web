@@ -48,6 +48,7 @@ export function createWorldSocket({
   onMove,
   onExperience,
   onGameMessage,
+  onRawMessage,
   onStatusChange,
 }) {
   let playerId = null;
@@ -143,6 +144,7 @@ export function createWorldSocket({
       if (socket !== nextSocket || expectedGeneration !== generation) return;
 
       try {
+        if (typeof message.data === "string") onRawMessage?.(message.data);
         const event = JSON.parse(message.data);
         if (event?.type === "session_identity") {
           if (typeof event.id !== "string" || typeof event.username !== "string") return;
@@ -370,6 +372,27 @@ export function createWorldSocket({
     }
   }
 
+  function sendRawText(source) {
+    if (typeof source !== "string" || !worldId) return false;
+    let event;
+    try {
+      event = JSON.parse(source);
+    } catch {
+      return false;
+    }
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+      queueGameMessage(event);
+      return true;
+    }
+    try {
+      socket.send(source);
+      return true;
+    } catch {
+      queueGameMessage(event);
+      return true;
+    }
+  }
+
   function destroy() {
     if (destroyed) return;
     destroyed = true;
@@ -408,6 +431,7 @@ export function createWorldSocket({
     setHidden,
     sendExperience,
     sendGameMessage,
+    sendRawText,
     destroy,
   };
 }
