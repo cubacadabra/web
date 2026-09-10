@@ -618,7 +618,10 @@ async function renderBasics(user) {
     input.setAttribute("aria-invalid", String(profile.username_feedback?.kind === "error"
       && profile.username_validation_error !== null));
     avatarInputs.forEach((control) => {
-      control.disabled = !active || savingBasics || profile.body_is_saving;
+      // Keep avatar selection available while a username or avatar request is
+      // in flight. Rust keeps the submitted value separate from this draft,
+      // so a response cannot overwrite a newer selection.
+      control.disabled = !active;
       control.checked = control.value === profile.body_draft;
     });
     submit.disabled = !active || savingBasics || profile.username_is_saving
@@ -646,6 +649,10 @@ async function renderBasics(user) {
     event.preventDefault();
     if (!activeSession() || savingBasics || runtime.snapshot.profile.username_is_saving
       || runtime.snapshot.profile.body_is_saving) return;
+    // Do not turn a username-only save into an unnecessary avatar request.
+    // Capture this before starting the asynchronous username request so a
+    // later avatar selection remains an unsaved draft for the next submit.
+    const shouldSaveBody = runtime.snapshot.profile.body_can_save;
     savingBasics = true;
     basicsFeedback = null;
     render(runtime.snapshot);
@@ -655,9 +662,12 @@ async function renderBasics(user) {
       const profile = runtime.snapshot.profile;
       if (!activeSession() || !form.isConnected || profile.username_validation_error
         || profile.username_is_dirty || profile.username_feedback?.kind === "error") return;
-      await runtime.dispatch({ type: "save_body" });
+      if (shouldSaveBody) {
+        await runtime.dispatch({ type: "save_body" });
+        if (runtime.snapshot.profile.body_feedback?.kind === "error") return;
+      }
       const finalProfile = runtime.snapshot.profile;
-      if (!activeSession() || finalProfile.body_feedback?.kind === "error") return;
+      if (!activeSession()) return;
       currentUser = { ...currentUser, username: finalProfile.username, body_id: finalProfile.body_id };
       basicsFeedback = { kind: "success", message: "Basics saved." };
     } catch (error) {
