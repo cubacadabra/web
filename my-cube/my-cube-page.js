@@ -15,10 +15,8 @@ const AVATAR_OPTIONS = [
 ];
 const BLOCKED_USERS_PATH = "/moderation/blocks";
 const SUBSCRIPTION_PATH = "/subscription";
-const CUBES_PATH = "/cubes";
 const CUBE_UPLOAD_PATH = "/cubes/upload";
 const MAX_CUBE_ZIP_BYTES = 25 * 1024 * 1024;
-const CUBE_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 let currentUser = null;
 let accountReady;
 let basicsCleanup;
@@ -371,28 +369,18 @@ async function fetchBlockedUsers() {
     : [];
 }
 
-function normalizeCubeCatalog(cubes) {
-  const seenIds = new Set();
-  return (Array.isArray(cubes) ? cubes : []).filter((cube) => {
-    if (!cube || typeof cube.cubeId !== "string" || !CUBE_ID_PATTERN.test(cube.cubeId)) {
-      return false;
-    }
-    if (seenIds.has(cube.cubeId)) return false;
-    seenIds.add(cube.cubeId);
-    return true;
-  });
-}
-
 async function fetchCubeCatalog() {
-  const url = new URL(backendApiUrl(CUBES_PATH));
-  url.searchParams.set("page", "1");
-  url.searchParams.set("page_size", "20");
-  const response = await fetch(url, {
-    headers: { Accept: "application/json" },
-  });
-  const result = await response.json().catch(() => null);
-  if (!response.ok) throw new Error(result?.error || "cube_catalog_load_failed");
-  return normalizeCubeCatalog(result?.cubes);
+  const runtime = await accountReady;
+  await runtime.dispatch({ type: "load_catalog", page_size: 20 });
+  const catalog = runtime.snapshot.catalog;
+  if (catalog.feedback?.kind === "error") throw new Error(catalog.feedback.code);
+  return catalog.entries.map((entry) => ({
+    cubeId: entry.cube_id,
+    version: entry.version,
+    displayName: entry.display_name,
+    packagePath: entry.package_path,
+    assetBaseURL: entry.asset_base_url,
+  }));
 }
 
 function cubeGameUrl(cubeId) {

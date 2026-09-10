@@ -12,6 +12,7 @@ export class AppRuntime {
   readSnapshot() {
     const value = JSON.parse(this.model.snapshot_json());
     const p = value.profile;
+    const catalog = value.catalog;
     if (value.protocol_version !== 1 || !Number.isInteger(value.session_id)
       || !(value.account_id === null || typeof value.account_id === "string")
       || !p || !(p.username === null || typeof p.username === "string")
@@ -30,6 +31,18 @@ export class AppRuntime {
       || !(p.birthday_feedback === null || (["success", "error"].includes(p.birthday_feedback?.kind)
         && typeof p.birthday_feedback.code === "string"
         && typeof p.birthday_feedback.message === "string"))) {
+      throw new Error("Unsupported app snapshot");
+    }
+    if (!catalog || !Array.isArray(catalog.entries) || typeof catalog.is_loading !== "boolean"
+      || !(catalog.feedback === null || (catalog.feedback.kind === "error"
+        && typeof catalog.feedback.code === "string"
+        && typeof catalog.feedback.message === "string"))
+      || catalog.entries.some((entry) => !entry
+        || typeof entry.cube_id !== "string"
+        || typeof entry.version !== "string"
+        || typeof entry.display_name !== "string"
+        || typeof entry.package_path !== "string"
+        || !(entry.asset_base_url === null || typeof entry.asset_base_url === "string"))) {
       throw new Error("Unsupported app snapshot");
     }
     this.snapshot = value;
@@ -54,7 +67,8 @@ export class AppRuntime {
     for (let source; (source = this.model.poll_effect_json()) != null;) {
       const effect = JSON.parse(source);
       if (effect.type !== "http_request" || !Number.isInteger(effect.effect_id)
-        || !["account_id", "method", "path", "body"].every((key) => typeof effect[key] === "string")) {
+        || !(effect.account_id === null || typeof effect.account_id === "string")
+        || !["method", "path", "body"].every((key) => typeof effect[key] === "string")) {
         throw new Error("Unsupported app effect");
       }
       pending.push(this.perform(effect));
@@ -67,7 +81,9 @@ export class AppRuntime {
     this.requests.set(effect.effect_id, controller);
     let action;
     try {
-      if (effect.account_id !== this.snapshot.account_id) throw new Error("Replaced account");
+      if (effect.account_id !== null && effect.account_id !== this.snapshot.account_id) {
+        throw new Error("Replaced account");
+      }
       // Start transport now: do not defer credential selection to a later session.
       const response = await this.request(effect, controller.signal);
       action = { type: "http_completed", effect_id: effect.effect_id, status: response.status, body: response.body };
