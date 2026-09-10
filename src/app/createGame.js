@@ -262,6 +262,9 @@ export async function createGame() {
   });
   worldSocket = createWorldSocket({
     gameId: gameDefinition.gameId,
+    worldConfigs: Object.fromEntries(
+      Object.entries(gameDefinition.worlds).map(([id, definition]) => [id, definition.server]),
+    ),
     initialUsername: currentUser?.username,
     onSession: (session) => {
       if (session.username) engine.setUsername(session.username);

@@ -31,17 +31,32 @@ function normalizeUsername(value) {
   return username;
 }
 
-function createSocketUrl(gameId, worldId) {
+function encodeWorldConfig(config) {
+  if (!config || typeof config !== "object") return null;
+  try {
+    const bytes = new TextEncoder().encode(JSON.stringify(config));
+    let binary = "";
+    for (const byte of bytes) binary += String.fromCharCode(byte);
+    return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  } catch {
+    return null;
+  }
+}
+
+function createSocketUrl(gameId, worldId, worldConfigs) {
   const url = new URL(backendConfig.webSocketUrl);
   const basePath = url.pathname.replace(/\/$/, "");
   url.pathname = `${basePath}/world/${encodeURIComponent(worldId)}`;
   url.searchParams.set("client", "web");
   url.searchParams.set("game", gameId);
+  const encodedConfig = encodeWorldConfig(worldConfigs?.[worldId]);
+  if (encodedConfig) url.searchParams.set("world_config", encodedConfig);
   return url;
 }
 
 export function createWorldSocket({
   gameId = "first-game",
+  worldConfigs = {},
   initialUsername = null,
   onEvent,
   onSession,
@@ -114,7 +129,7 @@ export function createWorldSocket({
     if (destroyed || !worldId || expectedGeneration !== generation) return;
 
     setStatus(reconnectAttempt > 0 ? "reconnecting" : "connecting");
-    const nextSocket = new WebSocket(createSocketUrl(gameId, worldId));
+    const nextSocket = new WebSocket(createSocketUrl(gameId, worldId, worldConfigs));
     socket = nextSocket;
 
     nextSocket.addEventListener("open", () => {
