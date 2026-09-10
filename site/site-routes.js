@@ -247,6 +247,6 @@ export const SITE_PAGES = [
     header: "product",
     headerCurrent: "my-cube",
     sidebar: "my-cube",
-    scripts: ["/my-cube/my-cube-page.js"],
+    scripts: ["/wasm/app/load-app-runtime.js", "/my-cube/my-cube-page.js"],
   },
 ];

@@ -5,14 +5,25 @@ let runtime;
 let loading;
 let sessionUser = null;
 
+function loadAppRuntimeWasm() {
+  if (window.cubacadabraAppWasm) return window.cubacadabraAppWasm;
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.type = "module";
+    script.src = "/wasm/app/load-app-runtime.js";
+    script.onload = () => resolve(window.cubacadabraAppWasm);
+    script.onerror = () => reject(new Error("The app runtime loader is unavailable"));
+    document.head.append(script);
+  });
+}
+
 // One instance for the signed-in document, shared across account screens.
 export function initializeAccountRuntime(user) {
   sessionUser = user;
   if (!loading) {
     loading = (async () => {
-      const modulePath = "/wasm/app/cubacadabra_app.js";
-      const wasm = await import(/* @vite-ignore */ modulePath);
-      await wasm.default();
+      const wasm = await loadAppRuntimeWasm();
+      if (!wasm) throw new Error("The app runtime loader is unavailable");
       runtime = new AppRuntime(new wasm.WebApp(), async (effect, signal) => {
         const response = await fetch(backendApiUrl("/" + effect.path), {
           method: effect.method, body: effect.body, signal,
