@@ -21,9 +21,12 @@ export const backendConfig = {
 
 export function backendApiUrl(path) {
   const url = new URL(backendConfig.webSocketUrl);
+  const queryIndex = path.indexOf("?");
+  const pathname = queryIndex === -1 ? path : path.slice(0, queryIndex);
+  const query = queryIndex === -1 ? "" : path.slice(queryIndex + 1);
   url.protocol = url.protocol === "wss:" ? "https:" : "http:";
-  url.pathname = path;
-  url.search = "";
+  url.pathname = pathname;
+  url.search = query ? `?${query}` : "";
   url.hash = "";
   return url;
 }
