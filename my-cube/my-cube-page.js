@@ -605,8 +605,9 @@ async function renderBasics(user) {
   if (!form.isConnected) return;
   runtime.dispatch({ type: "begin_username_edit" });
   const sessionId = runtime.snapshot.session_id;
-  const activeSession = () => runtime.snapshot.session_id === sessionId
-    && runtime.snapshot.account_id !== null && runtime.snapshot.account_id === currentUser?.id;
+  const accountId = runtime.snapshot.account_id;
+  const activeSession = () => accountId !== null
+    && runtime.snapshot.session_id === sessionId && runtime.snapshot.account_id === accountId;
   let savingBasics = false;
   let basicsFeedback = null;
 
@@ -626,6 +627,8 @@ async function renderBasics(user) {
     });
     submit.disabled = !active || savingBasics || profile.username_is_saving
       || profile.body_is_saving || !(profile.username_can_save || profile.body_can_save);
+    submit.setAttribute("aria-busy", String(savingBasics
+      || profile.username_is_saving || profile.body_is_saving));
     const feedback = basicsFeedback ?? profile.body_feedback ?? profile.username_feedback;
     setFormStatus(status,
       !active ? "Please sign in again."
