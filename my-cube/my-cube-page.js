@@ -537,18 +537,14 @@ function renderBirthdayForm() {
     const dob = `${year}-${String(monthNumber).padStart(2, "0")}-${String(dayNumber).padStart(2, "0")}`;
 
     try {
-      const response = await fetch(backendApiUrl("/auth/birthday"), {
-        method: "POST",
-        credentials: "include",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ dob }),
-      });
-      const result = await response.json().catch(() => null);
-      if (!response.ok || !result?.user?.dob) throw new Error(result?.error || "birthday_save_failed");
-
-      if (!currentUser || result.user.id !== currentUser.id) return;
-      currentUser = { ...currentUser, dob: result.user.dob };
-      const age = Number.isInteger(result.age) ? result.age : calculateAge(result.user.dob);
+      const runtime = await initializeAccountRuntime(currentUser);
+      await runtime.dispatch({ type: "save_birthday", date_of_birth: dob });
+      const snapshot = runtime.snapshot;
+      if (snapshot.account_id !== currentUser?.id || snapshot.profile.date_of_birth !== dob) {
+        throw new Error(snapshot.profile.birthday_feedback?.code || "birthday_save_failed");
+      }
+      currentUser = { ...currentUser, dob: snapshot.profile.date_of_birth };
+      const age = calculateAge(snapshot.profile.date_of_birth);
       if (age < 13) {
         renderParentStep();
       } else {

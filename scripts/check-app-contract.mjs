@@ -31,13 +31,18 @@ const requests = [];
 const runtime = new AppRuntime(new WebApp(), (effect, signal) => new Promise((resolve) => {
   requests.push({ effect, signal, resolve });
 }));
-let hostUser = { id: "a", username: "Ada", body_id: "new-avatar" };
+let hostUser = { id: "a", username: "Ada", body_id: "new-avatar", dob: "2000-01-01" };
 runtime.subscribe((snapshot) => {
   if (snapshot.account_id === hostUser?.id) {
-    hostUser = { ...hostUser, username: snapshot.profile.username, body_id: snapshot.profile.body_id };
+    hostUser = {
+      ...hostUser,
+      username: snapshot.profile.username,
+      body_id: snapshot.profile.body_id,
+      dob: snapshot.profile.date_of_birth,
+    };
   }
 });
-await runtime.dispatch({ type: "replace_session", account_id: "a", username: "Ada", body_id: "cuba:person.v1" });
+await runtime.dispatch({ type: "replace_session", account_id: "a", username: "Ada", body_id: "cuba:person.v1", date_of_birth: "2000-01-01" });
 await runtime.dispatch({ type: "username_changed", value: "  Grace  " });
 const saving = runtime.dispatch({ type: "save_username" });
 assert.equal(runtime.snapshot.profile.username_is_saving, true);
@@ -48,7 +53,7 @@ assert.deepEqual(JSON.parse(requests[0].effect.body), { username: "Grace" });
 assert.equal(hostUser.username, "Ada"); // HTTP has not been accepted yet.
 requests[0].resolve({ status: 200, body: '{"user":{"id":"a","username":"Grace","body_id":"old-avatar"}}' });
 await saving;
-assert.deepEqual(hostUser, { id: "a", username: "Grace", body_id: "cuba:person.v1" });
+assert.deepEqual(hostUser, { id: "a", username: "Grace", body_id: "cuba:person.v1", dob: "2000-01-01" });
 
 await runtime.dispatch({ type: "body_changed", body_id: "cuba:person-girl.v1" });
 const bodySaving = runtime.dispatch({ type: "save_body" });
@@ -59,13 +64,21 @@ requests[1].resolve({ status: 200, body: '{"user":{"id":"a","body_id":"cuba:pers
 await bodySaving;
 assert.equal(hostUser.body_id, "cuba:person-girl.v1");
 
+const birthdaySaving = runtime.dispatch({ type: "save_birthday", date_of_birth: "2001-02-03" });
+assert.equal(runtime.snapshot.profile.birthday_is_saving, true);
+assert.equal(requests[2].effect.path, "auth/birthday");
+assert.deepEqual(JSON.parse(requests[2].effect.body), { dob: "2001-02-03" });
+requests[2].resolve({ status: 200, body: '{"user":{"id":"a","dob":"2001-02-03"},"age":25}' });
+await birthdaySaving;
+assert.equal(hostUser.dob, "2001-02-03");
+
 await runtime.dispatch({ type: "username_changed", value: "Later" });
 const staleSave = runtime.dispatch({ type: "save_username" });
 await runtime.dispatch({ type: "replace_session", account_id: null, username: null });
-assert.equal(requests[2].signal.aborted, true);
-hostUser = { id: "b", username: "Lin" };
-await runtime.dispatch({ type: "replace_session", account_id: "b", username: "Lin" });
-requests[2].resolve({ status: 200, body: '{"user":{"id":"a","username":"Later"}}' });
+assert.equal(requests[3].signal.aborted, true);
+hostUser = { id: "b", username: "Lin", dob: null };
+await runtime.dispatch({ type: "replace_session", account_id: "b", username: "Lin", date_of_birth: null });
+requests[3].resolve({ status: 200, body: '{"user":{"id":"a","username":"Later"}}' });
 await staleSave;
 assert.equal(hostUser.username, "Lin");
 assert.equal(runtime.snapshot.profile.username_is_saving, false);
@@ -74,8 +87,8 @@ await runtime.dispatch({ type: "username_changed", value: "Final" });
 const closingSave = runtime.dispatch({ type: "save_username" });
 runtime.close();
 runtime.close();
-assert.equal(requests[3].signal.aborted, true);
-requests[3].resolve({ status: 200, body: '{"user":{"id":"b","username":"Final"}}' });
+assert.equal(requests[4].signal.aborted, true);
+requests[4].resolve({ status: 200, body: '{"user":{"id":"b","username":"Final"}}' });
 await closingSave; // No callback touches the freed WASM handle.
 assert.equal(hostUser.username, "Lin");
 assert.throws(() => runtime.dispatch({ type: "save_username" }), /closed/);

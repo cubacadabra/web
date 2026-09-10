@@ -31,7 +31,8 @@ export function initializeAccountRuntime(user) {
 
 function replaceSession() {
   return runtime?.dispatch({ type: "replace_session", account_id: sessionUser?.id ?? null,
-    username: sessionUser?.username ?? null, body_id: sessionUser?.body_id ?? null });
+    username: sessionUser?.username ?? null, body_id: sessionUser?.body_id ?? null,
+    date_of_birth: sessionUser?.dob ?? null });
 }
 
 export function clearAccountSession() {

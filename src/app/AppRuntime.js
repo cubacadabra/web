@@ -24,7 +24,12 @@ export class AppRuntime {
       || typeof p.body_draft !== "string"
       || !["body_can_save", "body_is_saving"].every((key) => typeof p[key] === "boolean")
       || !(p.body_feedback === null || (["success", "error"].includes(p.body_feedback?.kind)
-        && typeof p.body_feedback.message === "string"))) {
+        && typeof p.body_feedback.message === "string"))
+      || !(p.date_of_birth === null || typeof p.date_of_birth === "string")
+      || typeof p.birthday_is_saving !== "boolean"
+      || !(p.birthday_feedback === null || (["success", "error"].includes(p.birthday_feedback?.kind)
+        && typeof p.birthday_feedback.code === "string"
+        && typeof p.birthday_feedback.message === "string"))) {
       throw new Error("Unsupported app snapshot");
     }
     this.snapshot = value;
