@@ -15,6 +15,8 @@ const AUDIO_ID_PATTERN = /^[A-Za-z0-9._-]{1,64}$/;
 const AUDIO_PATH_PATTERN = /^assets\/(?:[A-Za-z0-9_-][A-Za-z0-9._-]*\/)*[A-Za-z0-9_-][A-Za-z0-9._-]*\.wav$/i;
 const IMAGE_ID_PATTERN = /^[A-Za-z0-9._-]{1,64}$/;
 const IMAGE_PATH_PATTERN = /^assets\/(?:[A-Za-z0-9_-][A-Za-z0-9._-]*\/)*[A-Za-z0-9_-][A-Za-z0-9._-]*\.(?:jpg|jpeg|png)$/i;
+const MORPH_ID_PATTERN = /^[a-z0-9-]+:[a-z0-9_-]+(?:\/[a-z0-9_-]+)*\.v[1-9][0-9]*$/;
+const MORPH_PATH_PATTERN = /^assets\/(?:[A-Za-z0-9_-][A-Za-z0-9._-]*\/)*[A-Za-z0-9_-][A-Za-z0-9._-]*\.morphpack$/i;
 
 function requestedGameId() {
   const gameId = new URLSearchParams(window.location.search).get("game");
@@ -135,6 +137,32 @@ function normalizeImageAssets(assets, baseUrl) {
   }));
 }
 
+function normalizeMorphPacks(assets, baseUrl) {
+  const morphPacks = assets?.morphPacks;
+  if (morphPacks === undefined) return {};
+  if (!morphPacks || typeof morphPacks !== "object" || Array.isArray(morphPacks)) {
+    throw new Error("Game manifest assets.morphPacks must be an object.");
+  }
+  const entries = Object.entries(morphPacks);
+  if (entries.length > 32) {
+    throw new Error("A game package may declare at most 32 morph packs.");
+  }
+
+  return Object.fromEntries(entries.map(([id, definition]) => {
+    if (!MORPH_ID_PATTERN.test(id)) {
+      throw new Error(`Game morph pack id "${id}" is invalid.`);
+    }
+    if (!definition || typeof definition !== "object" || Array.isArray(definition)) {
+      throw new Error(`Game morph pack "${id}" must be an object.`);
+    }
+    const path = definition.path;
+    if (typeof path !== "string" || !MORPH_PATH_PATTERN.test(path)) {
+      throw new Error(`Game morph pack "${id}" must reference a .morphpack inside assets/.`);
+    }
+    return [id, { url: new URL(path, baseUrl).href }];
+  }));
+}
+
 export async function loadGamePackage() {
   const gameId = requestedGameId();
   const baseUrl = LOCAL_GAME_IDS.has(gameId)
@@ -207,5 +235,6 @@ export async function loadGamePackage() {
     activeWorldId,
     audioAssets: normalizeAudioAssets(manifest.assets, baseUrl),
     imageAssets: normalizeImageAssets(manifest.assets, baseUrl),
+    morphPacks: normalizeMorphPacks(manifest.assets, baseUrl),
   };
 }

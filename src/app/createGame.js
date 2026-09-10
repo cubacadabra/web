@@ -20,6 +20,8 @@ const PLAYER_BODY_IDS = new Set([
   "cuba:person-nb.v1",
 ]);
 const MOVEMENT_DEBUG = new URLSearchParams(window.location.search).get("debugMovement") === "1";
+const MAXIMUM_MORPH_PACK_BYTES = 64 * 1024 * 1024;
+const MAXIMUM_MORPH_RESIDENT_BYTES = 16 * 1024 * 1024;
 
 async function decodePackageImage(url) {
   const response = await fetch(url);
@@ -56,6 +58,27 @@ async function decodePackageImage(url) {
     bitmap?.close?.();
     if (objectUrl) URL.revokeObjectURL(objectUrl);
   }
+}
+
+async function loadMorphPacks(morphPacks) {
+  let totalBytes = 0;
+  const loaded = [];
+  for (const [id, definition] of Object.entries(morphPacks)) {
+    const response = await fetch(definition.url);
+    if (!response.ok) {
+      throw new Error(`The morph pack "${id}" could not be loaded (${response.status}).`);
+    }
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    if (bytes.length === 0 || bytes.length > MAXIMUM_MORPH_PACK_BYTES) {
+      throw new Error(`The morph pack "${id}" exceeds the supported size limit.`);
+    }
+    totalBytes += bytes.length;
+    if (totalBytes > MAXIMUM_MORPH_RESIDENT_BYTES) {
+      throw new Error("The game morph packs exceed the renderer residency limit.");
+    }
+    loaded.push({ id, bytes });
+  }
+  return loaded;
 }
 
 function nextPowerOfTwo(value) {
@@ -168,6 +191,11 @@ export async function createGame() {
     typeof navigator !== "undefined" && navigator.maxTouchPoints > 0;
   elements.worldShell?.classList.toggle("is-touch-device", isTouchDevice);
   const renderer = await createRustRenderer({ canvas: elements.canvas });
+  for (const { id, bytes } of await loadMorphPacks(gameDefinition.morphPacks)) {
+    if (!renderer.registerMorphPack(bytes)) {
+      throw new Error(`The morph pack "${id}" was rejected by the renderer.`);
+    }
+  }
   const engine = createRustEngine(
     renderer.wasmExports,
     renderer.bindings,

@@ -33,6 +33,10 @@ export async function createRustRenderer({ canvas }) {
       if (destroyed) return false;
       return renderer.set_package_image_atlas(width, height, pixels, regions);
     },
+    registerMorphPack(bytes) {
+      if (destroyed) return false;
+      return renderer.register_morph_pack(bytes);
+    },
     render(engineHandle) {
       if (destroyed) return;
       renderer.sync_engine(engineHandle);
