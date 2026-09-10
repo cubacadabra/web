@@ -16,6 +16,8 @@ const AVATAR_OPTIONS = [
 const BLOCKED_USERS_PATH = "/moderation/blocks";
 const SUBSCRIPTION_PATH = "/subscription";
 const CUBE_UPLOAD_PATH = "/cubes/upload";
+const CUBE_CATALOG_PAGE_SIZE = 20;
+const CUBE_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const MAX_CUBE_ZIP_BYTES = 25 * 1024 * 1024;
 let currentUser = null;
 let accountReady;
@@ -370,17 +372,56 @@ async function fetchBlockedUsers() {
 }
 
 async function fetchCubeCatalog() {
-  const runtime = await accountReady;
-  await runtime.dispatch({ type: "load_catalog", page_size: 20 });
-  const catalog = runtime.snapshot.catalog;
-  if (catalog.feedback?.kind === "error") throw new Error(catalog.feedback.code);
-  return catalog.entries.map((entry) => ({
-    cubeId: entry.cube_id,
-    version: entry.version,
-    displayName: entry.display_name,
-    packagePath: entry.package_path,
-    assetBaseURL: entry.asset_base_url,
-  }));
+  try {
+    const runtime = await accountReady;
+    await runtime.dispatch({ type: "load_catalog", page_size: CUBE_CATALOG_PAGE_SIZE });
+    const catalog = runtime.snapshot.catalog;
+    if (catalog.feedback?.kind === "error") throw new Error(catalog.feedback.code);
+    return catalog.entries.map((entry) => ({
+      cubeId: entry.cube_id,
+      version: entry.version,
+      displayName: entry.display_name,
+      packagePath: entry.package_path,
+      assetBaseURL: entry.asset_base_url,
+    }));
+  } catch (error) {
+    // The catalog is public. Keep this screen usable if the optional shared
+    // account runtime failed before it could issue its HTTP effect.
+    console.warn("Shared account runtime could not load the cube catalog; using the direct catalog request.", error);
+    return fetchCubeCatalogDirect();
+  }
+}
+
+async function fetchCubeCatalogDirect() {
+  const url = new URL(backendApiUrl("/cubes"));
+  url.searchParams.set("page", "1");
+  url.searchParams.set("page_size", String(CUBE_CATALOG_PAGE_SIZE));
+  const response = await fetch(url, {
+    headers: { Accept: "application/json" },
+  });
+  const result = await response.json().catch(() => null);
+  if (!response.ok) throw new Error(result?.error || "cube_catalog_load_failed");
+
+  const seenIds = new Set();
+  return (Array.isArray(result?.cubes) ? result.cubes : [])
+    .filter((cube) => {
+      if (!cube || typeof cube.cubeId !== "string" || !CUBE_ID_PATTERN.test(cube.cubeId)
+        || typeof cube.version !== "string" || !cube.version.trim()
+        || typeof cube.displayName !== "string" || !cube.displayName.trim()
+        || typeof cube.packagePath !== "string" || !cube.packagePath.startsWith("/cubes/")
+        || !cube.packagePath.endsWith("/") || seenIds.has(cube.cubeId)) {
+        return false;
+      }
+      seenIds.add(cube.cubeId);
+      return true;
+    })
+    .map((cube) => ({
+      cubeId: cube.cubeId,
+      version: cube.version,
+      displayName: cube.displayName,
+      packagePath: cube.packagePath,
+      assetBaseURL: typeof cube.assetBaseURL === "string" ? cube.assetBaseURL : null,
+    }));
 }
 
 function cubeGameUrl(cubeId) {
