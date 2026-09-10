@@ -78,7 +78,7 @@ assert.equal(requests[3].effect.path, "cubes?page=1&page_size=20");
 assert.equal(requests[3].effect.body, "");
 requests[3].resolve({
   status: 200,
-  body: JSON.stringify({ cubes: [{
+  body: JSON.stringify({ page: 1, hasNextPage: true, cubes: [{
     id: 1,
     cubeId: "uploaded-cube",
     version: "1.2.3",
@@ -88,21 +88,41 @@ requests[3].resolve({
   }] }),
 });
 await catalogLoading;
+const catalogNextPage = runtime.dispatch({ type: "load_catalog", page: 2, page_size: 20 });
+assert.equal(requests[4].effect.path, "cubes?page=2&page_size=20");
+requests[4].resolve({
+  status: 200,
+  body: JSON.stringify({ page: 2, hasNextPage: false, cubes: [{
+    id: 2,
+    cubeId: "second-uploaded-cube",
+    version: "1.0.0",
+    displayName: "Second Uploaded Cube",
+    fileCount: 1,
+    packagePath: "/cubes/2/files/",
+  }] }),
+});
+await catalogNextPage;
 assert.deepEqual(runtime.snapshot.catalog.entries, [{
   cube_id: "uploaded-cube",
   version: "1.2.3",
   display_name: "Uploaded Cube",
   package_path: "/cubes/1/files/",
   asset_base_url: null,
+}, {
+  cube_id: "second-uploaded-cube",
+  version: "1.0.0",
+  display_name: "Second Uploaded Cube",
+  package_path: "/cubes/2/files/",
+  asset_base_url: null,
 }]);
 
 await runtime.dispatch({ type: "username_changed", value: "Later" });
 const staleSave = runtime.dispatch({ type: "save_username" });
 await runtime.dispatch({ type: "replace_session", account_id: null, username: null });
-assert.equal(requests[4].signal.aborted, true);
+assert.equal(requests[5].signal.aborted, true);
 hostUser = { id: "b", username: "Lin", dob: null };
 await runtime.dispatch({ type: "replace_session", account_id: "b", username: "Lin", date_of_birth: null });
-requests[4].resolve({ status: 200, body: '{"user":{"id":"a","username":"Later"}}' });
+requests[5].resolve({ status: 200, body: '{"user":{"id":"a","username":"Later"}}' });
 await staleSave;
 assert.equal(hostUser.username, "Lin");
 assert.equal(runtime.snapshot.profile.username_is_saving, false);
@@ -111,8 +131,8 @@ await runtime.dispatch({ type: "username_changed", value: "Final" });
 const closingSave = runtime.dispatch({ type: "save_username" });
 runtime.close();
 runtime.close();
-assert.equal(requests[5].signal.aborted, true);
-requests[5].resolve({ status: 200, body: '{"user":{"id":"b","username":"Final"}}' });
+assert.equal(requests[6].signal.aborted, true);
+requests[6].resolve({ status: 200, body: '{"user":{"id":"b","username":"Final"}}' });
 await closingSave; // No callback touches the freed WASM handle.
 assert.equal(hostUser.username, "Lin");
 assert.throws(() => runtime.dispatch({ type: "save_username" }), /closed/);

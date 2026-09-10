@@ -33,7 +33,8 @@ export class AppRuntime {
         && typeof p.birthday_feedback.message === "string"))) {
       throw new Error("Unsupported app snapshot");
     }
-    if (!catalog || !Array.isArray(catalog.entries) || typeof catalog.is_loading !== "boolean"
+    if (!catalog || !Array.isArray(catalog.entries) || !Number.isInteger(catalog.page)
+      || typeof catalog.has_next_page !== "boolean" || typeof catalog.is_loading !== "boolean"
       || !(catalog.feedback === null || (catalog.feedback.kind === "error"
         && typeof catalog.feedback.code === "string"
         && typeof catalog.feedback.message === "string"))

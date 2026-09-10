@@ -19,6 +19,7 @@ function loadAppRuntimeWasm() {
 
 // One instance for the signed-in document, shared across account screens.
 export function initializeAccountRuntime(user) {
+  const previousUser = sessionUser;
   sessionUser = user;
   if (!loading) {
     loading = (async () => {
@@ -34,7 +35,12 @@ export function initializeAccountRuntime(user) {
       await replaceSession();
       return runtime;
     })().catch((error) => { loading = null; throw error; });
-  } else if (runtime) {
+  } else if (runtime && (
+    previousUser?.id !== user?.id
+      || previousUser?.username !== user?.username
+      || previousUser?.body_id !== user?.body_id
+      || previousUser?.dob !== user?.dob
+  )) {
     replaceSession();
   }
   return loading;
