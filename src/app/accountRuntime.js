@@ -26,10 +26,17 @@ export function initializeAccountRuntime(user) {
       const wasm = await loadAppRuntimeWasm();
       if (!wasm) throw new Error("The app runtime loader is unavailable");
       runtime = new AppRuntime(new wasm.WebApp(), async (effect, signal) => {
-        const response = await fetch(backendApiUrl("/" + effect.path), {
-          method: effect.method, body: effect.body, signal,
-          credentials: "include", headers: { "content-type": "application/json" },
-        });
+        const options = {
+          method: effect.method,
+          signal,
+          credentials: "include",
+          headers: { Accept: "application/json" },
+        };
+        if (effect.body.length > 0) {
+          options.body = effect.body;
+          options.headers["content-type"] = "application/json";
+        }
+        const response = await fetch(backendApiUrl("/" + effect.path), options);
         return { status: response.status, body: await response.text() };
       });
       await replaceSession();
