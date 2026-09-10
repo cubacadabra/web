@@ -160,7 +160,7 @@ function basicsMarkup() {
   return `
     <div class="basics-view" id="item1">
       <div class="basics-workspace">
-        <form class="basics-form" novalidate>
+        <form class="basics-form" novalidate autocomplete="off">
           <label class="basics-field" for="my-cube-username">
             <span>Username</span>
             <input id="my-cube-username" name="username" type="text" autocomplete="nickname" aria-describedby="my-cube-username-help basics-username-status" spellcheck="false" required />
@@ -174,7 +174,7 @@ ${avatarOptions}
             </div>
           </fieldset>
           <p class="basics-status" id="basics-username-status" role="status" aria-live="polite"></p>
-          <button class="basics-submit" type="submit">Save</button>
+          <button class="basics-submit" type="submit" disabled>Save</button>
         </form>
       </div>
     </div>`;
@@ -589,7 +589,7 @@ async function renderBasics(user) {
   const status = content.querySelector("#basics-username-status");
   const submit = form.querySelector(".basics-submit");
   const avatarInputs = [...form.querySelectorAll('input[name="body_id"]')];
-  for (const control of form.elements) control.disabled = true;
+  input.disabled = true;
   setFormStatus(status, "Loading profile…");
 
   let runtime;
