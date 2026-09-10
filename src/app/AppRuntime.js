@@ -13,6 +13,7 @@ export class AppRuntime {
     const value = JSON.parse(this.model.snapshot_json());
     const p = value.profile;
     const catalog = value.catalog;
+    const safety = value.safety;
     if (value.protocol_version !== 1 || !Number.isInteger(value.session_id)
       || !(value.account_id === null || typeof value.account_id === "string")
       || !p || !(p.username === null || typeof p.username === "string")
@@ -44,6 +45,16 @@ export class AppRuntime {
         || typeof entry.display_name !== "string"
         || typeof entry.package_path !== "string"
         || !(entry.asset_base_url === null || typeof entry.asset_base_url === "string"))) {
+      throw new Error("Unsupported app snapshot");
+    }
+    if (!safety || !Array.isArray(safety.blocked_user_ids)
+      || safety.blocked_user_ids.some((userId) => typeof userId !== "string")
+      || typeof safety.is_loading !== "boolean"
+      || ![null, "load", "block", "unblock"].includes(safety.pending_action)
+      || !(safety.pending_user_id === null || typeof safety.pending_user_id === "string")
+      || !(safety.feedback === null || (safety.feedback.kind === "error"
+        && typeof safety.feedback.code === "string"
+        && typeof safety.feedback.message === "string"))) {
       throw new Error("Unsupported app snapshot");
     }
     this.snapshot = value;

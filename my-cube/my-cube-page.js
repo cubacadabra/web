@@ -13,7 +13,6 @@ const AVATAR_OPTIONS = [
   { bodyId: "cuba:person-girl.v1", label: "Girl", image: "/images/player_girl_001.png" },
   { bodyId: "cuba:person-nb.v1", label: "Nonbinary", image: "/images/player_nb_001.png" },
 ];
-const BLOCKED_USERS_PATH = "/moderation/blocks";
 const SUBSCRIPTION_PATH = "/subscription";
 const CUBE_UPLOAD_PATH = "/cubes/upload";
 const CUBE_CATALOG_PAGE_SIZE = 20;
@@ -359,15 +358,11 @@ function blockedUserLabel(userId) {
 }
 
 async function fetchBlockedUsers() {
-  const response = await fetch(backendApiUrl(BLOCKED_USERS_PATH), {
-    credentials: "include",
-    headers: { Accept: "application/json" },
-  });
-  const result = await response.json().catch(() => null);
-  if (!response.ok) throw new Error(result?.error || "blocked_users_load_failed");
-  return Array.isArray(result?.user_ids)
-    ? result.user_ids.filter((userId) => typeof userId === "string" && userId.trim())
-    : [];
+  const runtime = await initializeAccountRuntime(currentUser);
+  await runtime.dispatch({ type: "load_blocked_users" });
+  const safety = runtime.snapshot.safety;
+  if (safety.feedback?.kind === "error") throw new Error(safety.feedback.code);
+  return { runtime, userIds: safety.blocked_user_ids };
 }
 
 async function fetchCubeCatalog() {
@@ -438,7 +433,7 @@ function blockedUsersErrorMessage(error) {
   return "We couldn’t load your blocked users. Please try again.";
 }
 
-function renderBlockedUserRows(userIds, status, count) {
+function renderBlockedUserRows(runtime, userIds, status, count) {
   const list = content.querySelector(".blocked-users-list");
   list.replaceChildren();
   count.textContent = `${userIds.length} ${userIds.length === 1 ? "user" : "users"}`;
@@ -478,12 +473,9 @@ function renderBlockedUserRows(userIds, status, count) {
       status.dataset.state = "pending";
 
       try {
-        const response = await fetch(
-          `${backendApiUrl(BLOCKED_USERS_PATH)}/${encodeURIComponent(userId)}`,
-          { method: "DELETE", credentials: "include", headers: { Accept: "application/json" } },
-        );
-        const result = await response.json().catch(() => null);
-        if (!response.ok) throw new Error(result?.error || "unblock_failed");
+        await runtime.dispatch({ type: "unblock_user", user_id: userId });
+        const safety = runtime.snapshot.safety;
+        if (safety.feedback?.kind === "error") throw new Error(safety.feedback.code);
 
         row.remove();
         const remainingRows = list.querySelectorAll(".blocked-user-row").length;
@@ -835,9 +827,9 @@ async function renderBlockedUsers() {
   const count = content.querySelector(".blocked-users-count");
   const retry = content.querySelector(".blocked-users-retry");
   try {
-    const userIds = await fetchBlockedUsers();
+    const { runtime, userIds } = await fetchBlockedUsers();
     retry.hidden = true;
-    renderBlockedUserRows(userIds, status, count);
+    renderBlockedUserRows(runtime, userIds, status, count);
     status.textContent = "";
     status.dataset.state = "";
   } catch (error) {
