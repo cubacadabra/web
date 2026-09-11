@@ -175,3 +175,10 @@ quality policy does not change simulation or character identity.
 - [tools/docs/cubacadabra-game-developer-guide-preview-0.3.md](../tools/docs/cubacadabra-game-developer-guide-preview-0.3.md) — game developer guide
 - [rust/README.md](../rust/README.md) — simulation and WASM renderer
 - [backend/README.md](../backend/README.md) — local/LAN/production multiplayer
+
+### Licensing
+
+Copyright (C) 2026 Andrew Arrow
+
+Licensed under the GNU General Public License v3.0 or later.
+See [LICENSE](LICENSE).
