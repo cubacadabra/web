@@ -37,6 +37,10 @@ export async function createRustRenderer({ canvas }) {
       if (destroyed) return false;
       return renderer.register_morph_pack(bytes);
     },
+    setAvatarPreviewMode(enabled) {
+      if (destroyed) return;
+      renderer.set_avatar_preview_mode(Boolean(enabled));
+    },
     render(engineHandle) {
       if (destroyed) return;
       renderer.sync_engine(engineHandle);
