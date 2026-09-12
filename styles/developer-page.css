@@ -1,4 +1,5 @@
-/* Developer pricing: a focused creator workspace with the morph editor's three-column rhythm. */
+/* Developer pricing and creator tools. */
+@import "./developer-upload.css";
 .developer-page .about-layout {
   grid-template-columns: 200px minmax(0, 1fr);
   gap: 20px;

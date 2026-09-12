@@ -279,5 +279,6 @@ export const SITE_PAGES = [
     header: "product",
     headerCurrent: "developer",
     footerCurrent: "developer",
+    scripts: ["/developer/developer-page.js"],
   },
 ];

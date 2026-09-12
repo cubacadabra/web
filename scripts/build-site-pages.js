@@ -358,7 +358,6 @@ const renderMyCubeSidebar = () => `<aside class="about-sidebar">
     <a href="#birthday" data-section="birthday" aria-current="page"><span>Birthday</span></a>
     <a href="#morph-editor" data-section="morph-editor" hidden><span>Morph Editor</span></a>
     <a href="#cubes" data-section="cubes" hidden><span>Cubes</span></a>
-    <a href="#upload-cube" data-section="upload-cube" hidden><span>Upload a Cube</span></a>
     <a href="#blocked-users" data-section="blocked-users" hidden><span>Blocked Users</span></a>
     <a href="#subscription" data-section="subscription" hidden><span>Subscription</span></a>
   </nav>
@@ -371,8 +370,9 @@ const renderDeveloperSidebar = () => `<aside class="about-sidebar">
   </div>
 
   <nav class="about-menu" aria-label="Developer sections">
-    <a class="is-active" href="#pricing" aria-current="page"><span>Pricing</span></a>
-    <a href="#included"><span>What stays free</span></a>
+    <a href="#upload" data-section="upload"><span>Upload</span></a>
+    <a class="is-active" href="#pricing" data-section="pricing" aria-current="page"><span>Pricing</span></a>
+    <a href="#included" data-section="included"><span>What stays free</span></a>
   </nav>
 </aside>`;
 

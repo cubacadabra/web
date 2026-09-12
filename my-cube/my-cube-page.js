@@ -9,9 +9,7 @@ const content = document.querySelector(".about-content");
 const menuLinks = [...document.querySelectorAll(".about-menu > a")];
 const sidebarStatus = document.querySelector(".about-sidebar-status");
 const SUBSCRIPTION_PATH = "/subscription";
-const CUBE_UPLOAD_PATH = "/cubes/upload";
 const CUBE_CATALOG_PAGE_SIZE = 20;
-const MAX_CUBE_ZIP_BYTES = 25 * 1024 * 1024;
 const MORPH_KIND_ORDER = ["hair", "face", "headwear", "facewear", "top", "bottom", "footwear", "accessory"];
 let currentUser = null;
 let accountReady;
@@ -41,7 +39,7 @@ function setMenuState(requiresBirthday, activeSection = requiresBirthday ? "birt
   }
 
   menuLinks.slice(1).forEach((link) => {
-    link.hidden = requiresBirthday && link.dataset.section !== "upload-cube";
+    link.hidden = requiresBirthday;
   });
 
   menuLinks.forEach((link) => {
@@ -279,25 +277,6 @@ function moreCubesMarkup() {
       <table class="cube-table more-cube-table" aria-label="Uploaded cubes">
         <tbody class="more-cube-table-body"></tbody>
       </table>
-    </div>`;
-}
-
-function cubeUploadMarkup() {
-  return `
-    <div class="cube-upload-view" id="upload-cube">
-      <div class="cube-upload-heading">
-        <h1>Upload a Cube</h1>
-        <p>Upload a built cubacadabra cube package. Its manifest supplies the unique cube ID and display name.</p>
-      </div>
-      <form class="cube-upload-form" novalidate>
-        <label class="cube-upload-field" for="cube-upload-file">
-          <span>Cube package</span>
-          <input id="cube-upload-file" name="cube" type="file" accept=".zip,application/zip" required />
-        </label>
-        <p class="cube-upload-note">ZIP files up to 25 MiB.</p>
-        <p class="cube-upload-status" role="status" aria-live="polite"></p>
-        <button class="cube-upload-submit" type="submit">Upload cube</button>
-      </form>
     </div>`;
 }
 
@@ -956,100 +935,6 @@ function renderMoreCubes() {
   load();
 }
 
-function cubeUploadErrorMessage(error) {
-  switch (error.message) {
-    case "cube_zip_too_large":
-      return "That ZIP is larger than the 25 MiB limit.";
-    case "zip_required":
-      return "Choose a ZIP file to upload.";
-    case "invalid_cube_id":
-      return "The cube ID must be 3–64 characters using lowercase letters, numbers, and single dashes.";
-    case "invalid_cube_version":
-      return "The cube manifest needs a valid version number.";
-    case "invalid_display_name":
-      return "The cube display name is invalid.";
-    case "cube_already_exists":
-      return "That cube version is already uploaded to your account.";
-    case "cube_id_taken":
-      return "That cube ID is already used by another creator. Choose a different ID in manifest.json.";
-    case "not_authenticated":
-      return "Your session has expired. Please sign in again.";
-    case "invalid_cube_package":
-    case "invalid_archive":
-    case "invalid_manifest":
-    case "invalid_package":
-    case "invalid_package_metadata":
-    case "missing_required_file":
-    case "invalid_archive_path":
-    case "invalid_archive_files":
-    case "unsupported_archive_compression":
-    case "empty_archive":
-    case "invalid_script":
-      return "That ZIP is not a valid cube package.";
-    case "cube_file_too_large":
-    case "cube_uncompressed_too_large":
-      return "The files inside that ZIP are larger than the cube limit.";
-    default:
-      return "We couldn’t upload that cube. Please try again.";
-  }
-}
-
-async function uploadCube(file) {
-  const response = await fetch(backendApiUrl(CUBE_UPLOAD_PATH), {
-    method: "POST",
-    credentials: "include",
-    headers: {
-      Accept: "application/json",
-      "content-type": "application/zip",
-    },
-    body: file,
-  });
-  const result = await response.json().catch(() => null);
-  if (!response.ok) throw new Error(result?.error || "cube_upload_failed");
-  return result;
-}
-
-function renderCubeUpload() {
-  const age = currentUser?.dob ? calculateAge(currentUser.dob) : null;
-  setMenuState(!currentUser?.dob || age === null || age < 13, "upload-cube");
-  content.innerHTML = cubeUploadMarkup();
-
-  const form = content.querySelector(".cube-upload-form");
-  const fileInput = content.querySelector("#cube-upload-file");
-  const submit = content.querySelector(".cube-upload-submit");
-  const status = content.querySelector(".cube-upload-status");
-
-  form.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const file = fileInput.files?.[0];
-    if (!file) {
-      setFormStatus(status, "Choose a ZIP file first.", "error");
-      return;
-    }
-    if (file.size > MAX_CUBE_ZIP_BYTES) {
-      setFormStatus(status, "That ZIP is larger than the 25 MiB limit.", "error");
-      return;
-    }
-
-    submit.disabled = true;
-    setFormStatus(status, "Uploading and checking your cube…", "pending");
-    try {
-      const result = await uploadCube(file);
-      const cube = result.cube;
-      setFormStatus(
-        status,
-        `${cube.displayName} ${cube.version} was uploaded successfully.`,
-        "success",
-      );
-      fileInput.value = "";
-    } catch (error) {
-      setFormStatus(status, cubeUploadErrorMessage(error), "error");
-    } finally {
-      submit.disabled = false;
-    }
-  });
-}
-
 async function renderBlockedUsers() {
   setMenuState(false, "blocked-users");
   content.innerHTML = blockedUsersMarkup();
@@ -1260,9 +1145,6 @@ menuLinks.forEach((link) => {
     if (link.dataset.section === "cubes") {
       event.preventDefault();
       renderCubes();
-    } else if (link.dataset.section === "upload-cube" && currentUser) {
-      event.preventDefault();
-      renderCubeUpload();
     } else if (link.dataset.section === "blocked-users" && currentUser) {
       event.preventDefault();
       renderBlockedUsers();
@@ -1301,9 +1183,7 @@ getCurrentUser().then((user) => {
   document.body.dataset.authenticated = "true";
 
   const age = calculateAge(user.dob);
-  if (window.location.hash === "#upload-cube") {
-    renderCubeUpload();
-  } else if (!user.dob || age === null) {
+  if (!user.dob || age === null) {
     renderBirthdayForm();
   } else if (age !== null && age < 13) {
     renderParentStep();
