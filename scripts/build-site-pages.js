@@ -179,6 +179,7 @@ const renderHeader = (page) => {
       links: [
         { id: "about", href: "/about/", label: "About" },
         { id: "developer", href: "/developer/", label: "Developer" },
+        { id: "landscape", href: "/landscape/", label: "Landscape" },
         { id: "my-cube", href: "/my-cube/", label: "My Cube" },
       ],
       logout: true,
@@ -248,6 +249,7 @@ const socialLinks = [
 const footerLinks = [
   { id: "about", href: "/about/", label: "About" },
   { id: "developer", href: "/developer/", label: "Developer" },
+  { id: "landscape", href: "/landscape/", label: "Landscape" },
   { id: "download", href: "/download/", label: "Download" },
   { id: "terms", href: "/terms/", label: "Terms" },
   { id: "privacy", href: "/privacy/", label: "Privacy" },
@@ -376,6 +378,41 @@ const renderDeveloperSidebar = () => `<aside class="about-sidebar">
   </nav>
 </aside>`;
 
+const renderLandscapeSidebar = (currentId) => {
+  const routes = [
+    ["landscape-roblox", "Roblox"],
+    ["landscape-sbox", "s&box"],
+    ["landscape-polytoria", "Polytoria"],
+    ["landscape-mirror", "The Mirror"],
+    ["landscape-luanti", "Luanti"],
+    ["landscape-brickadia", "Brickadia"],
+    ["landscape-core", "Core"],
+  ];
+  const linkFor = (id, label) => {
+    const route = SITE_PAGES.find((page) => page.id === id);
+    const active = id === currentId ? ' class="is-active" aria-current="location"' : "";
+    return `    <a${active} href="${route.path}"><span>${label}</span><span class="about-menu-arrow" aria-hidden="true">↗</span></a>`;
+  };
+
+  return `<aside class="about-sidebar">
+  <div class="about-sidebar-heading">
+    <span>Landscape</span>
+    <span class="about-sidebar-status">A candid field guide</span>
+  </div>
+
+  <nav class="about-menu landscape-menu" aria-label="Competitive landscape sections">
+    <a${currentId === "landscape-overview" ? ' class="is-active" aria-current="page"' : ""} href="/landscape/">
+      <span>Overview</span>
+      <span class="about-menu-arrow" aria-hidden="true">↗</span>
+    </a>
+    <div class="about-menu-group">
+      <p>Platforms</p>
+${routes.map(([id, label]) => linkFor(id, label)).join("\n")}
+    </div>
+  </nav>
+</aside>`;
+};
+
 const renderScripts = (page) => [
   ...(page.externalScripts ?? []),
   ...(page.scripts ?? []).map((source) => `<script type="module" src="${source}"></script>`),
@@ -462,6 +499,18 @@ ${indent(content, 4)}
 ${indent(renderFooter(page), 2)}
 </div>`;
 
+const renderLandscapePage = (page, content) => `<div class="about-shell">
+${indent(renderHeader(page), 2)}
+
+  <div class="about-layout landscape-layout">
+${indent(renderLandscapeSidebar(page.id), 4)}
+
+${indent(content, 4)}
+  </div>
+
+${indent(renderFooter(page), 2)}
+</div>`;
+
 const renderCubePage = (page) => `<div class="about-shell cube-route-shell">
 ${indent(renderHeader(page), 2)}
 
@@ -499,6 +548,7 @@ export const buildSitePages = async ({ outputDirectory }) => {
     else if (page.kind === "shell-content") body = renderShellPage(page, content[page.content]);
     else if (page.kind === "my-cube") body = renderMyCubePage(page);
     else if (page.kind === "developer") body = renderDeveloperPage(page, content[page.content]);
+    else if (page.kind === "landscape") body = renderLandscapePage(page, content[page.content]);
     else if (page.kind === "cube") body = renderCubePage(page);
     else body = content[page.content];
 
