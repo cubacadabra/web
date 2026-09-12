@@ -154,4 +154,84 @@ requests[8].resolve({ status: 200, body: '{"user":{"id":"b","username":"Final"}}
 await closingSave; // No callback touches the freed WASM handle.
 assert.equal(hostUser.username, "Lin");
 assert.throws(() => runtime.dispatch({ type: "save_username" }), /closed/);
+
+// The three account clients can begin editing before catalog/profile requests
+// settle. The shared app state must replace any loadout the current catalog
+// cannot render with its first authored starter.
+const morphCatalog = JSON.parse(await readFile(
+  new URL("../../rust/assets/characters/morph_catalog.json", import.meta.url),
+  "utf8",
+));
+const completeStarter = {
+  id: "cuba:preset/current.v1",
+  displayName: "Current starter",
+  base: "cuba:base/person-02.v1",
+  parts: ["cuba:hair/shag.v1"],
+  face: "cuba:face/neutral.v1",
+  parameters: {},
+};
+const currentAssets = morphCatalog.assets.filter(
+  (definition) => definition.id !== "cuba:everyday-hoodie.v1",
+);
+const morphRequests = [];
+const morphRuntime = new AppRuntime(new WebApp(), (effect, signal) => new Promise((resolve) => {
+  morphRequests.push({ effect, signal, resolve });
+}));
+await morphRuntime.dispatch({
+  type: "replace_session",
+  account_id: "morph-user",
+  username: "Morph User",
+  body_id: "cuba:person.v1",
+  date_of_birth: "2000-01-01",
+});
+const morphLoading = morphRuntime.dispatch({ type: "load_appearance_catalog" });
+await morphRuntime.dispatch({ type: "begin_appearance_edit" });
+assert.equal(morphRequests[0].effect.path, "morphs/catalog?limit=100");
+morphRequests[0].resolve({
+  status: 200,
+  body: JSON.stringify({
+    release: "complete-starter-test",
+    assets: currentAssets.map((definition) => ({
+      id: definition.id,
+      kind: definition.kind,
+      name: definition.displayName,
+      definition,
+      artifact: definition.kind === "face"
+        ? undefined
+        : { url: `/morphs/packs/${encodeURIComponent(definition.id)}.morphpack` },
+    })),
+    presets: [completeStarter],
+  }),
+});
+await new Promise((resolve) => setImmediate(resolve));
+assert.equal(morphRequests[1].effect.path, "auth/appearance");
+morphRequests[1].resolve({
+  status: 200,
+  body: JSON.stringify({
+    appearance: {
+      version: 2,
+      base: "cuba:base/person.v1",
+      parts: ["cuba:hair/swept.v1", "cuba:everyday-hoodie.v1"],
+      parameters: {},
+      revision: 0,
+    },
+    revision: 0,
+  }),
+});
+await morphLoading;
+assert.equal(morphRuntime.snapshot.appearance.selected_base, "cuba:base/person.v1");
+assert.equal(morphRuntime.snapshot.appearance.draft_preset_id, completeStarter.id);
+assert.equal(morphRuntime.snapshot.appearance.draft_base, completeStarter.base);
+assert.deepEqual(morphRuntime.snapshot.appearance.draft_parts, [...completeStarter.parts].sort());
+assert.equal(morphRuntime.snapshot.appearance.draft_can_save, true);
+assert.equal("draft_render_json" in morphRuntime.snapshot.appearance, false);
+const directLoadout = JSON.parse(morphRuntime.snapshot.appearance.draft_loadout_json);
+assert.equal(directLoadout.base, completeStarter.base);
+assert.deepEqual(directLoadout.parts, [...completeStarter.parts].sort());
+for (const id of [directLoadout.base, ...directLoadout.parts]) {
+  const asset = morphRuntime.snapshot.appearance.assets.find((candidate) => candidate.id === id);
+  assert.ok(asset?.artifact_url, `${id} must resolve to a schema-5 artifact`);
+}
+morphRuntime.close();
+
 console.log(`Passed ${scenarios.length} shared WASM scenarios and host lifecycle checks.`);

@@ -809,19 +809,9 @@ async function renderMorphEditor() {
         && (appearance.draft_parts.includes(asset.id) || appearance.draft_face === asset.id));
       if (current) runtime.dispatch({ type: "clear_morph_part", asset_id: current.id });
     }));
-    const draftLoadout = {
-      version: 2,
-      base: appearance.draft_base,
-      parts: appearance.draft_parts,
-      ...(appearance.draft_face ? { face: appearance.draft_face } : {}),
-      parameters: {},
-      revision: 0,
-    };
-    let renderAppearance = draftLoadout;
-    if (appearance.draft_render_json) try {
-      renderAppearance = JSON.parse(appearance.draft_render_json);
+    if (appearance.draft_loadout_json) try {
+      morphPreview?.setMorphLoadout(JSON.parse(appearance.draft_loadout_json));
     } catch { /* Rust snapshots always contain validated JSON. */ }
-    morphPreview?.setAppearance(draftLoadout, renderAppearance);
     form.querySelectorAll("[data-preview-name]").forEach((element) => {
       element.textContent = selectedPreset?.display_name || "Custom morph";
     });
@@ -885,7 +875,7 @@ async function renderMorphEditor() {
     try {
       await runtime.dispatch({ type: "save_appearance" });
       if (runtime.snapshot.appearance.feedback?.kind === "error") throw new Error("invalid_appearance");
-      const selectedAppearance = runtime.snapshot.appearance.selected_render_json;
+      const selectedAppearance = runtime.snapshot.appearance.selected_loadout_json;
       if (selectedAppearance) try {
         window.localStorage.setItem(`cubacadabra.character-appearance:${encodeURIComponent(currentUser.id)}`, selectedAppearance);
       } catch { /* The server remains the source of truth. */ }

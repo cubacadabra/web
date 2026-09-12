@@ -159,13 +159,19 @@ export async function createMorphPreview({ canvas }) {
     async function ensureMorphPacks(appearance) {
       const ids = [appearance.base, ...(appearance.parts || [])];
       if (appearance.face) ids.push(appearance.face);
-      const assets = ids.map((id) => catalog.find((asset) => asset.id === id));
-      for (const asset of assets) {
-        if (!asset || registeredAssets.has(asset.id)) continue;
+      for (const id of ids) {
+        const asset = catalog.find((candidate) => candidate.id === id);
+        if (!asset) {
+          throw new Error(`Morph asset "${id}" is missing from the catalog.`);
+        }
+        if (registeredAssets.has(asset.id)) continue;
         const artifactURL = asset.artifact?.url;
         // Faces are analytic renderer inputs. They are part of the v2
         // loadout, but do not have a .morphpack artifact to register.
-        if (!artifactURL) continue;
+        if (!artifactURL) {
+          if (asset.kind === "face") continue;
+          throw new Error(`Morph asset "${asset.id}" has no schema-5 artifact.`);
+        }
         const bytes = await loadMorphPacks({ [asset.id]: {
           url: new URL(artifactURL, backendApiUrl("/")).href,
         } });
@@ -207,23 +213,23 @@ export async function createMorphPreview({ canvas }) {
       animationFrame = requestAnimationFrame(render);
     }
 
-    function setAppearance(appearance, renderAppearance = appearance) {
-      if (disposed || !appearance?.base) return;
-      appearanceQueue = appearanceQueue.catch((error) => {
-        console.error("Previous morph preview update failed", error);
-      }).then(async () => {
-        await ensureMorphPacks(appearance);
+    function setMorphLoadout(loadout) {
+      if (disposed || !loadout?.base) return;
+      appearanceQueue = appearanceQueue.catch(() => {}).then(async () => {
+        await ensureMorphPacks(loadout);
         if (disposed) return;
         previewAppearanceRevision = Math.max(
           previewAppearanceRevision,
-          Number(appearance.revision) || 0,
+          Number(loadout.revision) || 0,
         ) + 1;
-        const status = engine.setLocalAppearance(JSON.stringify({
-          ...renderAppearance,
+        const status = engine.setLocalMorphLoadout(JSON.stringify({
+          ...loadout,
           revision: previewAppearanceRevision,
         }));
-        if (!status) throw new Error("The morph preview rejected the selected appearance.");
+        if (!status) throw new Error("The morph preview rejected the selected v2 loadout.");
       });
+      appearanceQueue.catch((error) => console.error("Morph preview update failed", error));
+      return appearanceQueue;
     }
 
     function play(nextAction) {
@@ -234,7 +240,7 @@ export async function createMorphPreview({ canvas }) {
 
     animationFrame = requestAnimationFrame(render);
     return {
-      setAppearance,
+      setMorphLoadout,
       play,
       destroy() {
         if (disposed) return;

@@ -121,6 +121,15 @@ export function createRustEngine(exports, bindings, manifestSource, scriptSource
         "engine_load_appearance_buffer",
       );
     },
+    setLocalMorphLoadout(source) {
+      if (typeof source !== "string") return 0;
+      if (typeof exports.engine_morph_loadout_buffer_ptr !== "function") return 0;
+      return writeJsonBuffer(
+        "engine_morph_loadout_buffer_ptr",
+        source,
+        "engine_load_morph_loadout_buffer",
+      );
+    },
     appearanceRevision() {
       if (typeof exports.engine_appearance_revision !== "function") return 0;
       return Number(call("engine_appearance_revision")) || 0;
