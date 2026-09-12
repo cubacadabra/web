@@ -178,6 +178,7 @@ const renderHeader = (page) => {
       ariaLabel: "Site navigation",
       links: [
         { id: "about", href: "/about/", label: "About" },
+        { id: "developer", href: "/developer/", label: "Developer" },
         { id: "my-cube", href: "/my-cube/", label: "My Cube" },
       ],
       logout: true,
@@ -246,6 +247,7 @@ const socialLinks = [
 
 const footerLinks = [
   { id: "about", href: "/about/", label: "About" },
+  { id: "developer", href: "/developer/", label: "Developer" },
   { id: "download", href: "/download/", label: "Download" },
   { id: "terms", href: "/terms/", label: "Terms" },
   { id: "privacy", href: "/privacy/", label: "Privacy" },
@@ -362,6 +364,18 @@ const renderMyCubeSidebar = () => `<aside class="about-sidebar">
   </nav>
 </aside>`;
 
+const renderDeveloperSidebar = () => `<aside class="about-sidebar">
+  <div class="about-sidebar-heading">
+    <span>Developer</span>
+    <span class="about-sidebar-status">Early access</span>
+  </div>
+
+  <nav class="about-menu" aria-label="Developer sections">
+    <a class="is-active" href="#pricing" aria-current="page"><span>Pricing</span></a>
+    <a href="#included"><span>Included with every Cube</span></a>
+  </nav>
+</aside>`;
+
 const renderScripts = (page) => [
   ...(page.externalScripts ?? []),
   ...(page.scripts ?? []).map((source) => `<script type="module" src="${source}"></script>`),
@@ -436,6 +450,18 @@ ${indent(renderMyCubeSidebar(), 4)}
 ${indent(renderFooter(page), 2)}
 </div>`;
 
+const renderDeveloperPage = (page, content) => `<div class="about-shell">
+${indent(renderHeader(page), 2)}
+
+  <div class="about-layout developer-layout">
+${indent(renderDeveloperSidebar(), 4)}
+
+${indent(content, 4)}
+  </div>
+
+${indent(renderFooter(page), 2)}
+</div>`;
+
 const renderCubePage = (page) => `<div class="about-shell cube-route-shell">
 ${indent(renderHeader(page), 2)}
 
@@ -472,6 +498,7 @@ export const buildSitePages = async ({ outputDirectory }) => {
     if (page.kind === "about") body = renderAboutPage(page, sectionsSource);
     else if (page.kind === "shell-content") body = renderShellPage(page, content[page.content]);
     else if (page.kind === "my-cube") body = renderMyCubePage(page);
+    else if (page.kind === "developer") body = renderDeveloperPage(page, content[page.content]);
     else if (page.kind === "cube") body = renderCubePage(page);
     else body = content[page.content];
 
