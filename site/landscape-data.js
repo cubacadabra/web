@@ -79,7 +79,7 @@ export const LANDSCAPE_ENTRIES = [
   },
   {
     id: "jamango", title: "Jamango", group: "core", path: "/landscape/jamango/",
-    logo: "https://jamango.io/favicon.ico", source: "https://jamango.io/", sourceLabel: "Jamango",
+    logo: "https://jamango.io/assets/frontend/social.webp", source: "https://jamango.io/", sourceLabel: "Jamango",
     headline: "Jamango is a browser-first play/create benchmark.",
     lede: "Jamango combines a browser-accessible multiplayer catalog with world-building, scripting, physics, and publishing workflows.",
     kicker: "The first-five-minutes test",
@@ -89,7 +89,7 @@ export const LANDSCAPE_ENTRIES = [
   },
   {
     id: "dot-big-bang", title: "dot big bang", group: "core", path: "/landscape/dot-big-bang/",
-    logo: "https://developers.dotbigbang.com/favicon.ico", source: "https://developers.dotbigbang.com/", sourceLabel: "dot big bang developer docs",
+    logo: "https://developers.dotbigbang.com/meta-preview.jpg", source: "https://developers.dotbigbang.com/", sourceLabel: "dot big bang developer docs",
     headline: "dot big bang makes collaboration the product.",
     lede: "dot big bang offers browser-based game creation, voxel editing, multiplayer, collaborative development, and TypeScript scripting.",
     kicker: "Collaborative browser creation",
@@ -109,7 +109,7 @@ export const LANDSCAPE_ENTRIES = [
   },
   {
     id: "bloxd", title: "Bloxd.io", group: "core", path: "/landscape/bloxd/",
-    logo: "https://bloxd.io/favicon.ico", source: "https://github.com/Bloxdy/code-api", sourceLabel: "Bloxd game API",
+    logo: "https://github.com/Bloxdy.png?size=128", source: "https://github.com/Bloxdy/code-api", sourceLabel: "Bloxd game API",
     headline: "Bloxd is more creator-relevant than it looks.",
     lede: "Bloxd has a documented JavaScript game API for world owners, covering players, entities, movement, messaging, and other gameplay mechanics.",
     kicker: "The creator on-ramp",
@@ -119,7 +119,7 @@ export const LANDSCAPE_ENTRIES = [
   },
   {
     id: "highrise-studio", title: "Highrise Studio", group: "core", path: "/landscape/highrise-studio/",
-    logo: "https://highrise.game/favicon.ico", source: "https://highrise.game/", sourceLabel: "Highrise",
+    logo: "https://highrise.game/assets/images/highrise-meta.png", source: "https://highrise.game/", sourceLabel: "Highrise",
     headline: "Highrise is the mobile social-world comparator.",
     lede: "Highrise pairs a mobile social world with creator tooling around worlds, Lua APIs, assets, avatars, and monetization.",
     kicker: "Identity and economy",
@@ -139,7 +139,7 @@ export const LANDSCAPE_ENTRIES = [
   },
   {
     id: "tessera", title: "Tessera", group: "watchlist", path: "/landscape/tessera/",
-    logo: "https://tessera.imperiuminteractive.com/favicon.ico", source: "https://tessera.imperiuminteractive.com/", sourceLabel: "Tessera Engine",
+    logo: "https://tessera.imperiuminteractive.com/tessera_icon.png", source: "https://tessera.imperiuminteractive.com/", sourceLabel: "Tessera Engine",
     headline: "Tessera is unusually close to the technical direction.",
     lede: "Tessera is an early Roblox-style engine whose public materials describe Rust, wgpu, Luau-related compatibility, a visual editor, and standalone/headless runtime architecture.",
     kicker: "High-priority technical watch",
@@ -169,7 +169,7 @@ export const LANDSCAPE_ENTRIES = [
   },
   {
     id: "brickplanet", title: "BrickPlanet", group: "watchlist", path: "/landscape/brickplanet/",
-    logo: "https://www.brickplanet.com/favicon.ico", source: "https://www.brickplanet.com/", sourceLabel: "BrickPlanet",
+    logo: "https://www.brickplanet.com/assets/images/bp-refreshed.png", source: "https://www.brickplanet.com/", sourceLabel: "BrickPlanet",
     headline: "BrickPlanet is a classic-Roblox-style watch.",
     lede: "BrickPlanet describes a multiplayer creation platform in development with a builder, scripting, avatars, and a virtual economy.",
     kicker: "Direct classic-style competitor",
@@ -189,7 +189,7 @@ export const LANDSCAPE_ENTRIES = [
   },
   {
     id: "rooms", title: "Rooms", group: "adjacent", path: "/landscape/rooms/",
-    logo: "https://rooms.xyz/favicon.ico", source: "https://rooms.xyz/", sourceLabel: "Rooms",
+    logo: "https://rooms.xyz/og.jpg", source: "https://rooms.xyz/", sourceLabel: "Rooms",
     headline: "Rooms is an interface-design comparator.",
     lede: "Rooms offers interactive rooms and small experiences, with Lua scripting attached to objects.",
     kicker: "Approachable creation",
@@ -199,7 +199,7 @@ export const LANDSCAPE_ENTRIES = [
   },
   {
     id: "resonite", title: "Resonite", group: "adjacent", path: "/landscape/resonite/",
-    logo: "https://resonite.com/favicon.ico", source: "https://resonite.com/features", sourceLabel: "Resonite features",
+    logo: "https://resonite.com/images/webclip.png", source: "https://resonite.com/features", sourceLabel: "Resonite features",
     headline: "Resonite turns creation into a shared activity.",
     lede: "Resonite offers collaborative desktop/VR world creation, avatars, and ProtoFlux visual programming.",
     kicker: "Creation inside the world",
@@ -209,7 +209,7 @@ export const LANDSCAPE_ENTRIES = [
   },
   {
     id: "overte", title: "Overte", group: "adjacent", path: "/landscape/overte/",
-    logo: "https://overte.org/favicon.ico", source: "https://overte.org/", sourceLabel: "Overte",
+    logo: "https://overte.org/_static/favicon-256.ico", source: "https://overte.org/", sourceLabel: "Overte",
     headline: "Overte is an ownership and infrastructure comparator.",
     lede: "Overte is an Apache-2.0 open-source social-world system with self-hosted servers, desktop/VR support, and scripting.",
     kicker: "Independent operation",
@@ -219,7 +219,7 @@ export const LANDSCAPE_ENTRIES = [
   },
   {
     id: "hytale", title: "Hytale", group: "adjacent", path: "/landscape/hytale/",
-    logo: "https://hytale.com/favicon.ico", source: "https://hytale.com/", sourceLabel: "Hytale",
+    logo: "https://hytale.com/images/favicon.png", source: "https://hytale.com/", sourceLabel: "Hytale",
     headline: "Hytale is the broader sandbox overlap.",
     lede: "Hytale is a creator-oriented sandbox with community-server ambitions and Early Access beginning January 13, 2026.",
     kicker: "Sandbox creators",
@@ -229,7 +229,7 @@ export const LANDSCAPE_ENTRIES = [
   },
   {
     id: "bopimo", title: "Bopimo", group: "adjacent", path: "/landscape/bopimo/",
-    logo: "https://www.bopimo.com/favicon.ico", source: "https://www.bopimo.com/forums/thread/736", sourceLabel: "Bopimo",
+    logo: "https://cdn.bopimo.com/static/images/favicon.png", source: "https://www.bopimo.com/forums/thread/736", sourceLabel: "Bopimo",
     headline: "Bopimo is a narrower creation-game comparator.",
     lede: "Bopimo is a 3D platformer level-creation game rather than a general Roblox-like platform.",
     kicker: "Accessible level creation",
@@ -239,7 +239,7 @@ export const LANDSCAPE_ENTRIES = [
   },
   {
     id: "spatial", title: "Spatial", group: "adjacent", path: "/landscape/spatial/",
-    logo: "https://www.spatial.io/favicon.ico", source: "https://www.spatial.io/", sourceLabel: "Spatial",
+    logo: "https://cdn2.spatial.io/s/spatial.io/og-image.jpg", source: "https://www.spatial.io/", sourceLabel: "Spatial",
     headline: "Spatial is the cross-platform publishing comparator.",
     lede: "Spatial offers a Unity/C# toolkit for multiplayer experiences across web, mobile, and VR, with current positioning that also emphasizes enterprise and brand experiences.",
     kicker: "Changed positioning",
@@ -249,7 +249,7 @@ export const LANDSCAPE_ENTRIES = [
   },
   {
     id: "moddio-indiefun", title: "Moddio / indie.fun", group: "adjacent", path: "/landscape/moddio-indiefun/",
-    logo: "https://www.modd.io/favicon.ico", source: "https://www.modd.io/", sourceLabel: "indie.fun",
+    logo: "https://indie.fun/images/indiefun.png", source: "https://www.modd.io/", sourceLabel: "indie.fun",
     headline: "Moddio is a creation-and-funding pivot case study.",
     lede: "Moddio’s site now redirects to indie.fun, distinguishing a multiplayer creation engine from a token-based game-funding ecosystem.",
     kicker: "Pivot note",
@@ -279,7 +279,7 @@ export const LANDSCAPE_ENTRIES = [
   },
   {
     id: "worlds-frvr", title: "Worlds FRVR", group: "transitions", path: "/landscape/worlds-frvr/",
-    logo: "https://worlds.frvr.com/favicon.ico", source: "https://worlds.frvr.com/", sourceLabel: "Worlds FRVR shutdown notice",
+    logo: "https://worlds.frvr.com/img/favicon-180x180.png", source: "https://worlds.frvr.com/", sourceLabel: "Worlds FRVR shutdown notice",
     headline: "Worlds FRVR is a browser-platform shutdown reference.",
     lede: "Worlds FRVR’s official notice set July 16, 2025 as the shutdown date.",
     kicker: "Shutdown case study",
@@ -289,7 +289,7 @@ export const LANDSCAPE_ENTRIES = [
   },
   {
     id: "hiberworld", title: "HiberWorld", group: "transitions", path: "/landscape/hiberworld/",
-    logo: "https://hiberworld.com/favicon.ico", source: "https://hiberworld.com/", sourceLabel: "HiberWorld",
+    logo: "https://hiberworld.com/hw-logo.svg", source: "https://hiberworld.com/", sourceLabel: "HiberWorld",
     headline: "HiberWorld is closed, with a successor teased.",
     lede: "HiberWorld’s current site says the product has closed while teasing a successor; that does not establish that every Hiber-related technology or business has disappeared.",
     kicker: "Transition case study",
@@ -299,7 +299,7 @@ export const LANDSCAPE_ENTRIES = [
   },
   {
     id: "kogama", title: "KoGaMa", group: "transitions", path: "/landscape/kogama/",
-    logo: "https://www.kogama.com/favicon.ico", source: "https://www.kogama.com/", sourceLabel: "KoGaMa",
+    logo: "https://kogama.com/logo_bluewhite_5.png", source: "https://www.kogama.com/", sourceLabel: "KoGaMa",
     headline: "KoGaMa is winding down into a transformation.",
     lede: "KoGaMa’s current site describes a winding down or transformation underway, with a new product teased.",
     kicker: "Transition case study",
@@ -309,7 +309,7 @@ export const LANDSCAPE_ENTRIES = [
   },
   {
     id: "world-to-build", title: "World to Build", group: "transitions", path: "/landscape/world-to-build/",
-    logo: "https://www.worldtobuild.com/favicon.ico", source: "https://www.worldtobuild.com/", sourceLabel: "World to Build",
+    logo: "https://upload.wikimedia.org/wikipedia/commons/e/ec/World_To_Build_Logo.png", source: "https://www.worldtobuild.com/", sourceLabel: "World to Build",
     headline: "World to Build is a goodbye worth remembering.",
     lede: "World to Build’s official site carries a goodbye or end-of-service notice; an exact closure date was not independently established.",
     kicker: "Shutdown case study",
