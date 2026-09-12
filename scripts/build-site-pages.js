@@ -486,13 +486,14 @@ const renderLandscapeEntryTable = () => {
       </div>
       <span>${LANDSCAPE_ENTRIES.length} names tracked</span>
     </div>
-    <div class="landscape-index-table-wrap">
+    <div class="landscape-index-table-wrap" tabindex="0" aria-label="Scrollable broader competitive field">
       <table class="landscape-index-table">
         <caption>The broader cubacadabra competitive field.</caption>
         <thead><tr><th scope="col">Project</th><th scope="col">Category</th><th scope="col">Snapshot</th><th scope="col">Source</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
     </div>
+    <p class="landscape-table-scroll-hint">Swipe horizontally to browse the full field <span aria-hidden="true">→</span></p>
   </section>`;
 };
 

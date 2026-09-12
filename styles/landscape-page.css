@@ -328,9 +328,18 @@
 
 .landscape-index-table-wrap {
   overflow-x: auto;
+  overscroll-behavior-inline: contain;
   border: 1px solid rgba(231, 233, 236, 0.13);
   border-radius: 8px;
   background: rgba(21, 25, 32, 0.58);
+  scrollbar-color: rgba(139, 156, 246, 0.55) rgba(255, 255, 255, 0.06);
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
+.landscape-index-table-wrap:focus-visible {
+  outline: 2px solid var(--about-accent);
+  outline-offset: 3px;
 }
 
 .landscape-index-table {
@@ -373,9 +382,27 @@
   text-transform: uppercase;
 }
 
+.landscape-index-table thead th:first-child,
+.landscape-index-table tbody th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: #191d22;
+  box-shadow: 1px 0 rgba(139, 156, 246, 0.18);
+}
+
+.landscape-index-table tbody th:first-child {
+  z-index: 1;
+  background: #15191f;
+}
+
 .landscape-index-table tbody tr:hover th,
 .landscape-index-table tbody tr:hover td {
   background: rgba(255, 255, 255, 0.025);
+}
+
+.landscape-index-table tbody tr:hover th:first-child {
+  background: #1b2027;
 }
 
 .landscape-index-table tbody th {
