@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { ABOUT_ROUTES, SITE, SITE_PAGES } from "../site/site-routes.js";
+import { LANDSCAPE_ENTRIES, LANDSCAPE_GROUPS } from "../site/landscape-data.js";
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const projectDirectory = path.dirname(scriptDirectory);
@@ -379,20 +380,23 @@ const renderDeveloperSidebar = () => `<aside class="about-sidebar">
 </aside>`;
 
 const renderLandscapeSidebar = (currentId) => {
-  const routes = [
-    ["landscape-roblox", "Roblox"],
-    ["landscape-sbox", "s&box"],
-    ["landscape-polytoria", "Polytoria"],
-    ["landscape-mirror", "The Mirror"],
-    ["landscape-luanti", "Luanti"],
-    ["landscape-brickadia", "Brickadia"],
-    ["landscape-core", "Core"],
-  ];
-  const linkFor = (id, label) => {
-    const route = SITE_PAGES.find((page) => page.id === id);
-    const active = id === currentId ? ' class="is-active" aria-current="location"' : "";
-    return `    <a${active} href="${route.path}"><span>${label}</span><span class="about-menu-arrow" aria-hidden="true">↗</span></a>`;
+  const linkFor = (entry) => {
+    const route = SITE_PAGES.find((page) => page.id === `landscape-${entry.id}`);
+    if (!route) return "";
+    const active = route.id === currentId ? ' class="is-active" aria-current="location"' : "";
+    return `    <a${active} href="${route.path}"><span>${escapeHtml(entry.title)}</span><span class="about-menu-arrow" aria-hidden="true">↗</span></a>`;
   };
+  const groups = LANDSCAPE_GROUPS.map(([groupId, label]) => {
+    const links = LANDSCAPE_ENTRIES
+      .filter((entry) => entry.group === groupId)
+      .map(linkFor)
+      .filter(Boolean)
+      .join("\n");
+    return `    <div class="about-menu-group">
+      <p>${escapeHtml(label)}</p>
+${links}
+    </div>`;
+  }).join("\n");
 
   return `<aside class="about-sidebar">
   <div class="about-sidebar-heading">
@@ -405,12 +409,81 @@ const renderLandscapeSidebar = (currentId) => {
       <span>Overview</span>
       <span class="about-menu-arrow" aria-hidden="true">↗</span>
     </a>
-    <div class="about-menu-group">
-      <p>Platforms</p>
-${routes.map(([id, label]) => linkFor(id, label)).join("\n")}
-    </div>
+${groups}
   </nav>
 </aside>`;
+};
+
+const renderLandscapeProfile = (page) => {
+  const entry = LANDSCAPE_ENTRIES.find((candidate) => `landscape-${candidate.id}` === page.id);
+  if (!entry) throw new Error(`Missing landscape entry for ${page.id}`);
+  const image = entry.logo
+    ? `<img class="landscape-detail-logo${entry.logo.includes("/header.jpg") || entry.logo.includes("og.jpg") ? " landscape-detail-art" : ""}" src="${escapeHtml(entry.logo)}" alt="${escapeHtml(entry.title)}" />`
+    : `<div class="landscape-detail-logo landscape-detail-fallback" aria-hidden="true">${escapeHtml(entry.title.slice(0, 1))}</div>`;
+  const facts = entry.facts
+    .map(([label, value]) => `<div><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`)
+    .join("");
+  const copy = entry.copy
+    .map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`)
+    .join("");
+
+  return `<main class="about-content developer-content landscape-content">
+  <header class="landscape-detail-heading">
+    <div>
+      <p class="developer-kicker">Landscape / ${escapeHtml(entry.group === "core" ? "Main product comparison" : entry.group === "watchlist" ? "Emerging engine" : entry.group === "adjacent" ? "Adjacent platform" : entry.group === "transitions" ? "Shutdown / transition" : "Technical prior art")}</p>
+      <h1>${escapeHtml(entry.headline)}</h1>
+      <p class="developer-lede">${escapeHtml(entry.lede)}</p>
+    </div>
+    ${image}
+  </header>
+  <div class="landscape-detail-grid">
+    <section class="landscape-detail-copy">
+      <p class="landscape-detail-kicker">${escapeHtml(entry.kicker)}</p>
+      <h2>${escapeHtml(entry.lesson)}</h2>
+      ${copy}
+    </section>
+    <aside class="landscape-detail-aside">
+      <span>Lesson for cubacadabra</span>
+      <strong>${escapeHtml(entry.lesson)}</strong>
+      <a href="${escapeHtml(entry.source)}" target="_blank" rel="noreferrer">${escapeHtml(entry.sourceLabel)} ↗</a>
+    </aside>
+  </div>
+  <section class="landscape-detail-facts">${facts}</section>
+</main>`;
+};
+
+const landscapeGroupLabel = (groupId) => LANDSCAPE_GROUPS.find(([id]) => id === groupId)?.[1] ?? groupId;
+
+const renderLandscapeEntryTable = () => {
+  const rows = LANDSCAPE_ENTRIES.map((entry) => {
+    const logo = entry.logo
+      ? `<img class="landscape-index-logo" src="${escapeHtml(entry.logo)}" alt="" />`
+      : `<span class="landscape-index-fallback" aria-hidden="true">${escapeHtml(entry.title.slice(0, 1))}</span>`;
+    const [factLabel, factValue] = entry.facts[0] ?? ["Status", "See profile"];
+    return `      <tr>
+        <th scope="row"><a class="landscape-index-project" href="${escapeHtml(entry.path)}">${logo}<span>${escapeHtml(entry.title)}</span></a></th>
+        <td><span class="landscape-index-group">${escapeHtml(landscapeGroupLabel(entry.group))}</span></td>
+        <td><strong>${escapeHtml(factLabel)}:</strong> ${escapeHtml(factValue)}</td>
+        <td><a href="${escapeHtml(entry.source)}" target="_blank" rel="noreferrer">${escapeHtml(entry.sourceLabel)} ↗</a></td>
+      </tr>`;
+  }).join("\n");
+
+  return `<section class="landscape-field-index" aria-labelledby="landscape-field-index-title">
+    <div class="developer-section-heading">
+      <div>
+        <h2 id="landscape-field-index-title">The broader field</h2>
+        <p>Direct competitors, adjacent products, transitions, and technical prior art in one scan.</p>
+      </div>
+      <span>${LANDSCAPE_ENTRIES.length} names tracked</span>
+    </div>
+    <div class="landscape-index-table-wrap">
+      <table class="landscape-index-table">
+        <caption>The broader cubacadabra competitive field.</caption>
+        <thead><tr><th scope="col">Project</th><th scope="col">Category</th><th scope="col">Snapshot</th><th scope="col">Source</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  </section>`;
 };
 
 const renderScripts = (page) => [
@@ -499,17 +572,23 @@ ${indent(content, 4)}
 ${indent(renderFooter(page), 2)}
 </div>`;
 
-const renderLandscapePage = (page, content) => `<div class="about-shell">
+const renderLandscapePage = (page, content) => {
+  const pageContent = page.id === "landscape-overview"
+    ? content.replace("<!-- landscape-entry-table -->", renderLandscapeEntryTable())
+    : content || renderLandscapeProfile(page);
+
+  return `<div class="about-shell">
 ${indent(renderHeader(page), 2)}
 
   <div class="about-layout landscape-layout">
 ${indent(renderLandscapeSidebar(page.id), 4)}
 
-${indent(content, 4)}
+${indent(pageContent, 4)}
   </div>
 
 ${indent(renderFooter(page), 2)}
 </div>`;
+};
 
 const renderCubePage = (page) => `<div class="about-shell cube-route-shell">
 ${indent(renderHeader(page), 2)}

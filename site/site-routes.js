@@ -1,3 +1,5 @@
+import { LANDSCAPE_ENTRIES } from "./landscape-data.js";
+
 export const SITE = {
   origin: "https://cubacadabra.com",
   name: "cubacadabra",
@@ -127,6 +129,35 @@ const aboutPages = ABOUT_ROUTES.map((route) => ({
   footerCurrent: "about",
   scripts: ["/about/about-page.js"],
 }));
+
+const existingLandscapePages = new Set([
+  "landscape-roblox",
+  "landscape-sbox",
+  "landscape-polytoria",
+  "landscape-mirror",
+  "landscape-luanti",
+  "landscape-brickadia",
+  "landscape-core",
+]);
+
+const landscapePages = LANDSCAPE_ENTRIES
+  .filter((entry) => !existingLandscapePages.has(`landscape-${entry.id}`))
+  .map((entry) => ({
+  id: `landscape-${entry.id}`,
+  path: entry.path,
+  kind: "landscape",
+  title: entry.title,
+  pageTitle: `${entry.title} · Competitive landscape · cubacadabra`,
+  description: entry.lede,
+  htmlClass: "about-document",
+  bodyClass: "about-page landscape-page",
+  themeColor: "#111315",
+  robots: "index, follow, max-image-preview:large",
+  ogType: "article",
+  header: "product",
+  headerCurrent: "landscape",
+  footerCurrent: "landscape",
+  }));
 
 export const SITE_PAGES = [
   {
@@ -417,4 +448,5 @@ export const SITE_PAGES = [
     headerCurrent: "landscape",
     footerCurrent: "landscape",
   },
+  ...landscapePages,
 ];
