@@ -166,7 +166,10 @@ function normalizeMorphPacks(assets, baseUrl) {
 export async function loadGamePackage() {
   const gameId = requestedGameId();
   const baseUrl = LOCAL_GAME_IDS.has(gameId)
-    ? new URL(`games/${gameId}/`, document.baseURI)
+    // Account pages live below routes such as /my-cube/. Resolve bundled game
+    // packages from the site base rather than accidentally requesting
+    // /my-cube/games/<id>/.
+    ? new URL(`games/${gameId}/`, new URL(import.meta.env.BASE_URL, document.baseURI))
     : await loadUploadedCubeBaseUrl(gameId);
   const { source: manifestSource, manifest } = await loadManifest(
     new URL("manifest.json", baseUrl),

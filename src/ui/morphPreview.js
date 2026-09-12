@@ -44,6 +44,7 @@ export async function createMorphPreview({ canvas }) {
     let previousTime = performance.now();
     let action = null;
     let actionUntil = 0;
+    let previewAppearanceRevision = 0;
 
     function render(currentTime) {
       if (disposed) return;
@@ -66,7 +67,15 @@ export async function createMorphPreview({ canvas }) {
     }
 
     function setAppearance(appearance) {
-      if (!disposed && appearance) engine.setLocalAppearance(JSON.stringify(appearance));
+      if (disposed || !appearance?.base) return;
+      previewAppearanceRevision = Math.max(
+        previewAppearanceRevision,
+        Number(appearance.revision) || 0,
+      ) + 1;
+      engine.setLocalAppearance(JSON.stringify({
+        ...appearance,
+        revision: previewAppearanceRevision,
+      }));
     }
 
     function play(nextAction) {
