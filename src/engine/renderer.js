@@ -1,7 +1,8 @@
 const RENDERER_MODULE_PATH = "wasm/renderer/cubacadabra_renderer.js";
 
 export async function createRustRenderer({ canvas }) {
-  const moduleUrl = new URL(RENDERER_MODULE_PATH, document.baseURI);
+  const siteBaseURL = new URL(import.meta.env.BASE_URL, document.baseURI);
+  const moduleUrl = new URL(RENDERER_MODULE_PATH, siteBaseURL);
   const bindings = await import(moduleUrl.href);
   const wasmExports = await bindings.default();
 

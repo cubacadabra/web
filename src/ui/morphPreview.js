@@ -1,8 +1,37 @@
 import { createRustEngine } from "../engine/wasm.js";
 import { createRustRenderer } from "../engine/renderer.js";
-import { loadGamePackage } from "../game/loadGamePackage.js";
+import { backendApiUrl } from "../config/clientConfig.js";
 
 const MAX_MORPH_PACK_BYTES = 64 * 1024 * 1024;
+const STANDALONE_PREVIEW_MANIFEST = JSON.stringify({
+  id: "web-morph-preview",
+  version: "0.0.0",
+  sdkVersion: "0.3.0",
+  package: { formatVersion: 3, entry: "game.luau" },
+  displayName: "Morph Preview",
+  lobby: false,
+  startWorld: "lobby",
+  launch: { destinationWorld: "lobby", authoritative: false },
+  world: {
+    groundSize: 12,
+    gridSize: 0,
+    gridDivisions: 0,
+    spawn: [0, 0, 0],
+    showSpawnPad: false,
+  },
+});
+const STANDALONE_PREVIEW_SCRIPT = "return {}";
+
+async function loadMorphCatalog() {
+  const response = await fetch(backendApiUrl("/morphs/catalog?limit=100"), {
+    headers: { Accept: "application/json" },
+  });
+  const catalog = await response.json().catch(() => null);
+  if (!response.ok || !Array.isArray(catalog?.assets)) {
+    throw new Error(catalog?.error || "The morph catalog could not be loaded.");
+  }
+  return catalog.assets;
+}
 
 async function loadMorphPacks(morphPacks) {
   const loaded = [];
@@ -21,20 +50,14 @@ async function loadMorphPacks(morphPacks) {
 }
 
 export async function createMorphPreview({ canvas }) {
-  const gameDefinition = await loadGamePackage();
+  const catalog = await loadMorphCatalog();
   const renderer = await createRustRenderer({ canvas });
   try {
-    for (const bytes of await loadMorphPacks(gameDefinition.morphPacks)) {
-      if (!renderer.registerMorphPack(bytes)) {
-        throw new Error("The morph pack was rejected by the renderer.");
-      }
-    }
-
     const engine = createRustEngine(
       renderer.wasmExports,
       renderer.bindings,
-      gameDefinition.manifestSource,
-      gameDefinition.script,
+      STANDALONE_PREVIEW_MANIFEST,
+      STANDALONE_PREVIEW_SCRIPT,
     );
     renderer.setAvatarPreviewMode(true);
     engine.setAuthenticated(true);
@@ -45,6 +68,26 @@ export async function createMorphPreview({ canvas }) {
     let action = null;
     let actionUntil = 0;
     let previewAppearanceRevision = 0;
+    const registeredAssets = new Set();
+    let appearanceQueue = Promise.resolve();
+
+    async function ensureMorphPacks(appearance) {
+      const ids = [appearance.base, ...(appearance.parts || [])];
+      if (appearance.face) ids.push(appearance.face);
+      const assets = ids.map((id) => catalog.find((asset) => asset.id === id));
+      for (const asset of assets) {
+        if (!asset || registeredAssets.has(asset.id)) continue;
+        const artifactURL = asset.artifact?.url;
+        if (!artifactURL) throw new Error(`The morph asset "${asset.id}" has no runtime pack.`);
+        const bytes = await loadMorphPacks({ [asset.id]: {
+          url: new URL(artifactURL, backendApiUrl("/")).href,
+        } });
+        if (!renderer.registerMorphPack(bytes[0])) {
+          throw new Error(`The morph pack "${asset.id}" was rejected by the renderer.`);
+        }
+        registeredAssets.add(asset.id);
+      }
+    }
 
     function render(currentTime) {
       if (disposed) return;
@@ -68,14 +111,19 @@ export async function createMorphPreview({ canvas }) {
 
     function setAppearance(appearance) {
       if (disposed || !appearance?.base) return;
-      previewAppearanceRevision = Math.max(
-        previewAppearanceRevision,
-        Number(appearance.revision) || 0,
-      ) + 1;
-      engine.setLocalAppearance(JSON.stringify({
-        ...appearance,
-        revision: previewAppearanceRevision,
-      }));
+      appearanceQueue = appearanceQueue.then(async () => {
+        await ensureMorphPacks(appearance);
+        if (disposed) return;
+        previewAppearanceRevision = Math.max(
+          previewAppearanceRevision,
+          Number(appearance.revision) || 0,
+        ) + 1;
+        engine.setLocalAppearance(JSON.stringify({
+          ...appearance,
+          revision: previewAppearanceRevision,
+        }));
+      });
+      appearanceQueue.catch(() => {});
     }
 
     function play(nextAction) {
