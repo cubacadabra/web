@@ -21,12 +21,12 @@
   max-width: 380px;
 }
 
-.about-page[data-about-route="support"] .about-support-grid {
+.about-page .about-support-grid {
   grid-template-columns: minmax(0, 1fr);
   gap: 38px;
 }
 
-.about-page[data-about-route="support"] .about-support-image-link {
+.about-page .about-support-image-link {
   max-width: 560px;
 }
 
