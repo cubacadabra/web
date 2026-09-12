@@ -233,7 +233,7 @@ export async function createGame() {
     // The bundled package appearance remains the safe offline default.
   }
   const selectedBodyId = playerBodyId(currentUser?.body_id);
-  if (selectedBodyId) {
+  if (selectedBodyId && localAppearance?.version !== 2) {
     localAppearance = {
       ...(localAppearance || {}),
       version: 1,

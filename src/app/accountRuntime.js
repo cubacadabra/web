@@ -40,6 +40,7 @@ export function initializeAccountRuntime(user) {
         return { status: response.status, body: await response.text() };
       });
       await replaceSession();
+      await runtime.dispatch({ type: "load_appearance_catalog" });
       return runtime;
     })().catch((error) => { loading = null; throw error; });
   } else if (runtime && (

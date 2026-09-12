@@ -7,12 +7,6 @@ const loginPath = `/login/?returnTo=${encodeURIComponent(`${window.location.path
 const content = document.querySelector(".about-content");
 const menuLinks = [...document.querySelectorAll(".about-menu > a")];
 const sidebarStatus = document.querySelector(".about-sidebar-status");
-const DEFAULT_BODY_ID = "cuba:person.v1";
-const AVATAR_OPTIONS = [
-  { bodyId: DEFAULT_BODY_ID, label: "Boy", image: "/images/player_boy_001.png" },
-  { bodyId: "cuba:person-girl.v1", label: "Girl", image: "/images/player_girl_001.png" },
-  { bodyId: "cuba:person-nb.v1", label: "Nonbinary", image: "/images/player_nb_001.png" },
-];
 const SUBSCRIPTION_PATH = "/subscription";
 const CUBE_UPLOAD_PATH = "/cubes/upload";
 const CUBE_CATALOG_PAGE_SIZE = 20;
@@ -146,15 +140,6 @@ function parentStepMarkup() {
 }
 
 function basicsMarkup() {
-  const avatarOptions = AVATAR_OPTIONS.map((option) => `
-            <label class="basics-avatar-option">
-              <input type="radio" name="body_id" value="${option.bodyId}" />
-              <span class="basics-avatar-option-content">
-                <img src="${option.image}" alt="${option.label} avatar" />
-                <span>${option.label}</span>
-              </span>
-            </label>`).join("");
-
   return `
     <div class="basics-view" id="item1">
       <div class="basics-workspace">
@@ -164,13 +149,21 @@ function basicsMarkup() {
             <input id="my-cube-username" name="username" type="text" autocomplete="nickname" aria-describedby="my-cube-username-help basics-username-status" spellcheck="false" required />
           </label>
           <p class="basics-field-help" id="my-cube-username-help">Use 2–24 letters, numbers, _ or -.</p>
-          <fieldset class="basics-avatar-fieldset">
-            <legend>Avatar</legend>
-            <p class="basics-field-help">Choose how you appear in a game.</p>
-            <div class="basics-avatar-options" role="radiogroup" aria-label="Avatar">
-${avatarOptions}
+          <section class="morph-editor" aria-labelledby="morph-editor-title">
+            <div class="morph-editor-heading"><div><h2 id="morph-editor-title">Your morph</h2><p>Pick a starter, then make it yours.</p></div><span class="morph-release" aria-live="polite"></span></div>
+            <div class="morph-tabs" role="tablist" aria-label="Morph editor">
+              <button type="button" role="tab" aria-selected="true" data-morph-tab="starters">Starters</button>
+              <button type="button" role="tab" aria-selected="false" data-morph-tab="customize">Customize</button>
             </div>
-          </fieldset>
+            <div class="morph-panel" data-morph-panel="starters" role="tabpanel"></div>
+            <div class="morph-panel" data-morph-panel="customize" role="tabpanel" hidden></div>
+            <div class="morph-preview" aria-label="Morph preview">
+              <div class="morph-preview-stage"><img src="/images/player_boy_001.png" alt="" /><span class="morph-preview-shadow"></span></div>
+              <div class="morph-preview-controls" role="group" aria-label="Preview actions">
+                <button type="button" data-preview-action="walk">Walk</button><button type="button" data-preview-action="jump">Jump</button><button type="button" data-preview-action="turn">Turn</button>
+              </div>
+            </div>
+          </section>
           <p class="basics-status" id="basics-username-status" role="status" aria-live="polite"></p>
           <button class="basics-submit" type="submit" disabled>Save</button>
         </form>
@@ -578,7 +571,7 @@ async function renderBasics(user) {
   const input = content.querySelector("#my-cube-username");
   const status = content.querySelector("#basics-username-status");
   const submit = form.querySelector(".basics-submit");
-  const avatarInputs = [...form.querySelectorAll('input[name="body_id"]')];
+  const morphEditor = form.querySelector(".morph-editor");
   input.disabled = true;
   setFormStatus(status, "Loading profile…");
 
@@ -593,6 +586,8 @@ async function renderBasics(user) {
     return;
   }
   if (!form.isConnected) return;
+  await runtime.dispatch({ type: "load_appearance_catalog" });
+  await runtime.dispatch({ type: "begin_appearance_edit" });
   runtime.dispatch({ type: "begin_username_edit" });
   const sessionId = runtime.snapshot.session_id;
   const accountId = runtime.snapshot.account_id;
@@ -608,44 +603,43 @@ async function renderBasics(user) {
     input.disabled = !active;
     input.setAttribute("aria-invalid", String(profile.username_feedback?.kind === "error"
       && profile.username_validation_error !== null));
-    avatarInputs.forEach((control) => {
-      // Keep avatar selection available while a username or avatar request is
-      // in flight. Rust keeps the submitted value separate from this draft,
-      // so a response cannot overwrite a newer selection.
-      control.disabled = !active;
-      control.checked = control.value === profile.body_draft;
-    });
+    const appearance = runtime.snapshot.appearance;
+    const starterPanel = morphEditor.querySelector('[data-morph-panel="starters"]');
+    const customizePanel = morphEditor.querySelector('[data-morph-panel="customize"]');
+    morphEditor.querySelector(".morph-release").textContent = appearance.release ? `Catalog ${appearance.release}` : "";
+    starterPanel.innerHTML = appearance.is_loading ? "<p>Loading morphs…</p>" : appearance.presets.map((preset) => `
+      <button type="button" class="morph-choice ${preset.base === appearance.draft_base ? "is-selected" : ""}" data-preset-id="${preset.id}" ${!active || appearance.is_saving ? "disabled" : ""}><span>${preset.display_name}</span><small>${preset.parts.length ? "Ready to play" : "Base morph"}</small></button>`).join("") || "<p>No starter morphs are available.</p>";
+    const byKind = new Map();
+    appearance.assets.forEach((asset) => { if (asset.kind !== "base") byKind.set(asset.kind, [...(byKind.get(asset.kind) || []), asset]); });
+    customizePanel.innerHTML = [...byKind.entries()].map(([kind, assets]) => `<label class="morph-customize-field"><span>${kind.replaceAll("-", " ")}</span><select data-morph-kind="${kind}" ${!active || appearance.is_saving ? "disabled" : ""}><option value="">None</option>${assets.map((asset) => `<option value="${asset.id}" ${appearance.draft_parts.includes(asset.id) || appearance.draft_face === asset.id ? "selected" : ""}>${asset.display_name}</option>`).join("")}</select></label>`).join("") || "<p>Customize options will appear here.</p>";
+    starterPanel.querySelectorAll("[data-preset-id]").forEach((button) => button.addEventListener("click", () => runtime.dispatch({ type: "select_morph_preset", preset_id: button.dataset.presetId })));
+    customizePanel.querySelectorAll("select").forEach((select) => select.addEventListener("change", () => { if (select.value) runtime.dispatch({ type: "set_morph_part", asset_id: select.value }); }));
+    morphEditor.querySelectorAll("[data-morph-tab]").forEach((tab) => tab.onclick = () => { morphEditor.querySelectorAll("[data-morph-tab]").forEach((item) => item.setAttribute("aria-selected", String(item === tab))); morphEditor.querySelectorAll("[data-morph-panel]").forEach((panel) => { panel.hidden = panel.dataset.morphPanel !== tab.dataset.morphTab; }); });
+    morphEditor.querySelectorAll("[data-preview-action]").forEach((button) => button.onclick = () => { const stage = morphEditor.querySelector(".morph-preview-stage"); stage.dataset.action = button.dataset.previewAction; setTimeout(() => { if (stage.dataset.action === button.dataset.previewAction) delete stage.dataset.action; }, 700); });
     submit.disabled = !active || savingBasics || profile.username_is_saving
-      || profile.body_is_saving || !(profile.username_can_save || profile.body_can_save);
+      || appearance.is_saving || !(profile.username_can_save || appearance.draft_can_save);
     submit.setAttribute("aria-busy", String(savingBasics
-      || profile.username_is_saving || profile.body_is_saving));
-    const feedback = basicsFeedback ?? profile.body_feedback ?? profile.username_feedback;
+      || profile.username_is_saving || appearance.is_saving));
+    const feedback = basicsFeedback ?? appearance.feedback ?? profile.username_feedback;
     setFormStatus(status,
       !active ? "Please sign in again."
         : feedback?.kind === "error" ? feedback.message
-          : savingBasics || profile.username_is_saving || profile.body_is_saving ? "Saving your basics…"
+          : savingBasics || profile.username_is_saving || appearance.is_saving ? "Saving your basics…"
             : feedback?.message ?? "",
       !active ? "error" : feedback?.kind === "error" ? "error"
-        : savingBasics || profile.username_is_saving || profile.body_is_saving ? "pending" : feedback?.kind ?? "");
+        : savingBasics || profile.username_is_saving || appearance.is_saving ? "pending" : feedback?.kind ?? "");
   };
   basicsCleanup = runtime.subscribe(render);
   input.addEventListener("input", () => {
     basicsFeedback = null;
     runtime.dispatch({ type: "username_changed", value: input.value });
   });
-  avatarInputs.forEach((control) => control.addEventListener("change", () => {
-    basicsFeedback = null;
-    runtime.dispatch({ type: "body_changed", body_id: control.value });
-  }));
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!activeSession() || savingBasics || runtime.snapshot.profile.username_is_saving
-      || runtime.snapshot.profile.body_is_saving) return;
-    // Do not turn a username-only save into an unnecessary avatar request.
-    // Capture this before starting the asynchronous username request so a
-    // later avatar selection remains an unsaved draft for the next submit.
-    const shouldSaveBody = runtime.snapshot.profile.body_can_save;
+      || runtime.snapshot.appearance.is_saving) return;
+    const shouldSaveAppearance = runtime.snapshot.appearance.draft_can_save;
     savingBasics = true;
     basicsFeedback = null;
     render(runtime.snapshot);
@@ -655,18 +649,29 @@ async function renderBasics(user) {
       const profile = runtime.snapshot.profile;
       if (!activeSession() || !form.isConnected || profile.username_validation_error
         || profile.username_is_dirty || profile.username_feedback?.kind === "error") return;
-      if (shouldSaveBody) {
-        await runtime.dispatch({ type: "save_body" });
-        if (runtime.snapshot.profile.body_feedback?.kind === "error") return;
+      if (shouldSaveAppearance) {
+        await runtime.dispatch({ type: "save_appearance" });
+        if (runtime.snapshot.appearance.feedback?.kind === "error") throw new Error("invalid_appearance");
       }
       const finalProfile = runtime.snapshot.profile;
       if (!activeSession()) return;
       currentUser = { ...currentUser, username: finalProfile.username, body_id: finalProfile.body_id };
+      const selectedBase = runtime.snapshot.appearance.selected_base;
+      if (selectedBase) try {
+        window.localStorage.setItem(`cubacadabra.character-appearance:${encodeURIComponent(currentUser.id)}`, JSON.stringify({
+          version: 2,
+          base: selectedBase,
+          parts: runtime.snapshot.appearance.selected_parts,
+          ...(runtime.snapshot.appearance.selected_face ? { face: runtime.snapshot.appearance.selected_face } : {}),
+          parameters: {},
+          revision: 0,
+        }));
+      } catch { /* The server remains the source of truth. */ }
       basicsFeedback = { kind: "success", message: "Basics saved." };
     } catch (error) {
       basicsFeedback = {
         kind: "error",
-        message: error.message === "invalid_body_id" ? "Choose one of the available avatars."
+        message: error.message === "invalid_appearance" ? "Choose a valid morph option."
           : error.message === "age_required" ? "Complete the birthday step before choosing your basics."
             : "We couldn’t save your basics. Please try again.",
       };

@@ -14,6 +14,7 @@ export class AppRuntime {
     const p = value.profile;
     const catalog = value.catalog;
     const safety = value.safety;
+    const appearance = value.appearance;
     if (value.protocol_version !== 1 || !Number.isInteger(value.session_id)
       || !(value.account_id === null || typeof value.account_id === "string")
       || !p || !(p.username === null || typeof p.username === "string")
@@ -45,6 +46,11 @@ export class AppRuntime {
         || typeof entry.display_name !== "string"
         || typeof entry.package_path !== "string"
         || !(entry.asset_base_url === null || typeof entry.asset_base_url === "string"))) {
+      throw new Error("Unsupported app snapshot");
+    }
+    if (!appearance || !Array.isArray(appearance.assets) || !Array.isArray(appearance.presets)
+      || typeof appearance.draft_can_save !== "boolean"
+      || typeof appearance.is_loading !== "boolean" || typeof appearance.is_saving !== "boolean") {
       throw new Error("Unsupported app snapshot");
     }
     if (!safety || !Array.isArray(safety.blocked_user_ids)
