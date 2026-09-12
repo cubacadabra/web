@@ -445,35 +445,27 @@
 
 .morph-choice-figure {
   position: relative;
-  width: 34px;
-  height: 54px;
+  width: 58px;
+  height: 68px;
   align-self: center;
-  border-radius: 13px 13px 9px 9px;
-  background: linear-gradient(180deg, #8b9cf6 0 54%, #56617b 54%);
-  opacity: 0.72;
+  overflow: hidden;
+  border-radius: 7px;
+  background: #111722;
 }
 
 .morph-choice-figure::before {
   position: absolute;
-  top: -9px;
-  left: 8px;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: #cda67f;
+  inset: 0;
+  background: linear-gradient(180deg, #8b9cf6 0 54%, #56617b 54%);
   content: "";
 }
 
-.morph-choice-figure::after {
+.morph-choice-figure img {
   position: absolute;
-  right: 6px;
-  bottom: -7px;
-  left: 6px;
-  height: 12px;
-  border-radius: 0 0 5px 5px;
-  border-right: 7px solid #67728b;
-  border-left: 7px solid #67728b;
-  content: "";
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .morph-choice > span:not(.morph-choice-figure) {

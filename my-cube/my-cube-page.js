@@ -27,6 +27,11 @@ function calculateAge(dob) {
   return age;
 }
 
+function morphThumbnailURL(thumbnail) {
+  if (typeof thumbnail !== "string" || !thumbnail.startsWith("/morphs/")) return null;
+  return backendApiUrl(thumbnail).href;
+}
+
 function setMenuState(requiresBirthday, activeSection = requiresBirthday ? "birthday" : "basics") {
   sectionCleanup?.();
   sectionCleanup = null;
@@ -729,12 +734,19 @@ async function renderMorphEditor() {
     form.querySelector(".morph-release").textContent = appearance.release ? `Catalog ${appearance.release}` : "";
     starterGrid.innerHTML = appearance.is_loading
       ? '<p class="morph-empty">Loading morphs…</p>'
-      : visiblePresets.map((preset) => `
-        <button type="button" class="morph-choice ${selectedPreset?.id === preset.id ? "is-selected" : ""}" data-preset-id="${escapeMarkup(preset.id)}" ${!active || appearance.is_saving ? "disabled" : ""}>
-          <span class="morph-choice-figure" aria-hidden="true"></span>
-          <span>${escapeMarkup(preset.display_name)}</span>
-          <small>${preset.parts.length ? "Ready to play" : "Base morph"}</small>
-        </button>`).join("")
+      : visiblePresets.map((preset) => {
+        const thumbnailURL = morphThumbnailURL(preset.thumbnail);
+        return `
+          <button type="button" class="morph-choice ${selectedPreset?.id === preset.id ? "is-selected" : ""}" data-preset-id="${escapeMarkup(preset.id)}" ${!active || appearance.is_saving ? "disabled" : ""}>
+            <span class="morph-choice-figure" aria-hidden="true">
+              ${thumbnailURL
+                ? `<img src="${escapeMarkup(thumbnailURL)}" alt="" loading="lazy" decoding="async">`
+                : ""}
+            </span>
+            <span>${escapeMarkup(preset.display_name)}</span>
+            <small>${preset.parts.length ? "Ready to play" : "Base morph"}</small>
+          </button>`;
+      }).join("")
         || `<p class="morph-empty">${searchQuery ? "No starters match your search." : "No starter morphs are available."}</p>`;
 
     const baseAssets = appearance.assets.filter((asset) => asset.kind === "base");
