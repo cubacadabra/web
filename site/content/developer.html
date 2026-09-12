@@ -1,90 +1,76 @@
 <main class="about-content developer-content">
-  <div class="developer-workspace">
-    <div class="developer-main-column">
-      <header class="developer-heading">
-        <div>
-          <p class="developer-kicker">Pricing</p>
-          <h1 id="developer-title">Build in the open.</h1>
-          <p class="developer-lede">Create and publish real multiplayer Cubes for free. Upgrade when you want professional tools—and help keep cubacadabra independent.</p>
-        </div>
-        <span class="developer-release">PLANS FOR 2026</span>
-      </header>
-
-      <section class="developer-pricing" id="pricing" aria-labelledby="developer-plans-title">
-        <div class="developer-section-heading">
-          <div>
-            <h2 id="developer-plans-title">Choose your level</h2>
-            <p>No credit card required to start.</p>
-          </div>
-          <span>Monthly · cancel anytime</span>
-        </div>
-
-        <div class="developer-plan-grid">
-          <article class="developer-plan">
-            <div class="developer-plan-heading">
-              <h3>Creator</h3>
-              <p>For everyone getting started.</p>
-            </div>
-            <div class="developer-plan-price"><strong>$0</strong><span>forever</span></div>
-            <ul>
-              <li>Create and publish</li>
-              <li>Multiplayer hosting</li>
-              <li>Basic source and version history</li>
-              <li>Community support</li>
-            </ul>
-            <a class="developer-plan-action" href="/login/?returnTo=%2Fdeveloper%2F">Start creating <span aria-hidden="true">↗</span></a>
-          </article>
-
-          <article class="developer-plan developer-plan-featured" id="creator-pro">
-            <div class="developer-plan-badge">Supports the platform</div>
-            <div class="developer-plan-heading">
-              <h3>Creator Pro</h3>
-              <p>For serious creators and supporters.</p>
-            </div>
-            <div class="developer-plan-price"><strong>$20</strong><span>/ month</span></div>
-            <ul>
-              <li>Private Cubes and full history</li>
-              <li>Cloud builds and staging</li>
-              <li>Advanced analytics and crash reports</li>
-              <li>2–3 collaborators</li>
-            </ul>
-            <a class="developer-plan-action" href="/login/?returnTo=%2Fdeveloper%2F">Choose Creator Pro <span aria-hidden="true">↗</span></a>
-          </article>
-
-          <article class="developer-plan" id="studio">
-            <div class="developer-plan-heading">
-              <h3>Studio</h3>
-              <p>For small professional teams.</p>
-            </div>
-            <div class="developer-plan-price"><strong>$99</strong><span>/ month</span></div>
-            <ul>
-              <li>Everything in Creator Pro</li>
-              <li>Team permissions</li>
-              <li>Larger storage and compute allowances</li>
-              <li>About 5 collaborators</li>
-            </ul>
-            <a class="developer-plan-action" href="/login/?returnTo=%2Fdeveloper%2F">Plan a Studio <span aria-hidden="true">↗</span></a>
-          </article>
-        </div>
-      </section>
-
-      <section class="developer-included" id="included" aria-labelledby="developer-included-title">
-        <div class="developer-section-heading">
-          <div>
-            <h2 id="developer-included-title">Included with every Cube</h2>
-            <p>The foundation stays open, no matter which level you choose.</p>
-          </div>
-        </div>
-        <div class="developer-included-list">
-          <div><span>01</span><strong>Publish everywhere</strong><p>Web, iOS, and Android are part of the same open runtime.</p></div>
-          <div><span>02</span><strong>Your source is yours</strong><p>Use open formats and keep control of the project you build.</p></div>
-          <div><span>03</span><strong>No ads. No paid placement.</strong><p>Discovery stays authentic and the world stays made for people.</p></div>
-        </div>
-      </section>
+  <header class="developer-heading">
+    <div>
+      <p class="developer-kicker">Pricing</p>
+      <h1 id="developer-title">Build in the open.</h1>
+      <p class="developer-lede">Create and publish real multiplayer Cubes for free. Upgrade when you want professional tools—and help keep cubacadabra independent.</p>
     </div>
+    <p class="developer-heading-note"><i aria-hidden="true"></i> Free to build and publish</p>
+  </header>
+
+  <div class="developer-workspace">
+    <section class="developer-pricing" id="pricing" aria-labelledby="developer-plans-title">
+      <div class="developer-section-heading">
+        <div>
+          <h2 id="developer-plans-title">Plans</h2>
+          <p>No credit card required to create and publish.</p>
+        </div>
+        <span>Monthly billing</span>
+      </div>
+
+      <div class="developer-plan-grid">
+        <article class="developer-plan">
+          <div class="developer-plan-badge">Free forever</div>
+          <div class="developer-plan-heading">
+            <h3>Creator</h3>
+            <p>For everyone getting started.</p>
+          </div>
+          <div class="developer-plan-price"><strong>$0</strong><span>forever</span></div>
+          <ul>
+            <li>Create and publish</li>
+            <li>Multiplayer hosting</li>
+            <li>Basic source and version history</li>
+            <li>Community support</li>
+          </ul>
+          <a class="developer-plan-action" href="/login/?returnTo=%2Fdeveloper%2F">Start creating <span aria-hidden="true">↗</span></a>
+        </article>
+
+        <article class="developer-plan developer-plan-featured" id="creator-pro">
+          <div class="developer-plan-badge">Recommended</div>
+          <div class="developer-plan-heading">
+            <h3>Creator Pro</h3>
+            <p>For serious creators and supporters.</p>
+          </div>
+          <div class="developer-plan-price"><strong>$20</strong><span>/ month</span></div>
+          <ul>
+            <li>Private Cubes and full history</li>
+            <li>Cloud builds and staging</li>
+            <li>Advanced analytics and crash reports</li>
+            <li>2–3 collaborators</li>
+          </ul>
+          <a class="developer-plan-action" href="/login/?returnTo=%2Fdeveloper%2F">Choose Creator Pro <span aria-hidden="true">↗</span></a>
+        </article>
+
+        <article class="developer-plan" id="studio">
+          <div class="developer-plan-badge">For teams</div>
+          <div class="developer-plan-heading">
+            <h3>Studio</h3>
+            <p>For small professional teams.</p>
+          </div>
+          <div class="developer-plan-price"><strong>$99</strong><span>/ month</span></div>
+          <ul>
+            <li>Everything in Creator Pro</li>
+            <li>Team permissions</li>
+            <li>Larger storage and compute allowances</li>
+            <li>About 5 collaborators</li>
+          </ul>
+          <a class="developer-plan-action" href="/login/?returnTo=%2Fdeveloper%2F">Plan a Studio <span aria-hidden="true">↗</span></a>
+        </article>
+      </div>
+    </section>
 
     <aside class="developer-inspector" aria-labelledby="developer-inspector-title">
-      <div class="developer-inspector-topline"><span>Selected plan</span><span class="developer-inspector-state"><i aria-hidden="true"></i> Recommended</span></div>
+      <div class="developer-inspector-topline"><span>Creator membership</span><span class="developer-inspector-state"><i aria-hidden="true"></i> Recommended</span></div>
       <h2 id="developer-inspector-title">Creator Pro</h2>
       <p class="developer-inspector-copy">Professional tools, higher limits, private development, and a direct way to support an independent game platform.</p>
       <div class="developer-inspector-price"><strong>$20</strong><span>/ month</span></div>
@@ -99,4 +85,18 @@
       <p class="developer-action-note">Payments are coming soon. Sign in to keep your place.</p>
     </aside>
   </div>
+
+  <section class="developer-included" id="included" aria-labelledby="developer-included-title">
+    <div class="developer-section-heading">
+      <div>
+        <h2 id="developer-included-title">Included with every Cube</h2>
+        <p>The foundation stays open, no matter which level you choose.</p>
+      </div>
+    </div>
+    <div class="developer-included-list">
+      <div><span>01</span><strong>Publish everywhere</strong><p>Web, iOS, and Android are part of the same open runtime.</p></div>
+      <div><span>02</span><strong>Your source is yours</strong><p>Use open formats and keep control of the project you build.</p></div>
+      <div><span>03</span><strong>No ads. No paid placement.</strong><p>Discovery stays authentic and the world stays made for people.</p></div>
+    </div>
+  </section>
 </main>

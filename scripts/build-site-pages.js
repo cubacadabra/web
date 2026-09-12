@@ -372,7 +372,7 @@ const renderDeveloperSidebar = () => `<aside class="about-sidebar">
 
   <nav class="about-menu" aria-label="Developer sections">
     <a class="is-active" href="#pricing" aria-current="page"><span>Pricing</span></a>
-    <a href="#included"><span>Included with every Cube</span></a>
+    <a href="#included"><span>What stays free</span></a>
   </nav>
 </aside>`;
 
