@@ -220,6 +220,16 @@ const renderHeader = (page) => {
     <input type="search" placeholder="Search starter morphs…" autocomplete="off" />
   </label>`
     : "";
+  const mobileNavigation = page.kind === "landscape"
+    ? `
+  <button class="landscape-topbar-toggle" type="button" aria-label="Open site menu" aria-expanded="false" aria-controls="landscape-topbar-navigation">
+    <span class="landscape-topbar-toggle-icon" aria-hidden="true"><i></i><i></i><i></i></span>
+  </button>`
+    : "";
+  const navigationId = page.kind === "landscape" ? ' id="landscape-topbar-navigation"' : "";
+  const navigationClass = page.kind === "landscape"
+    ? `${variant.navClass} landscape-topbar-nav`
+    : variant.navClass;
 
   return `<header class="${variant.className}">
   <a class="brand" href="/" aria-label="cubacadabra home">
@@ -230,8 +240,9 @@ const renderHeader = (page) => {
     </span>
   </a>
 ${workspaceSearch}
+${mobileNavigation}
 
-  <nav class="${variant.navClass}" aria-label="${variant.ariaLabel}">
+  <nav${navigationId} class="${navigationClass}" aria-label="${variant.ariaLabel}">
 ${links}${logout}
   </nav>
 </header>`;
@@ -398,29 +409,19 @@ ${links}
     </div>`;
   }).join("\n");
 
-  return `<aside class="about-sidebar landscape-sidebar">
-  <button class="about-sidebar-toggle" type="button" aria-expanded="false" aria-controls="landscape-navigation">
-    <span class="about-sidebar-toggle-copy">
-      <span class="about-sidebar-toggle-label">Landscape</span>
-      <span class="about-sidebar-toggle-meta">Browse field guide</span>
-    </span>
-    <span class="about-sidebar-toggle-icon" aria-hidden="true"><i></i><i></i><i></i></span>
-  </button>
+  return `<aside class="about-sidebar">
+  <div class="about-sidebar-heading">
+    <span>Landscape</span>
+    <span class="about-sidebar-status">A candid field guide</span>
+  </div>
 
-  <div class="about-sidebar-panel" id="landscape-navigation">
-    <div class="about-sidebar-heading">
-      <span>Landscape</span>
-      <span class="about-sidebar-status">A candid field guide</span>
-    </div>
-
-    <nav class="about-menu landscape-menu" aria-label="Competitive landscape sections">
+  <nav class="about-menu landscape-menu" aria-label="Competitive landscape sections">
     <a${currentId === "landscape-overview" ? ' class="is-active" aria-current="page"' : ""} href="/landscape/">
       <span>Overview</span>
       <span class="about-menu-arrow" aria-hidden="true">↗</span>
     </a>
 ${groups}
-    </nav>
-  </div>
+  </nav>
 </aside>`;
 };
 

@@ -10,17 +10,7 @@
   padding: 26px 0 84px;
 }
 
-.landscape-sidebar {
-  min-width: 0;
-}
-
-.about-sidebar-panel {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-}
-
-.about-sidebar-toggle {
+.landscape-topbar-toggle {
   display: none;
 }
 
@@ -706,100 +696,91 @@
   }
 
   .landscape-page .about-sidebar {
-    position: static;
-    min-height: 0;
-    padding: 12px 0 0;
+    display: none;
   }
 
-  .landscape-page .about-sidebar-toggle {
-    display: flex;
-    width: 100%;
-    min-height: 50px;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 0 2px 0 0;
+  .landscape-page .landscape-topbar-toggle {
+    display: grid;
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+    margin-left: auto;
+    place-items: center;
     border: 0;
-    border-bottom: 1px solid var(--about-line);
+    border-radius: 6px;
     background: transparent;
     color: var(--about-ink);
     cursor: pointer;
-    text-align: left;
   }
 
-  .about-sidebar-toggle-copy {
-    display: grid;
-    gap: 4px;
+  .landscape-page .landscape-topbar-toggle:hover {
+    background: rgba(255, 255, 255, 0.06);
   }
 
-  .about-sidebar-toggle-label {
-    font-size: 13px;
-    font-weight: 750;
-  }
-
-  .about-sidebar-toggle-meta {
-    color: var(--about-faint);
-    font-size: 10px;
-    font-weight: 650;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
-  .about-sidebar-toggle-icon {
+  .landscape-topbar-toggle-icon {
     display: grid;
     width: 24px;
-    gap: 4px;
+    gap: 5px;
   }
 
-  .about-sidebar-toggle-icon i {
+  .landscape-topbar-toggle-icon i {
     display: block;
     height: 2px;
     border-radius: 2px;
-    background: var(--about-ink);
+    background: currentColor;
     transition: transform 180ms ease, opacity 180ms ease;
   }
 
-  .landscape-page .about-sidebar.is-menu-open .about-sidebar-toggle-icon i:first-child {
-    transform: translateY(6px) rotate(45deg);
+  .landscape-page .about-topbar.is-mobile-nav-open .landscape-topbar-toggle-icon i:first-child {
+    transform: translateY(7px) rotate(45deg);
   }
 
-  .landscape-page .about-sidebar.is-menu-open .about-sidebar-toggle-icon i:nth-child(2) {
+  .landscape-page .about-topbar.is-mobile-nav-open .landscape-topbar-toggle-icon i:nth-child(2) {
     opacity: 0;
   }
 
-  .landscape-page .about-sidebar.is-menu-open .about-sidebar-toggle-icon i:last-child {
-    transform: translateY(-6px) rotate(-45deg);
+  .landscape-page .about-topbar.is-mobile-nav-open .landscape-topbar-toggle-icon i:last-child {
+    transform: translateY(-7px) rotate(-45deg);
   }
 
-  .landscape-page .about-sidebar-panel {
+  .landscape-page .landscape-topbar-nav {
     display: none;
-    padding-top: 18px;
+    position: absolute;
+    top: calc(100% + 1px);
+    right: 18px;
+    left: 18px;
+    align-items: stretch;
+    flex-direction: column;
+    gap: 2px;
+    margin: 0;
+    padding: 8px;
+    border: 1px solid var(--about-line);
+    border-radius: 7px;
+    background: #17191c;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.24);
   }
 
-  .landscape-page .about-sidebar.is-menu-open .about-sidebar-panel {
+  .landscape-page .about-topbar.is-mobile-nav-open .landscape-topbar-nav {
     display: flex;
   }
 
-  .landscape-page .about-sidebar-heading {
-    padding-left: 0;
+  .landscape-page .landscape-topbar-nav a {
+    min-height: 44px;
+    align-content: center;
+    padding: 0 12px;
+    border-radius: 5px;
   }
 
-  .landscape-page .landscape-menu > a {
-    padding-left: 0;
+  .landscape-page .landscape-topbar-nav a:hover,
+  .landscape-page .landscape-topbar-nav a.is-current {
+    background: rgba(255, 255, 255, 0.06);
   }
 
-  .landscape-page .landscape-menu .about-menu-group {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    margin-top: 18px;
-  }
-
-  .landscape-page .landscape-menu .about-menu-group p {
-    grid-column: 1 / -1;
-    margin-left: 0;
-  }
-
-  .landscape-page .landscape-menu .about-menu-group a {
-    padding-left: 0;
+  .landscape-page .landscape-topbar-nav .about-logout {
+    width: 100%;
+    min-height: 44px;
+    margin-top: 4px;
+    text-align: left;
   }
 
   .landscape-page .about-content {
