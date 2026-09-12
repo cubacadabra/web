@@ -209,6 +209,14 @@ const renderHeader = (page) => {
   const logout = variant.logout
     ? '\n          <button class="about-logout" type="button" data-auth-logout hidden>Sign Out</button>'
     : "";
+  const workspaceSearch = page.id === "my-cube"
+    ? `
+  <label class="morph-topbar-search">
+    <span class="sr-only">Search starter morphs</span>
+    <span aria-hidden="true"></span>
+    <input type="search" placeholder="Search starter morphs…" autocomplete="off" />
+  </label>`
+    : "";
 
   return `<header class="${variant.className}">
   <a class="brand" href="/" aria-label="cubacadabra home">
@@ -218,6 +226,7 @@ const renderHeader = (page) => {
       <span class="brand-caption">the platform for creators, children, and parents</span>
     </span>
   </a>
+${workspaceSearch}
 
   <nav class="${variant.navClass}" aria-label="${variant.ariaLabel}">
 ${links}${logout}

@@ -94,101 +94,6 @@
   line-height: 1.45;
 }
 
-.basics-avatar-fieldset {
-  min-width: 0;
-  margin: 30px 0 0;
-  padding: 0;
-  border: 0;
-}
-
-.basics-avatar-fieldset legend {
-  padding: 0;
-  color: var(--about-soft);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.basics-avatar-fieldset > .basics-field-help {
-  margin-top: 8px;
-}
-
-.basics-avatar-options {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 16px;
-}
-
-.basics-avatar-option {
-  position: relative;
-  min-width: 0;
-  cursor: pointer;
-}
-
-.basics-avatar-option input {
-  position: absolute;
-  z-index: 1;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  opacity: 0;
-  cursor: pointer;
-}
-
-.basics-avatar-option-content {
-  display: grid;
-  align-content: space-between;
-  justify-items: center;
-  min-height: 184px;
-  box-sizing: border-box;
-  padding: 10px 8px 9px;
-  border: 1px solid rgba(231, 233, 236, 0.2);
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.045);
-  color: var(--about-soft);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  text-align: center;
-  transition: border-color 180ms ease, background 180ms ease, color 180ms ease;
-}
-
-.basics-avatar-option-content img {
-  display: block;
-  width: auto;
-  height: 146px;
-  max-width: 100%;
-  object-fit: contain;
-}
-
-.basics-avatar-option:hover .basics-avatar-option-content {
-  border-color: rgba(231, 233, 236, 0.4);
-  color: var(--about-ink);
-}
-
-.basics-avatar-option input:checked + .basics-avatar-option-content {
-  border-color: var(--about-accent);
-  background: rgba(139, 156, 246, 0.12);
-  color: var(--about-ink);
-}
-
-.basics-avatar-option input:focus-visible + .basics-avatar-option-content {
-  outline: 3px solid rgba(139, 156, 246, 0.32);
-  outline-offset: 3px;
-}
-
-.basics-avatar-option input:disabled + .basics-avatar-option-content {
-  cursor: not-allowed;
-  opacity: 0.65;
-}
-
-.basics-avatar-option input:disabled {
-  cursor: not-allowed;
-}
-
 .basics-status {
   min-height: 18px;
   margin: 14px 0 0;
@@ -249,10 +154,69 @@
   cursor: wait;
 }
 
+.morph-topbar-search {
+  display: none;
+}
+
+.my-cube-page.is-morph-editor .morph-topbar-search {
+  display: flex;
+  width: min(34vw, 520px);
+  min-height: 40px;
+  align-items: center;
+  gap: 10px;
+  margin-left: clamp(32px, 8vw, 140px);
+  padding: 0 13px;
+  border: 1px solid rgba(231, 233, 236, 0.15);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--about-faint);
+}
+
+.morph-topbar-search:focus-within {
+  border-color: rgba(139, 156, 246, 0.7);
+  box-shadow: 0 0 0 3px rgba(139, 156, 246, 0.12);
+}
+
+.morph-topbar-search > span[aria-hidden="true"] {
+  position: relative;
+  width: 13px;
+  height: 13px;
+  flex: 0 0 auto;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+}
+
+.morph-topbar-search > span[aria-hidden="true"]::after {
+  position: absolute;
+  right: -4px;
+  bottom: -3px;
+  width: 6px;
+  height: 1.5px;
+  border-radius: 2px;
+  background: currentColor;
+  content: "";
+  transform: rotate(45deg);
+}
+
+.morph-topbar-search input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--about-ink);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.morph-topbar-search input::placeholder {
+  color: var(--about-faint);
+}
+
 .my-cube-page.is-morph-editor .about-layout {
   grid-template-columns: 200px minmax(0, 1fr);
   gap: 20px;
-  width: min(1560px, calc(100% - 32px));
+  width: min(1780px, calc(100% - 32px));
 }
 
 .my-cube-page.is-morph-editor .about-content {
@@ -272,7 +236,7 @@
 
 .morph-editor-layout {
   display: grid;
-  grid-template-columns: minmax(520px, 1fr) minmax(290px, 360px);
+  grid-template-columns: minmax(560px, 1fr) minmax(330px, 400px);
   gap: 16px;
   align-items: start;
 }
@@ -327,30 +291,74 @@
 .morph-preview-canvas.is-moving { cursor: move; }
 .morph-preview-canvas.is-looking { cursor: grabbing; }
 
+.morph-preview-card {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  width: min(220px, calc(100% - 32px));
+  padding: 16px;
+  border: 1px solid rgba(231, 233, 236, 0.16);
+  border-radius: 12px;
+  background: rgba(13, 16, 22, 0.82);
+  color: var(--about-soft);
+  pointer-events: none;
+  backdrop-filter: blur(14px);
+}
+
+.morph-preview-card h2 {
+  margin: 0;
+  color: var(--about-ink);
+  font-size: 19px;
+  font-weight: 780;
+  letter-spacing: -0.02em;
+}
+
+.morph-preview-kind {
+  display: block;
+  margin-top: 5px;
+  color: var(--about-accent);
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.morph-preview-card p {
+  margin: 10px 0 12px;
+  color: var(--about-soft);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.morph-ready {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--about-soft);
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.morph-ready i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #55c96d;
+  box-shadow: 0 0 8px rgba(85, 201, 109, 0.5);
+}
+
 .morph-preview-overlay {
   position: absolute;
-  right: 16px;
+  right: 50%;
   bottom: 14px;
-  left: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 10px 12px;
+  padding: 9px 14px;
   border: 1px solid rgba(231, 233, 236, 0.12);
-  border-radius: 6px;
+  border-radius: 999px;
   background: rgba(13, 16, 22, 0.78);
   color: var(--about-faint);
   font-size: 11px;
+  white-space: nowrap;
   pointer-events: none;
+  transform: translateX(50%);
   backdrop-filter: blur(10px);
-}
-
-.morph-preview-name {
-  margin: 0;
-  color: var(--about-ink);
-  font-size: 12px;
-  font-weight: 750;
 }
 
 .morph-preview-controls {
@@ -418,7 +426,7 @@
 
 .morph-starter-grid {
   display: grid;
-  grid-auto-columns: 126px;
+  grid-auto-columns: 118px;
   grid-auto-flow: column;
   gap: 8px;
   overflow-x: auto;
@@ -427,20 +435,61 @@
 }
 
 .morph-choice {
-  display: flex;
-  min-height: 76px;
-  flex-direction: column;
-  align-items: start;
-  justify-content: end;
-  gap: 5px;
-  padding: 12px;
+  display: grid;
+  min-height: 126px;
+  grid-template-rows: 1fr auto auto;
+  justify-items: center;
+  gap: 4px;
+  padding: 10px 8px;
   border: 1px solid rgba(231, 233, 236, 0.14);
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.035);
   color: var(--about-soft);
   cursor: pointer;
-  text-align: left;
+  text-align: center;
   transition: border-color 180ms ease, background 180ms ease, color 180ms ease;
+}
+
+.morph-choice-figure {
+  position: relative;
+  width: 34px;
+  height: 54px;
+  align-self: center;
+  border-radius: 13px 13px 9px 9px;
+  background: linear-gradient(180deg, #8b9cf6 0 54%, #56617b 54%);
+  opacity: 0.72;
+}
+
+.morph-choice-figure::before {
+  position: absolute;
+  top: -9px;
+  left: 8px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #cda67f;
+  content: "";
+}
+
+.morph-choice-figure::after {
+  position: absolute;
+  right: 6px;
+  bottom: -7px;
+  left: 6px;
+  height: 12px;
+  border-radius: 0 0 5px 5px;
+  border-right: 7px solid #67728b;
+  border-left: 7px solid #67728b;
+  content: "";
+}
+
+.morph-choice > span:not(.morph-choice-figure) {
+  width: 100%;
+  overflow: hidden;
+  font-size: 11px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .morph-choice:hover,
@@ -463,8 +512,10 @@
   position: sticky;
   top: 82px;
   display: flex;
-  min-height: min(760px, calc(100vh - 98px));
+  height: min(760px, calc(100vh - 98px));
+  min-height: 560px;
   flex-direction: column;
+  overflow: hidden;
   padding: 12px;
   border: 1px solid rgba(231, 233, 236, 0.13);
   border-radius: 8px;
@@ -508,15 +559,143 @@
 
 .morph-customize-panel {
   display: grid;
+  min-height: 0;
+  flex: 1 1 auto;
   gap: 0;
   overflow-y: auto;
+  scrollbar-color: rgba(139, 156, 246, 0.35) transparent;
+}
+
+.morph-starter-inspector {
+  padding: 18px 4px;
+  color: var(--about-soft);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.morph-starter-inspector p {
+  margin: 0;
+}
+
+.morph-customize-group {
+  border-bottom: 1px solid rgba(231, 233, 236, 0.09);
+}
+
+.morph-customize-group summary {
+  position: relative;
+  display: grid;
+  min-height: 52px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 0 28px 0 4px;
+  color: var(--about-ink);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 730;
+  list-style: none;
+}
+
+.morph-customize-group summary::-webkit-details-marker {
+  display: none;
+}
+
+.morph-customize-group summary::after {
+  position: absolute;
+  right: 7px;
+  color: var(--about-accent);
+  content: "⌄";
+  font-size: 16px;
+  transform: rotate(-90deg);
+  transition: transform 180ms ease;
+}
+
+.morph-customize-group[open] summary::after {
+  transform: none;
+}
+
+.morph-customize-group summary strong {
+  max-width: 130px;
+  overflow: hidden;
+  color: var(--about-faint);
+  font-size: 10px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.morph-customize-group summary:hover,
+.morph-customize-group summary:focus-visible {
+  color: var(--about-accent);
+}
+
+.morph-customize-group summary:focus-visible {
+  outline: 2px solid var(--about-accent);
+  outline-offset: -2px;
+}
+
+.morph-base-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 0 4px 14px;
+}
+
+.morph-base-option {
+  display: grid;
+  min-height: 74px;
+  grid-template-columns: 20px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 9px;
+  border: 1px solid rgba(231, 233, 236, 0.14);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.025);
+  color: var(--about-soft);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 650;
+  line-height: 1.25;
+  text-align: left;
+}
+
+.morph-base-option > span {
+  position: relative;
+  width: 12px;
+  height: 31px;
+  justify-self: center;
+  border-radius: 6px 6px 3px 3px;
+  background: currentColor;
+  opacity: 0.75;
+}
+
+.morph-base-option > span::before {
+  position: absolute;
+  top: -9px;
+  left: 2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  content: "";
+}
+
+.morph-base-option:hover,
+.morph-base-option.is-selected {
+  border-color: var(--about-accent);
+  background: rgba(139, 156, 246, 0.1);
+  color: var(--about-ink);
+}
+
+.morph-base-option.is-selected {
+  box-shadow: inset 0 0 0 1px var(--about-accent);
 }
 
 .morph-customize-field {
   display: grid;
   gap: 7px;
-  padding: 14px 4px;
-  border-bottom: 1px solid rgba(231, 233, 236, 0.09);
+  padding: 0 4px 14px;
   color: var(--about-soft);
   font-size: 11px;
   font-weight: 700;
@@ -531,6 +710,14 @@
   border-radius: 5px;
   background: #191d24;
   color: var(--about-ink);
+}
+
+.morph-empty {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 18px 4px;
+  color: var(--about-faint);
+  font-size: 11px;
 }
 
 .morph-status {
@@ -568,10 +755,17 @@
 
 @media (max-width: 1120px) {
   .morph-editor-layout { grid-template-columns: minmax(0, 1fr); }
-  .morph-inspector { position: static; min-height: 0; }
+  .morph-inspector { position: static; height: auto; min-height: 0; }
+  .morph-customize-panel { overflow-y: visible; }
+}
+
+@media (max-width: 900px) {
+  .my-cube-page.is-morph-editor .morph-topbar-search { display: none; }
 }
 
 @media (max-width: 720px) {
   .morph-preview-stage { height: min(72vh, 520px); }
-  .morph-preview-overlay { align-items: flex-start; flex-direction: column; gap: 3px; }
+  .morph-preview-card { width: 180px; padding: 12px; }
+  .morph-preview-card p { display: none; }
+  .morph-preview-overlay { max-width: calc(100% - 24px); white-space: normal; }
 }
