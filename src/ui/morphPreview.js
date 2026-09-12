@@ -3,6 +3,7 @@ import { createRustRenderer } from "../engine/renderer.js";
 import { backendApiUrl } from "../config/clientConfig.js";
 
 const MAX_MORPH_PACK_BYTES = 64 * 1024 * 1024;
+const PREVIEW_ACTION_DURATION_MS = 1500;
 const STANDALONE_PREVIEW_MANIFEST = JSON.stringify({
   id: "web-morph-preview",
   version: "0.0.0",
@@ -78,7 +79,9 @@ export async function createMorphPreview({ canvas }) {
       for (const asset of assets) {
         if (!asset || registeredAssets.has(asset.id)) continue;
         const artifactURL = asset.artifact?.url;
-        if (!artifactURL) throw new Error(`The morph asset "${asset.id}" has no runtime pack.`);
+        // Faces are analytic renderer inputs. They are part of the v2
+        // loadout, but do not have a .morphpack artifact to register.
+        if (!artifactURL) continue;
         const bytes = await loadMorphPacks({ [asset.id]: {
           url: new URL(artifactURL, backendApiUrl("/")).href,
         } });
@@ -109,27 +112,29 @@ export async function createMorphPreview({ canvas }) {
       animationFrame = requestAnimationFrame(render);
     }
 
-    function setAppearance(appearance) {
+    function setAppearance(appearance, renderAppearance = appearance) {
       if (disposed || !appearance?.base) return;
-      appearanceQueue = appearanceQueue.then(async () => {
+      appearanceQueue = appearanceQueue.catch((error) => {
+        console.error("Previous morph preview update failed", error);
+      }).then(async () => {
         await ensureMorphPacks(appearance);
         if (disposed) return;
         previewAppearanceRevision = Math.max(
           previewAppearanceRevision,
           Number(appearance.revision) || 0,
         ) + 1;
-        engine.setLocalAppearance(JSON.stringify({
-          ...appearance,
+        const status = engine.setLocalAppearance(JSON.stringify({
+          ...renderAppearance,
           revision: previewAppearanceRevision,
         }));
+        if (!status) throw new Error("The morph preview rejected the selected appearance.");
       });
-      appearanceQueue.catch(() => {});
     }
 
     function play(nextAction) {
       if (disposed) return;
       action = nextAction;
-      actionUntil = performance.now() + 750;
+      actionUntil = performance.now() + PREVIEW_ACTION_DURATION_MS;
     }
 
     animationFrame = requestAnimationFrame(render);

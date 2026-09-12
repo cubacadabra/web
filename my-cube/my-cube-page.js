@@ -606,10 +606,7 @@ async function renderBasics(user) {
     input.setAttribute("aria-invalid", String(profile.username_feedback?.kind === "error"
       && profile.username_validation_error !== null));
     const appearance = runtime.snapshot.appearance;
-    const sameIDs = (left, right) => left.length === right.length && left.every((id) => right.includes(id));
-    const selectedPreset = appearance.presets.find((preset) => preset.base === appearance.draft_base
-      && sameIDs(preset.parts, appearance.draft_parts)
-      && preset.face === appearance.draft_face);
+    const selectedPreset = appearance.presets.find((preset) => preset.id === appearance.draft_preset_id);
     const starterPanel = morphEditor.querySelector('[data-morph-panel="starters"]');
     const customizePanel = morphEditor.querySelector('[data-morph-panel="customize"]');
     morphEditor.querySelector(".morph-release").textContent = appearance.release ? `Catalog ${appearance.release}` : "";
@@ -628,14 +625,19 @@ async function renderBasics(user) {
         && (appearance.draft_parts.includes(asset.id) || appearance.draft_face === asset.id));
       if (current) runtime.dispatch({ type: "clear_morph_part", asset_id: current.id });
     }));
-    morphPreview?.setAppearance({
+    const draftLoadout = {
       version: 2,
       base: appearance.draft_base,
       parts: appearance.draft_parts,
       ...(appearance.draft_face ? { face: appearance.draft_face } : {}),
       parameters: {},
       revision: 0,
-    });
+    };
+    let renderAppearance = draftLoadout;
+    if (appearance.draft_render_json) try {
+      renderAppearance = JSON.parse(appearance.draft_render_json);
+    } catch { /* Rust snapshots always contain validated JSON. */ }
+    morphPreview?.setAppearance(draftLoadout, renderAppearance);
     morphEditor.querySelector(".morph-preview-name").textContent = selectedPreset?.display_name || "Custom morph";
     morphEditor.querySelectorAll("[data-morph-tab]").forEach((tab) => tab.onclick = () => { morphEditor.querySelectorAll("[data-morph-tab]").forEach((item) => item.setAttribute("aria-selected", String(item === tab))); morphEditor.querySelectorAll("[data-morph-panel]").forEach((panel) => { panel.hidden = panel.dataset.morphPanel !== tab.dataset.morphTab; }); });
     morphEditor.querySelectorAll("[data-preview-action]").forEach((button) => button.onclick = () => morphPreview?.play(button.dataset.previewAction));
@@ -695,16 +697,9 @@ async function renderBasics(user) {
       const finalProfile = runtime.snapshot.profile;
       if (!activeSession()) return;
       currentUser = { ...currentUser, username: finalProfile.username, body_id: finalProfile.body_id };
-      const selectedBase = runtime.snapshot.appearance.selected_base;
-      if (selectedBase) try {
-        window.localStorage.setItem(`cubacadabra.character-appearance:${encodeURIComponent(currentUser.id)}`, JSON.stringify({
-          version: 2,
-          base: selectedBase,
-          parts: runtime.snapshot.appearance.selected_parts,
-          ...(runtime.snapshot.appearance.selected_face ? { face: runtime.snapshot.appearance.selected_face } : {}),
-          parameters: {},
-          revision: 0,
-        }));
+      const selectedAppearance = runtime.snapshot.appearance.selected_render_json;
+      if (selectedAppearance) try {
+        window.localStorage.setItem(`cubacadabra.character-appearance:${encodeURIComponent(currentUser.id)}`, selectedAppearance);
       } catch { /* The server remains the source of truth. */ }
       basicsFeedback = { kind: "success", message: "Basics saved." };
     } catch (error) {
