@@ -8,16 +8,6 @@ export const LANDSCAPE_GROUPS = [
 
 export const LANDSCAPE_ENTRIES = [
   {
-    id: "roblox", title: "Roblox", group: "core", path: "/landscape/roblox/",
-    logo: "https://www.roblox.com/favicon.ico", source: "https://about.roblox.com/newsroom/2026/07/build-without-limits-on-roblox", sourceLabel: "Roblox platform update",
-    headline: "Roblox is the network-effect benchmark.",
-    lede: "The incumbent creator platform combines the broadest mix of players, discovery, monetization, and cultural familiarity in this category.",
-    kicker: "The incumbent",
-    copy: ["Roblox is a habit, not just an engine. Its creator loop—make, publish, discover, play, and earn—has years of compounding network effects behind it.", "The announced move toward experiences that can run as standalone apps makes the boundary between platform and distribution more fluid. The moat is moving, but it is still a moat."],
-    lesson: "Openness is a relationship. Build the loop, not only the renderer.",
-    facts: [["Center", "Players + creators"], ["Creation", "Integrated editor"], ["Economy", "Established"], ["Risk", "Platform dependence"]],
-  },
-  {
     id: "sbox", title: "s&box", group: "core", path: "/landscape/sbox/",
     logo: "https://sbox.game/favicon.ico", source: "https://github.com/Facepunch/sbox-public/", sourceLabel: "s&box public repository",
     headline: "s&box is the serious engine comparison.",
