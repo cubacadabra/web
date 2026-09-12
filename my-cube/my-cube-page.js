@@ -2,6 +2,7 @@ import { initializeAccountRuntime, clearAccountSession } from "../src/app/accoun
 import { getCurrentUser, initializeLogoutButton } from "../src/auth/session.js";
 import { backendApiUrl } from "../src/config/clientConfig.js";
 import { mountStripeEmbeddedCheckout } from "../src/payments/stripeEmbeddedCheckout.js";
+import { createMorphPreview } from "../src/ui/morphPreview.js";
 
 const loginPath = `/login/?returnTo=${encodeURIComponent(`${window.location.pathname}${window.location.search}${window.location.hash}`)}`;
 const content = document.querySelector(".about-content");
@@ -158,10 +159,11 @@ function basicsMarkup() {
             <div class="morph-panel" data-morph-panel="starters" role="tabpanel"></div>
             <div class="morph-panel" data-morph-panel="customize" role="tabpanel" hidden></div>
             <div class="morph-preview" aria-label="Morph preview">
-              <div class="morph-preview-stage"><img src="/images/player_boy_001.png" alt="" /><span class="morph-preview-shadow"></span></div>
+              <div class="morph-preview-stage"><canvas class="morph-preview-canvas" aria-label="Live 3D morph preview"></canvas><span class="morph-preview-shadow"></span></div>
               <div class="morph-preview-controls" role="group" aria-label="Preview actions">
                 <button type="button" data-preview-action="walk">Walk</button><button type="button" data-preview-action="jump">Jump</button><button type="button" data-preview-action="turn">Turn</button>
               </div>
+              <p class="morph-preview-name" aria-live="polite"></p>
             </div>
           </section>
           <p class="basics-status" id="basics-username-status" role="status" aria-live="polite"></p>
@@ -595,6 +597,8 @@ async function renderBasics(user) {
     && runtime.snapshot.session_id === sessionId && runtime.snapshot.account_id === accountId;
   let savingBasics = false;
   let basicsFeedback = null;
+  let morphPreview = null;
+  let previewCancelled = false;
 
   const render = ({ profile }) => {
     if (!form.isConnected) return;
@@ -604,18 +608,39 @@ async function renderBasics(user) {
     input.setAttribute("aria-invalid", String(profile.username_feedback?.kind === "error"
       && profile.username_validation_error !== null));
     const appearance = runtime.snapshot.appearance;
+    const sameIDs = (left, right) => left.length === right.length && left.every((id) => right.includes(id));
+    const selectedPreset = appearance.presets.find((preset) => preset.base === appearance.draft_base
+      && sameIDs(preset.parts, appearance.draft_parts)
+      && preset.face === appearance.draft_face);
     const starterPanel = morphEditor.querySelector('[data-morph-panel="starters"]');
     const customizePanel = morphEditor.querySelector('[data-morph-panel="customize"]');
     morphEditor.querySelector(".morph-release").textContent = appearance.release ? `Catalog ${appearance.release}` : "";
     starterPanel.innerHTML = appearance.is_loading ? "<p>Loading morphs…</p>" : appearance.presets.map((preset) => `
-      <button type="button" class="morph-choice ${preset.base === appearance.draft_base ? "is-selected" : ""}" data-preset-id="${preset.id}" ${!active || appearance.is_saving ? "disabled" : ""}><span>${preset.display_name}</span><small>${preset.parts.length ? "Ready to play" : "Base morph"}</small></button>`).join("") || "<p>No starter morphs are available.</p>";
+      <button type="button" class="morph-choice ${selectedPreset?.id === preset.id ? "is-selected" : ""}" data-preset-id="${preset.id}" ${!active || appearance.is_saving ? "disabled" : ""}><span>${preset.display_name}</span><small>${preset.parts.length ? "Ready to play" : "Base morph"}</small></button>`).join("") || "<p>No starter morphs are available.</p>";
     const byKind = new Map();
     appearance.assets.forEach((asset) => { if (asset.kind !== "base") byKind.set(asset.kind, [...(byKind.get(asset.kind) || []), asset]); });
     customizePanel.innerHTML = [...byKind.entries()].map(([kind, assets]) => `<label class="morph-customize-field"><span>${kind.replaceAll("-", " ")}</span><select data-morph-kind="${kind}" ${!active || appearance.is_saving ? "disabled" : ""}><option value="">None</option>${assets.map((asset) => `<option value="${asset.id}" ${appearance.draft_parts.includes(asset.id) || appearance.draft_face === asset.id ? "selected" : ""}>${asset.display_name}</option>`).join("")}</select></label>`).join("") || "<p>Customize options will appear here.</p>";
     starterPanel.querySelectorAll("[data-preset-id]").forEach((button) => button.addEventListener("click", () => runtime.dispatch({ type: "select_morph_preset", preset_id: button.dataset.presetId })));
-    customizePanel.querySelectorAll("select").forEach((select) => select.addEventListener("change", () => { if (select.value) runtime.dispatch({ type: "set_morph_part", asset_id: select.value }); }));
+    customizePanel.querySelectorAll("select").forEach((select) => select.addEventListener("change", () => {
+      if (select.value) {
+        runtime.dispatch({ type: "set_morph_part", asset_id: select.value });
+        return;
+      }
+      const current = appearance.assets.find((asset) => asset.kind === select.dataset.morphKind
+        && (appearance.draft_parts.includes(asset.id) || appearance.draft_face === asset.id));
+      if (current) runtime.dispatch({ type: "clear_morph_part", asset_id: current.id });
+    }));
+    morphPreview?.setAppearance({
+      version: 2,
+      base: appearance.draft_base,
+      parts: appearance.draft_parts,
+      ...(appearance.draft_face ? { face: appearance.draft_face } : {}),
+      parameters: {},
+      revision: 0,
+    });
+    morphEditor.querySelector(".morph-preview-name").textContent = selectedPreset?.display_name || "Custom morph";
     morphEditor.querySelectorAll("[data-morph-tab]").forEach((tab) => tab.onclick = () => { morphEditor.querySelectorAll("[data-morph-tab]").forEach((item) => item.setAttribute("aria-selected", String(item === tab))); morphEditor.querySelectorAll("[data-morph-panel]").forEach((panel) => { panel.hidden = panel.dataset.morphPanel !== tab.dataset.morphTab; }); });
-    morphEditor.querySelectorAll("[data-preview-action]").forEach((button) => button.onclick = () => { const stage = morphEditor.querySelector(".morph-preview-stage"); stage.dataset.action = button.dataset.previewAction; setTimeout(() => { if (stage.dataset.action === button.dataset.previewAction) delete stage.dataset.action; }, 700); });
+    morphEditor.querySelectorAll("[data-preview-action]").forEach((button) => button.onclick = () => morphPreview?.play(button.dataset.previewAction));
     submit.disabled = !active || savingBasics || profile.username_is_saving
       || appearance.is_saving || !(profile.username_can_save || appearance.draft_can_save);
     submit.setAttribute("aria-busy", String(savingBasics
@@ -629,7 +654,23 @@ async function renderBasics(user) {
       !active ? "error" : feedback?.kind === "error" ? "error"
         : savingBasics || profile.username_is_saving || appearance.is_saving ? "pending" : feedback?.kind ?? "");
   };
-  basicsCleanup = runtime.subscribe(render);
+  const unsubscribe = runtime.subscribe(render);
+  basicsCleanup = () => {
+    previewCancelled = true;
+    unsubscribe();
+    morphPreview?.destroy();
+    morphPreview = null;
+  };
+  try {
+    const preview = await createMorphPreview({ canvas: morphEditor.querySelector(".morph-preview-canvas") });
+    if (previewCancelled || !form.isConnected) preview.destroy();
+    else {
+      morphPreview = preview;
+      render(runtime.snapshot);
+    }
+  } catch {
+    morphEditor.querySelector(".morph-preview-name").textContent = "Live preview unavailable";
+  }
   input.addEventListener("input", () => {
     basicsFeedback = null;
     runtime.dispatch({ type: "username_changed", value: input.value });
