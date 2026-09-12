@@ -398,19 +398,29 @@ ${links}
     </div>`;
   }).join("\n");
 
-  return `<aside class="about-sidebar">
-  <div class="about-sidebar-heading">
-    <span>Landscape</span>
-    <span class="about-sidebar-status">A candid field guide</span>
-  </div>
+  return `<aside class="about-sidebar landscape-sidebar">
+  <button class="about-sidebar-toggle" type="button" aria-expanded="false" aria-controls="landscape-navigation">
+    <span class="about-sidebar-toggle-copy">
+      <span class="about-sidebar-toggle-label">Landscape</span>
+      <span class="about-sidebar-toggle-meta">Browse field guide</span>
+    </span>
+    <span class="about-sidebar-toggle-icon" aria-hidden="true"><i></i><i></i><i></i></span>
+  </button>
 
-  <nav class="about-menu landscape-menu" aria-label="Competitive landscape sections">
+  <div class="about-sidebar-panel" id="landscape-navigation">
+    <div class="about-sidebar-heading">
+      <span>Landscape</span>
+      <span class="about-sidebar-status">A candid field guide</span>
+    </div>
+
+    <nav class="about-menu landscape-menu" aria-label="Competitive landscape sections">
     <a${currentId === "landscape-overview" ? ' class="is-active" aria-current="page"' : ""} href="/landscape/">
       <span>Overview</span>
       <span class="about-menu-arrow" aria-hidden="true">↗</span>
     </a>
 ${groups}
-  </nav>
+    </nav>
+  </div>
 </aside>`;
 };
 
@@ -488,6 +498,7 @@ const renderLandscapeEntryTable = () => {
 
 const renderScripts = (page) => [
   ...(page.externalScripts ?? []),
+  ...(page.kind === "landscape" ? ["<script type=\"module\" src=\"/site/landscape-nav.js\"></script>"] : []),
   ...(page.scripts ?? []).map((source) => `<script type="module" src="${source}"></script>`),
 ].map((script) => `    ${script}`).join("\n");
 

@@ -10,6 +10,20 @@
   padding: 26px 0 84px;
 }
 
+.landscape-sidebar {
+  min-width: 0;
+}
+
+.about-sidebar-panel {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.about-sidebar-toggle {
+  display: none;
+}
+
 .landscape-content,
 .landscape-content * {
   box-sizing: border-box;
@@ -79,10 +93,18 @@
 
 .landscape-table-wrap {
   overflow-x: auto;
+  overscroll-behavior-inline: contain;
   border: 1px solid rgba(231, 233, 236, 0.13);
   border-radius: 8px;
   background: rgba(21, 25, 32, 0.72);
   scrollbar-color: rgba(139, 156, 246, 0.55) rgba(255, 255, 255, 0.06);
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
+.landscape-table-wrap:focus-visible {
+  outline: 2px solid var(--about-accent);
+  outline-offset: 3px;
 }
 
 .landscape-table {
@@ -135,6 +157,24 @@
   font-weight: 800;
   letter-spacing: 0.11em;
   text-transform: uppercase;
+}
+
+.landscape-table thead th:first-child,
+.landscape-table tbody tr:not(.landscape-table-group) > :first-child {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  background: #191d22;
+  box-shadow: 1px 0 rgba(139, 156, 246, 0.18);
+}
+
+.landscape-table tbody tr:not(.landscape-table-group) > :first-child {
+  z-index: 1;
+  background: #15191f;
+}
+
+.landscape-table tbody tr:hover:not(.landscape-table-group) > :first-child {
+  background: #1b2027;
 }
 
 .landscape-competitor-heading {
@@ -395,6 +435,10 @@
   margin: 11px 4px 0;
 }
 
+.landscape-table-scroll-hint {
+  display: none;
+}
+
 .landscape-bottom-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
@@ -637,7 +681,76 @@
   .landscape-page .about-sidebar {
     position: static;
     min-height: 0;
-    padding: 24px 0 0;
+    padding: 12px 0 0;
+  }
+
+  .landscape-page .about-sidebar-toggle {
+    display: flex;
+    width: 100%;
+    min-height: 50px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 0 2px 0 0;
+    border: 0;
+    border-bottom: 1px solid var(--about-line);
+    background: transparent;
+    color: var(--about-ink);
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .about-sidebar-toggle-copy {
+    display: grid;
+    gap: 4px;
+  }
+
+  .about-sidebar-toggle-label {
+    font-size: 13px;
+    font-weight: 750;
+  }
+
+  .about-sidebar-toggle-meta {
+    color: var(--about-faint);
+    font-size: 10px;
+    font-weight: 650;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .about-sidebar-toggle-icon {
+    display: grid;
+    width: 24px;
+    gap: 4px;
+  }
+
+  .about-sidebar-toggle-icon i {
+    display: block;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--about-ink);
+    transition: transform 180ms ease, opacity 180ms ease;
+  }
+
+  .landscape-page .about-sidebar.is-menu-open .about-sidebar-toggle-icon i:first-child {
+    transform: translateY(6px) rotate(45deg);
+  }
+
+  .landscape-page .about-sidebar.is-menu-open .about-sidebar-toggle-icon i:nth-child(2) {
+    opacity: 0;
+  }
+
+  .landscape-page .about-sidebar.is-menu-open .about-sidebar-toggle-icon i:last-child {
+    transform: translateY(-6px) rotate(-45deg);
+  }
+
+  .landscape-page .about-sidebar-panel {
+    display: none;
+    padding-top: 18px;
+  }
+
+  .landscape-page .about-sidebar.is-menu-open .about-sidebar-panel {
+    display: flex;
   }
 
   .landscape-page .about-sidebar-heading {
@@ -664,6 +777,24 @@
 
   .landscape-page .about-content {
     padding-top: 30px;
+  }
+
+  .landscape-table-scroll-hint {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 9px 4px 0;
+    color: var(--about-faint);
+    font-size: 10px;
+    font-weight: 650;
+    letter-spacing: 0.02em;
+  }
+
+  .landscape-table-scroll-hint span {
+    color: var(--about-accent);
+    font-size: 18px;
+    line-height: 0.7;
   }
 
   .landscape-heading {
