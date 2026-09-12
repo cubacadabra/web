@@ -1,7 +1,7 @@
 @media (max-width: 960px) {
   .my-cube-page .about-layout {
     grid-template-columns: 200px minmax(0, 1fr);
-    gap: 48px;
+    gap: 20px;
   }
 
   .birthday-workspace {

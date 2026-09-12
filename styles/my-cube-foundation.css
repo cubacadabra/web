@@ -12,11 +12,13 @@
 }
 
 .my-cube-page .about-layout {
-  grid-template-columns: 232px minmax(0, 900px);
-  gap: clamp(52px, 7vw, 104px);
+  grid-template-columns: 200px minmax(0, 1fr);
+  gap: 20px;
+  width: min(1780px, calc(100% - 32px));
 }
 
 .my-cube-page .about-content {
+  min-width: 0;
   padding-top: 66px;
 }
 
@@ -25,4 +27,3 @@
   color: var(--about-accent);
   font-weight: 700;
 }
-

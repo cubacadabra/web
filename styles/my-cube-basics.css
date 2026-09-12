@@ -213,14 +213,7 @@
   color: var(--about-faint);
 }
 
-.my-cube-page.is-morph-editor .about-layout {
-  grid-template-columns: 200px minmax(0, 1fr);
-  gap: 20px;
-  width: min(1780px, calc(100% - 32px));
-}
-
 .my-cube-page.is-morph-editor .about-content {
-  min-width: 0;
   padding: 14px 0 28px;
 }
 
