@@ -159,7 +159,7 @@ function basicsMarkup() {
             <div class="morph-panel" data-morph-panel="starters" role="tabpanel"></div>
             <div class="morph-panel" data-morph-panel="customize" role="tabpanel" hidden></div>
             <div class="morph-preview" aria-label="Morph preview">
-              <div class="morph-preview-stage"><canvas class="morph-preview-canvas" aria-label="Live 3D morph preview"></canvas><span class="morph-preview-shadow"></span></div>
+              <div class="morph-preview-stage"><canvas class="morph-preview-canvas" tabindex="0" aria-label="Live 3D morph preview. Drag the left side to move and the right side to orbit the camera."></canvas><span class="morph-preview-shadow"></span></div>
               <div class="morph-preview-controls" role="group" aria-label="Preview actions">
                 <button type="button" data-preview-action="walk">Walk</button><button type="button" data-preview-action="jump">Jump</button><button type="button" data-preview-action="turn">Turn</button>
               </div>

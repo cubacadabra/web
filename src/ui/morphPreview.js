@@ -4,6 +4,7 @@ import { backendApiUrl } from "../config/clientConfig.js";
 
 const MAX_MORPH_PACK_BYTES = 64 * 1024 * 1024;
 const PREVIEW_ACTION_DURATION_MS = 1500;
+const PREVIEW_JOYSTICK_RADIUS = 96;
 const STANDALONE_PREVIEW_MANIFEST = JSON.stringify({
   id: "web-morph-preview",
   version: "0.0.0",
@@ -69,8 +70,90 @@ export async function createMorphPreview({ canvas }) {
     let action = null;
     let actionUntil = 0;
     let previewAppearanceRevision = 0;
+    let movementForward = 0;
+    let movementStrafe = 0;
+    let lookX = 0;
+    let lookY = 0;
+    let zoomDelta = 0;
+    let pointer = null;
     const registeredAssets = new Set();
     let appearanceQueue = Promise.resolve();
+    const removeListeners = [];
+
+    function listen(target, type, handler, options) {
+      target.addEventListener(type, handler, options);
+      removeListeners.push(() => target.removeEventListener(type, handler, options));
+    }
+
+    function resetPointer(pointerId) {
+      if (!pointer || (pointerId !== undefined && pointer.id !== pointerId)) return;
+      pointer = null;
+      movementForward = 0;
+      movementStrafe = 0;
+      canvas.classList.remove("is-moving", "is-looking");
+    }
+
+    function handlePointerDown(event) {
+      if (pointer || (event.pointerType === "mouse" && event.button !== 0 && event.button !== 2)) {
+        return;
+      }
+      const bounds = canvas.getBoundingClientRect();
+      const localX = event.clientX - bounds.left;
+      const mode = event.button === 2 || localX >= bounds.width / 2 ? "look" : "move";
+      event.preventDefault();
+      canvas.setPointerCapture(event.pointerId);
+      canvas.focus({ preventScroll: true });
+      pointer = {
+        id: event.pointerId,
+        mode,
+        originX: event.clientX,
+        originY: event.clientY,
+        x: event.clientX,
+        y: event.clientY,
+      };
+      canvas.classList.add(mode === "look" ? "is-looking" : "is-moving");
+    }
+
+    function handlePointerMove(event) {
+      if (!pointer || event.pointerId !== pointer.id) return;
+      event.preventDefault();
+      if (pointer.mode === "move") {
+        movementStrafe = Math.max(-1, Math.min(1,
+          (event.clientX - pointer.originX) / PREVIEW_JOYSTICK_RADIUS,
+        ));
+        movementForward = Math.max(-1, Math.min(1,
+          -(event.clientY - pointer.originY) / PREVIEW_JOYSTICK_RADIUS,
+        ));
+      } else {
+        lookX += event.clientX - pointer.x;
+        lookY += event.clientY - pointer.y;
+      }
+      pointer.x = event.clientX;
+      pointer.y = event.clientY;
+    }
+
+    function handleWheel(event) {
+      if (Math.abs(event.deltaY) < 0.5) return;
+      event.preventDefault();
+      zoomDelta += Math.sign(event.deltaY) * 0.9;
+    }
+
+    listen(canvas, "pointerdown", handlePointerDown);
+    listen(canvas, "pointermove", handlePointerMove);
+    listen(canvas, "pointerup", (event) => resetPointer(event.pointerId));
+    listen(canvas, "pointercancel", (event) => resetPointer(event.pointerId));
+    listen(canvas, "lostpointercapture", (event) => resetPointer(event.pointerId));
+    listen(canvas, "contextmenu", (event) => event.preventDefault());
+    listen(canvas, "wheel", handleWheel, { passive: false });
+
+    const resizeObserver = typeof ResizeObserver === "undefined"
+      ? null
+      : new ResizeObserver(() => renderer.resize());
+    if (resizeObserver) {
+      resizeObserver.observe(canvas);
+    } else {
+      listen(window, "resize", renderer.resize);
+    }
 
     async function ensureMorphPacks(appearance) {
       const ids = [appearance.base, ...(appearance.parts || [])];
@@ -97,16 +180,26 @@ export async function createMorphPreview({ canvas }) {
       const delta = Math.min((currentTime - previousTime) / 1000, 0.05);
       previousTime = currentTime;
       const activeAction = currentTime < actionUntil ? action : null;
+      let forward = movementForward + (activeAction === "walk" ? 1 : 0);
+      let strafe = movementStrafe;
+      const movementLength = Math.hypot(forward, strafe);
+      if (movementLength > 1) {
+        forward /= movementLength;
+        strafe /= movementLength;
+      }
       engine.setInput(
-        activeAction === "walk" ? 1 : 0,
-        0,
+        forward,
+        strafe,
         false,
         activeAction === "jump",
         false,
-        activeAction === "turn" ? 6 : 0,
-        0,
-        0,
+        lookX + (activeAction === "turn" ? 6 : 0),
+        lookY,
+        zoomDelta,
       );
+      lookX = 0;
+      lookY = 0;
+      zoomDelta = 0;
       engine.step(delta);
       renderer.render(engine.rendererHandle());
       animationFrame = requestAnimationFrame(render);
@@ -145,6 +238,9 @@ export async function createMorphPreview({ canvas }) {
         if (disposed) return;
         disposed = true;
         cancelAnimationFrame(animationFrame);
+        resetPointer();
+        resizeObserver?.disconnect();
+        removeListeners.forEach((remove) => remove());
         renderer.destroy();
         engine.destroy();
       },

@@ -14,7 +14,7 @@
 }
 
 .basics-form {
-  width: min(100%, 450px);
+  width: min(100%, 760px);
   justify-self: start;
   padding: 0;
   border-top: 0;
@@ -22,6 +22,7 @@
 
 .basics-field {
   display: grid;
+  width: min(100%, 450px);
   gap: 8px;
   margin-top: 0;
   color: var(--about-soft);
@@ -241,11 +242,18 @@
 .morph-choice small { color: var(--about-faint); font-size: 11px; }
 .morph-customize-field { display: grid; gap: 6px; color: var(--about-soft); font-size: 11px; font-weight: 700; text-transform: capitalize; }
 .morph-customize-field select { min-height: 42px; padding: 0 10px; border: 1px solid rgba(231,233,236,.2); border-radius: 4px; background: rgba(255,255,255,.045); color: var(--about-ink); }
-.morph-preview { display: grid; grid-template-columns: minmax(150px, 210px) 1fr; gap: 14px; align-items: end; margin-top: 18px; padding-top: 14px; border-top: 1px solid rgba(231,233,236,.14); }
-.morph-preview-stage { position: relative; display: grid; place-items: end center; height: 210px; overflow: hidden; background: linear-gradient(160deg, rgba(139,156,246,.16), rgba(255,255,255,.04)); }
-.morph-preview-canvas { z-index: 1; width: 100%; height: 100%; display: block; }
+.morph-preview { display: grid; grid-template-columns: minmax(300px, 420px) minmax(0, 1fr); gap: 14px; align-items: end; margin-top: 18px; padding-top: 14px; border-top: 1px solid rgba(231,233,236,.14); }
+.morph-preview-stage { position: relative; display: grid; place-items: end center; height: 420px; overflow: hidden; background: linear-gradient(160deg, rgba(139,156,246,.16), rgba(255,255,255,.04)); }
+.morph-preview-canvas { z-index: 1; width: 100%; height: 100%; display: block; cursor: grab; touch-action: none; }
+.morph-preview-canvas.is-moving { cursor: move; }
+.morph-preview-canvas.is-looking { cursor: grabbing; }
 .morph-preview-shadow { position: absolute; bottom: 10px; width: 70px; height: 13px; border-radius: 50%; background: rgba(0,0,0,.22); }
 .morph-preview-name { margin: 0; color: var(--about-ink); font-size: 12px; font-weight: 700; }
 .morph-preview-controls { display: flex; flex-wrap: wrap; gap: 8px; }
 .morph-preview-controls button { min-height: 40px; padding: 0 13px; border: 1px solid rgba(231,233,236,.2); border-radius: 4px; background: transparent; color: var(--about-soft); cursor: pointer; }
 .morph-preview-controls button:hover { border-color: var(--about-accent); color: var(--about-ink); }
+
+@media (max-width: 720px) {
+  .morph-preview { grid-template-columns: minmax(0, 1fr); align-items: start; }
+  .morph-preview-stage { width: min(100%, 420px); height: auto; aspect-ratio: 1; }
+}
