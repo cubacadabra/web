@@ -235,6 +235,10 @@ export function createRustEngine(exports, bindings, manifestSource, scriptSource
     resetView() {
       call("engine_reset_view");
     },
+    resetShowcaseView() {
+      if (typeof exports.engine_reset_showcase_view !== "function") return;
+      call("engine_reset_showcase_view");
+    },
     readFrame,
     rendererHandle() {
       return handle;

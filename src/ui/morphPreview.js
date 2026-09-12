@@ -62,6 +62,7 @@ export async function createMorphPreview({ canvas }) {
       STANDALONE_PREVIEW_SCRIPT,
     );
     renderer.setAvatarPreviewMode(true);
+    engine.resetShowcaseView();
     engine.setAuthenticated(true);
 
     let disposed = false;
@@ -75,7 +76,6 @@ export async function createMorphPreview({ canvas }) {
     let lookX = 0;
     let lookY = 0;
     let zoomDelta = 0;
-    let initialZoomPending = true;
     let pointer = null;
     const registeredAssets = new Set();
     let appearanceQueue = Promise.resolve();
@@ -196,9 +196,8 @@ export async function createMorphPreview({ canvas }) {
         false,
         lookX + (activeAction === "turn" ? 6 : 0),
         lookY,
-        zoomDelta + (initialZoomPending ? -6.5 : 0),
+        zoomDelta,
       );
-      initialZoomPending = false;
       lookX = 0;
       lookY = 0;
       zoomDelta = 0;
