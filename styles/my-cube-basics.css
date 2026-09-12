@@ -263,7 +263,7 @@
 
 .morph-preview-stage {
   position: relative;
-  height: clamp(420px, 52vh, 520px);
+  height: clamp(460px, 60vh, 660px);
   overflow: hidden;
   background: #111722;
 }
