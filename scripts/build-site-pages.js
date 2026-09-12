@@ -280,9 +280,11 @@ const renderFooter = (page) => {
 
   return `<footer class="about-footer" aria-label="cubacadabra status">
 ${status}  <nav class="about-social-links" aria-label="Social links">
+    <span class="about-footer-label" aria-hidden="true">Follow</span>
 ${social}
   </nav>
   <nav class="about-legal-links" aria-label="Legal pages">
+    <span class="about-footer-label" aria-hidden="true">Explore</span>
 ${legal}
   </nav>
 </footer>`;
