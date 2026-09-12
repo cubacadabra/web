@@ -24,7 +24,7 @@ const normalize = async () => {
   await Promise.all(SITE_PAGES.map(movePage));
   await fs.rm(path.join(distDirectory, "node_modules"), { recursive: true, force: true });
   await fs.copyFile(
-    path.join(distDirectory, "index.html"),
+    path.join(distDirectory, "cube/index.html"),
     path.join(distDirectory, "404.html"),
   );
   await Promise.all([

@@ -426,6 +426,19 @@ ${indent(renderMyCubeSidebar(), 4)}
 ${indent(renderFooter(page), 2)}
 </div>`;
 
+const renderCubePage = (page) => `<div class="about-shell cube-route-shell">
+${indent(renderHeader(page), 2)}
+
+  <main class="cube-route-main" id="cube-page-root" aria-live="polite">
+    <div class="cube-route-loading">
+      <span class="cube-route-loading-mark" aria-hidden="true"></span>
+      <p>Loading cube…</p>
+    </div>
+  </main>
+
+${indent(renderFooter(page), 2)}
+</div>`;
+
 const outputPathForPage = (outputDirectory, page) => page.path === "/"
   ? path.join(outputDirectory, "index.html")
   : path.join(outputDirectory, page.path.slice(1), "index.html");
@@ -449,6 +462,7 @@ export const buildSitePages = async ({ outputDirectory }) => {
     if (page.kind === "about") body = renderAboutPage(page, sectionsSource);
     else if (page.kind === "shell-content") body = renderShellPage(page, content[page.content]);
     else if (page.kind === "my-cube") body = renderMyCubePage(page);
+    else if (page.kind === "cube") body = renderCubePage(page);
     else body = content[page.content];
 
     const outputPath = outputPathForPage(outputDirectory, page);

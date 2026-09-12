@@ -1,7 +1,7 @@
 import { backendApiUrl } from "../config/clientConfig.js";
 
 const DEFAULT_GAME_ID = "first-game";
-const GAME_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const GAME_ID_PATTERN = /^(?=.{3,64}$)[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const LOCAL_GAME_IDS = new Set([
   "first-game",
   "second-game",
@@ -20,7 +20,9 @@ const MORPH_PATH_PATTERN = /^assets\/(?:[A-Za-z0-9_-][A-Za-z0-9._-]*\/)*[A-Za-z0
 
 function requestedGameId() {
   const gameId = new URLSearchParams(window.location.search).get("game");
-  return gameId && GAME_ID_PATTERN.test(gameId) ? gameId : DEFAULT_GAME_ID;
+  return gameId && gameId.trim() === gameId && GAME_ID_PATTERN.test(gameId)
+    ? gameId
+    : DEFAULT_GAME_ID;
 }
 
 function parseColor(value, fallback = 0xffffff) {

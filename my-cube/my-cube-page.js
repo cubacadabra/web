@@ -231,7 +231,7 @@ function cubeUploadMarkup() {
     <div class="cube-upload-view" id="upload-cube">
       <div class="cube-upload-heading">
         <h1>Upload a Cube</h1>
-        <p>Upload a built cubacadabra cube package. The ZIP must include its manifest and game script.</p>
+        <p>Upload a built cubacadabra cube package. Its manifest supplies the unique cube ID and display name.</p>
       </div>
       <form class="cube-upload-form" novalidate>
         <label class="cube-upload-field" for="cube-upload-file">
@@ -384,9 +384,7 @@ async function fetchCubeCatalog() {
 }
 
 function cubeGameUrl(cubeId) {
-  const url = new URL("/", window.location.origin);
-  url.searchParams.set("game", cubeId);
-  return url.href;
+  return new URL(`/cube/${encodeURIComponent(cubeId)}`, window.location.origin).href;
 }
 
 function createRemoteCubeRow(cube) {
@@ -780,13 +778,15 @@ function cubeUploadErrorMessage(error) {
     case "zip_required":
       return "Choose a ZIP file to upload.";
     case "invalid_cube_id":
-      return "The cube ID must use lowercase letters, numbers, and dashes.";
+      return "The cube ID must be 3–64 characters using lowercase letters, numbers, and single dashes.";
     case "invalid_cube_version":
       return "The cube manifest needs a valid version number.";
     case "invalid_display_name":
       return "The cube display name is invalid.";
     case "cube_already_exists":
       return "That cube version is already uploaded to your account.";
+    case "cube_id_taken":
+      return "That cube ID is already used by another creator. Choose a different ID in manifest.json.";
     case "not_authenticated":
       return "Your session has expired. Please sign in again.";
     case "invalid_cube_package":

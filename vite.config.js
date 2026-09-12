@@ -26,6 +26,7 @@ const routesWithoutTrailingSlash = new Set(
     .filter((routePath) => routePath !== "/")
     .map((routePath) => routePath.replace(/\/$/, "")),
 );
+const cubeRoutePattern = /^\/cube\/[^/]+\/?$/;
 
 const sitePageServer = () => ({
   name: "site-page-server",
@@ -56,7 +57,8 @@ const sitePageServer = () => ({
         return;
       }
 
-      const page = pagesByPath.get(pathname);
+      const page = pagesByPath.get(pathname)
+        || (cubeRoutePattern.test(pathname) ? pagesByPath.get("/cube/") : null);
       if (!page) {
         next();
         return;
@@ -77,6 +79,11 @@ const sitePageServer = () => ({
   configurePreviewServer(server) {
     server.middlewares.use((request, response, next) => {
       const pathname = request.url?.split("?")[0];
+      if (cubeRoutePattern.test(pathname)) {
+        request.url = `/cube/index.html${request.url.slice(pathname.length)}`;
+        next();
+        return;
+      }
       if (!routesWithoutTrailingSlash.has(pathname)) {
         next();
         return;

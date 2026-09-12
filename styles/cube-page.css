@@ -1,0 +1,242 @@
+.cube-route-shell {
+  min-height: 100svh;
+}
+
+.cube-route-main {
+  min-height: calc(100svh - 132px);
+  padding: 116px clamp(24px, 7vw, 112px) 72px;
+}
+
+.cube-route-loading,
+.cube-route-message {
+  display: grid;
+  min-height: 48vh;
+  align-content: center;
+  justify-items: start;
+  width: min(100%, 640px);
+  margin: 0 auto;
+}
+
+.cube-route-loading {
+  justify-items: center;
+  color: var(--about-soft);
+  text-align: center;
+}
+
+.cube-route-loading p {
+  margin: 18px 0 0;
+  font-size: 13px;
+}
+
+.cube-route-loading-mark {
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(139, 156, 246, 0.28);
+  border-top-color: var(--about-accent);
+  border-radius: 50%;
+  animation: cube-route-spin 800ms linear infinite;
+}
+
+.cube-route-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.72fr);
+  gap: clamp(40px, 8vw, 132px);
+  align-items: center;
+  width: min(100%, 1120px);
+  min-height: min(680px, calc(100svh - 204px));
+  margin: 0 auto;
+}
+
+.cube-route-hero::before {
+  position: absolute;
+  inset: 8% 30% 8% -20%;
+  border: 1px solid rgba(139, 156, 246, 0.11);
+  border-radius: 50%;
+  content: "";
+  transform: rotate(-18deg);
+  pointer-events: none;
+}
+
+.cube-route-hero-art {
+  position: relative;
+  min-height: min(540px, 58vh);
+  overflow: hidden;
+  border-left: 1px solid rgba(255, 255, 255, 0.11);
+  background:
+    linear-gradient(115deg, transparent 0 49%, rgba(139, 156, 246, 0.1) 49.2% 49.5%, transparent 49.7%),
+    linear-gradient(25deg, transparent 0 49%, rgba(237, 114, 91, 0.1) 49.2% 49.5%, transparent 49.7%),
+    radial-gradient(circle at 50% 44%, rgba(139, 156, 246, 0.18), transparent 25%),
+    #131619;
+}
+
+.cube-route-hero-art::after {
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-size: 48px 48px;
+  content: "";
+  opacity: 0.45;
+  mask-image: linear-gradient(90deg, transparent, black 22%, black 78%, transparent);
+}
+
+.cube-route-orbit {
+  position: absolute;
+  border: 1px solid rgba(139, 156, 246, 0.2);
+  border-radius: 50%;
+  transform: rotate(-26deg);
+}
+
+.cube-route-orbit-one {
+  width: 72%;
+  height: 36%;
+  top: 28%;
+  left: 14%;
+}
+
+.cube-route-orbit-two {
+  width: 52%;
+  height: 82%;
+  top: 8%;
+  left: 24%;
+  border-color: rgba(237, 114, 91, 0.23);
+  transform: rotate(58deg);
+}
+
+.cube-route-art-cube {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 150px;
+  height: 150px;
+  border: 1px solid rgba(231, 233, 236, 0.72);
+  background: linear-gradient(135deg, rgba(139, 156, 246, 0.34), rgba(237, 114, 91, 0.12));
+  box-shadow: 34px 32px 0 -1px rgba(17, 19, 21, 0.88), 34px 32px 0 0 rgba(231, 233, 236, 0.28);
+  transform: translate(-50%, -50%) rotate(30deg) skewY(-8deg);
+  animation: cube-route-float 5s ease-in-out infinite;
+}
+
+.cube-route-art-cube i {
+  position: absolute;
+  display: block;
+  width: 8px;
+  height: 8px;
+  border: 1px solid rgba(231, 233, 236, 0.72);
+  border-radius: 50%;
+}
+
+.cube-route-art-cube i:nth-child(1) { top: 24px; left: 28px; }
+.cube-route-art-cube i:nth-child(2) { right: 30px; bottom: 30px; }
+.cube-route-art-cube i:nth-child(3) { top: 68px; left: 68px; background: var(--about-logo-accent); border-color: var(--about-logo-accent); }
+
+.cube-route-copy {
+  position: relative;
+  z-index: 1;
+  max-width: 470px;
+}
+
+.cube-route-kicker {
+  margin: 0 0 18px;
+  color: var(--about-accent);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.cube-route-copy h1,
+.cube-route-message h1 {
+  max-width: 11ch;
+  margin: 0;
+  color: var(--about-ink);
+  font-size: clamp(42px, 6vw, 82px);
+  font-weight: 700;
+  letter-spacing: -0.065em;
+  line-height: 0.98;
+}
+
+.cube-route-byline {
+  margin: 24px 0 0;
+  color: var(--about-soft);
+  font-size: 14px;
+}
+
+.cube-route-byline strong {
+  color: var(--about-ink);
+  font-weight: 600;
+}
+
+.cube-route-description,
+.cube-route-message p {
+  max-width: 38ch;
+  margin: 22px 0 0;
+  color: var(--about-soft);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.cube-route-primary-action,
+.cube-route-secondary-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 48px;
+  margin-top: 34px;
+  padding: 0 18px;
+  border: 1px solid var(--about-accent);
+  color: #111315;
+  background: var(--about-accent);
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+  transition: transform 180ms ease, background 180ms ease;
+}
+
+.cube-route-primary-action:hover,
+.cube-route-primary-action:focus-visible {
+  background: #aeb9ff;
+  transform: translateY(-2px);
+}
+
+.cube-route-primary-action span {
+  font-size: 18px;
+  font-weight: 400;
+}
+
+.cube-route-meta {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  gap: 28px;
+  margin: 0;
+  color: var(--about-faint);
+  font-size: 11px;
+}
+
+.cube-route-meta div { display: grid; gap: 6px; }
+.cube-route-meta dt { text-transform: uppercase; letter-spacing: 0.12em; }
+.cube-route-meta dd { margin: 0; color: var(--about-soft); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+.cube-route-message h1 { max-width: 12ch; font-size: clamp(38px, 5vw, 68px); }
+.cube-route-secondary-action { color: var(--about-ink); background: transparent; border-color: var(--about-line); }
+.cube-route-secondary-action:hover,
+.cube-route-secondary-action:focus-visible { border-color: var(--about-accent); color: var(--about-accent); }
+
+@keyframes cube-route-spin { to { transform: rotate(360deg); } }
+@keyframes cube-route-float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -12px; } }
+
+@media (max-width: 760px) {
+  .cube-route-main { padding: 92px 22px 48px; }
+  .cube-route-hero { display: flex; min-height: auto; flex-direction: column-reverse; align-items: stretch; gap: 36px; }
+  .cube-route-hero-art { min-height: 300px; border-left: 0; border-top: 1px solid rgba(255, 255, 255, 0.11); }
+  .cube-route-copy h1 { font-size: clamp(44px, 14vw, 64px); }
+  .cube-route-meta { position: static; margin-top: 28px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cube-route-loading-mark,
+  .cube-route-art-cube { animation: none; }
+  .cube-route-primary-action { transition: none; }
+}
