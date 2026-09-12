@@ -26,7 +26,7 @@ const routesWithoutTrailingSlash = new Set(
     .filter((routePath) => routePath !== "/")
     .map((routePath) => routePath.replace(/\/$/, "")),
 );
-const cubeRoutePattern = /^\/cube\/[^/]+\/?$/;
+const cubeRoutePattern = /^\/cube\/[a-z0-9]+(?:-[a-z0-9]+)*\/?$/;
 
 const sitePageServer = () => ({
   name: "site-page-server",
