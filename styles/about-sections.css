@@ -417,7 +417,26 @@
   }
 
   .about-footer {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: 1fr;
+    margin: 0 18px;
     padding-bottom: 0;
+  }
+
+  .about-footer .about-social-links,
+  .about-footer .about-legal-links {
+    min-width: 0;
+    justify-content: flex-start;
+    gap: 12px 20px;
+    margin: 0;
+  }
+
+  .about-footer .about-social-links a,
+  .about-footer .about-legal-links a {
+    display: inline-flex;
+    min-height: 32px;
+    align-items: center;
   }
 }
 

@@ -220,15 +220,15 @@ const renderHeader = (page) => {
     <input type="search" placeholder="Search starter morphs…" autocomplete="off" />
   </label>`
     : "";
-  const mobileNavigation = page.kind === "landscape"
+  const mobileNavigation = page.header === "product"
     ? `
-  <button class="landscape-topbar-toggle" type="button" aria-label="Open site menu" aria-expanded="false" aria-controls="landscape-topbar-navigation">
-    <span class="landscape-topbar-toggle-icon" aria-hidden="true"><i></i><i></i><i></i></span>
+  <button class="mobile-product-nav-toggle" type="button" aria-label="Open site menu" aria-expanded="false" aria-controls="mobile-product-nav">
+    <span class="mobile-product-nav-toggle-icon" aria-hidden="true"><i></i><i></i><i></i></span>
   </button>`
     : "";
-  const navigationId = page.kind === "landscape" ? ' id="landscape-topbar-navigation"' : "";
-  const navigationClass = page.kind === "landscape"
-    ? `${variant.navClass} landscape-topbar-nav`
+  const navigationId = page.header === "product" ? ' id="mobile-product-nav"' : "";
+  const navigationClass = page.header === "product"
+    ? `${variant.navClass} mobile-product-nav`
     : variant.navClass;
 
   return `<header class="${variant.className}">
@@ -500,7 +500,7 @@ const renderLandscapeEntryTable = () => {
 
 const renderScripts = (page) => [
   ...(page.externalScripts ?? []),
-  ...(page.kind === "landscape" ? ["<script type=\"module\" src=\"/site/landscape-nav.js\"></script>"] : []),
+  ...(page.header === "product" ? ["<script type=\"module\" src=\"/site/mobile-product-nav.js\"></script>"] : []),
   ...(page.scripts ?? []).map((source) => `<script type="module" src="${source}"></script>`),
 ].map((script) => `    ${script}`).join("\n");
 
