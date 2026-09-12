@@ -14,7 +14,7 @@ const CUBE_CATALOG_PAGE_SIZE = 20;
 const MAX_CUBE_ZIP_BYTES = 25 * 1024 * 1024;
 let currentUser = null;
 let accountReady;
-let basicsCleanup;
+let sectionCleanup;
 let subscriptionCheckoutCleanup = null;
 
 function calculateAge(dob) {
@@ -29,8 +29,9 @@ function calculateAge(dob) {
 }
 
 function setMenuState(requiresBirthday, activeSection = requiresBirthday ? "birthday" : "basics") {
-  basicsCleanup?.();
-  basicsCleanup = null;
+  sectionCleanup?.();
+  sectionCleanup = null;
+  document.body.classList.toggle("is-morph-editor", !requiresBirthday && activeSection === "morph-editor");
   const firstLink = menuLinks[0];
   if (firstLink) {
     firstLink.href = requiresBirthday ? "#birthday" : "#item1";
@@ -145,32 +146,65 @@ function basicsMarkup() {
     <div class="basics-view" id="item1">
       <div class="basics-workspace">
         <form class="basics-form" novalidate autocomplete="off">
+          <div class="basics-heading">
+            <h1>Basics</h1>
+            <p>Update the name other players see.</p>
+          </div>
           <label class="basics-field" for="my-cube-username">
             <span>Username</span>
             <input id="my-cube-username" name="username" type="text" autocomplete="nickname" aria-describedby="my-cube-username-help basics-username-status" spellcheck="false" required />
           </label>
           <p class="basics-field-help" id="my-cube-username-help">Use 2–24 letters, numbers, _ or -.</p>
-          <section class="morph-editor" aria-labelledby="morph-editor-title">
-            <div class="morph-editor-heading"><div><h2 id="morph-editor-title">Your morph</h2><p>Pick a starter, then make it yours.</p></div><span class="morph-release" aria-live="polite"></span></div>
-            <div class="morph-tabs" role="tablist" aria-label="Morph editor">
-              <button type="button" role="tab" aria-selected="true" data-morph-tab="starters">Starters</button>
-              <button type="button" role="tab" aria-selected="false" data-morph-tab="customize">Customize</button>
-            </div>
-            <div class="morph-panel" data-morph-panel="starters" role="tabpanel"></div>
-            <div class="morph-panel" data-morph-panel="customize" role="tabpanel" hidden></div>
-            <div class="morph-preview" aria-label="Morph preview">
-              <div class="morph-preview-stage"><canvas class="morph-preview-canvas" tabindex="0" aria-label="Live 3D morph preview. Drag the left side to move and the right side to orbit the camera."></canvas><span class="morph-preview-shadow"></span></div>
-              <div class="morph-preview-controls" role="group" aria-label="Preview actions">
-                <button type="button" data-preview-action="walk">Walk</button><button type="button" data-preview-action="jump">Jump</button><button type="button" data-preview-action="turn">Turn</button>
-              </div>
-              <p class="morph-preview-name" aria-live="polite"></p>
-            </div>
-          </section>
           <p class="basics-status" id="basics-username-status" role="status" aria-live="polite"></p>
-          <button class="basics-submit" type="submit" disabled>Save</button>
+          <button class="basics-submit" type="submit" disabled>Save username</button>
         </form>
       </div>
     </div>`;
+}
+
+function morphEditorMarkup() {
+  return `
+    <form class="morph-editor" id="morph-editor" novalidate>
+      <div class="morph-editor-layout">
+        <div class="morph-main-column">
+          <div class="morph-editor-heading">
+            <div><h1 id="morph-editor-title">Morph Editor</h1><p>Pick a starter, then make it yours.</p></div>
+            <span class="morph-release" aria-live="polite"></span>
+          </div>
+          <section class="morph-preview" aria-labelledby="morph-editor-title">
+            <div class="morph-preview-stage">
+              <canvas class="morph-preview-canvas" tabindex="0" aria-label="Live 3D morph preview. Drag the left side to move and the right side to orbit the camera."></canvas>
+              <div class="morph-preview-overlay">
+                <p class="morph-preview-name" aria-live="polite"></p>
+                <span>Drag to move or orbit · Scroll to zoom</span>
+              </div>
+            </div>
+            <div class="morph-preview-controls" role="group" aria-label="Preview actions">
+              <button type="button" data-preview-action="walk">Walk</button>
+              <button type="button" data-preview-action="jump">Jump</button>
+              <button type="button" data-preview-action="turn">Turn</button>
+            </div>
+          </section>
+          <section class="morph-starters" data-morph-panel="starters" role="tabpanel" aria-label="Starter morphs">
+            <div class="morph-section-heading"><h2>Starter gallery</h2><span>Choose a ready-to-play look</span></div>
+            <div class="morph-starter-grid"></div>
+          </section>
+        </div>
+        <aside class="morph-inspector" aria-label="Morph controls">
+          <div class="morph-tabs" role="tablist" aria-label="Morph editor">
+            <button type="button" role="tab" aria-selected="true" data-morph-tab="starters">Starters</button>
+            <button type="button" role="tab" aria-selected="false" data-morph-tab="customize">Customize</button>
+          </div>
+          <div class="morph-inspector-heading">
+            <h2>Appearance</h2>
+            <p>Combine clothing, hair, and accessories.</p>
+          </div>
+          <div class="morph-panel morph-customize-panel" data-morph-panel="customize" role="tabpanel" hidden></div>
+          <p class="morph-status" role="status" aria-live="polite"></p>
+          <button class="morph-save" type="submit" disabled>Save Morph</button>
+        </aside>
+      </div>
+    </form>`;
 }
 
 function cubesMarkup() {
@@ -571,7 +605,6 @@ async function renderBasics(user) {
   const input = content.querySelector("#my-cube-username");
   const status = content.querySelector("#basics-username-status");
   const submit = form.querySelector(".basics-submit");
-  const morphEditor = form.querySelector(".morph-editor");
   input.disabled = true;
   setFormStatus(status, "Loading profile…");
 
@@ -586,17 +619,13 @@ async function renderBasics(user) {
     return;
   }
   if (!form.isConnected) return;
-  await runtime.dispatch({ type: "load_appearance_catalog" });
-  await runtime.dispatch({ type: "begin_appearance_edit" });
   runtime.dispatch({ type: "begin_username_edit" });
   const sessionId = runtime.snapshot.session_id;
   const accountId = runtime.snapshot.account_id;
   const activeSession = () => accountId !== null
     && runtime.snapshot.session_id === sessionId && runtime.snapshot.account_id === accountId;
-  let savingBasics = false;
-  let basicsFeedback = null;
-  let morphPreview = null;
-  let previewCancelled = false;
+  let saving = false;
+  let localFeedback = null;
 
   const render = ({ profile }) => {
     if (!form.isConnected) return;
@@ -605,17 +634,100 @@ async function renderBasics(user) {
     input.disabled = !active;
     input.setAttribute("aria-invalid", String(profile.username_feedback?.kind === "error"
       && profile.username_validation_error !== null));
-    const appearance = runtime.snapshot.appearance;
+    submit.disabled = !active || saving || profile.username_is_saving || !profile.username_can_save;
+    submit.setAttribute("aria-busy", String(saving || profile.username_is_saving));
+    const feedback = localFeedback ?? profile.username_feedback;
+    setFormStatus(status,
+      !active ? "Please sign in again."
+        : feedback?.kind === "error" ? feedback.message
+          : saving || profile.username_is_saving ? "Saving username…"
+            : feedback?.message ?? "",
+      !active ? "error" : feedback?.kind === "error" ? "error"
+        : saving || profile.username_is_saving ? "pending" : feedback?.kind ?? "");
+  };
+  const unsubscribe = runtime.subscribe(render);
+  sectionCleanup = unsubscribe;
+  input.addEventListener("input", () => {
+    localFeedback = null;
+    runtime.dispatch({ type: "username_changed", value: input.value });
+  });
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!activeSession() || saving || runtime.snapshot.profile.username_is_saving) return;
+    saving = true;
+    localFeedback = null;
+    render(runtime.snapshot);
+    try {
+      await runtime.dispatch({ type: "save_username" });
+      const profile = runtime.snapshot.profile;
+      if (!activeSession() || !form.isConnected || profile.username_validation_error
+        || profile.username_is_dirty || profile.username_feedback?.kind === "error") return;
+      currentUser = { ...currentUser, username: profile.username };
+      localFeedback = { kind: "success", message: "Username saved." };
+    } catch {
+      localFeedback = { kind: "error", message: "We couldn’t save your username. Please try again." };
+    } finally {
+      saving = false;
+      render(runtime.snapshot);
+    }
+  });
+  input.focus();
+  input.select();
+}
+
+async function renderMorphEditor() {
+  setMenuState(false, "morph-editor");
+  content.innerHTML = morphEditorMarkup();
+  const form = content.querySelector(".morph-editor");
+  const starterGrid = form.querySelector(".morph-starter-grid");
+  const customizePanel = form.querySelector('[data-morph-panel="customize"]');
+  const status = form.querySelector(".morph-status");
+  const submit = form.querySelector(".morph-save");
+  let runtime;
+  try { runtime = await accountReady; }
+  catch {
+    if (!form.isConnected) return;
+    setFormStatus(status, "We couldn’t load the Morph Editor. Please reload and try again.", "error");
+    return;
+  }
+  if (!form.isConnected) return;
+  await runtime.dispatch({ type: "load_appearance_catalog" });
+  await runtime.dispatch({ type: "begin_appearance_edit" });
+  const sessionId = runtime.snapshot.session_id;
+  const accountId = runtime.snapshot.account_id;
+  const activeSession = () => accountId !== null
+    && runtime.snapshot.session_id === sessionId && runtime.snapshot.account_id === accountId;
+  let saving = false;
+  let localFeedback = null;
+  let morphPreview = null;
+  let previewCancelled = false;
+  let activeTab = "starters";
+
+  const selectTab = (nextTab) => {
+    activeTab = nextTab;
+    form.dataset.activeTab = nextTab;
+    form.querySelectorAll("[data-morph-tab]").forEach((tab) => {
+      tab.setAttribute("aria-selected", String(tab.dataset.morphTab === nextTab));
+    });
+    form.querySelectorAll("[data-morph-panel]").forEach((panel) => {
+      panel.hidden = panel.dataset.morphPanel !== nextTab;
+    });
+  };
+
+  const render = ({ appearance }) => {
+    if (!form.isConnected) return;
+    const active = activeSession();
     const selectedPreset = appearance.presets.find((preset) => preset.id === appearance.draft_preset_id);
-    const starterPanel = morphEditor.querySelector('[data-morph-panel="starters"]');
-    const customizePanel = morphEditor.querySelector('[data-morph-panel="customize"]');
-    morphEditor.querySelector(".morph-release").textContent = appearance.release ? `Catalog ${appearance.release}` : "";
-    starterPanel.innerHTML = appearance.is_loading ? "<p>Loading morphs…</p>" : appearance.presets.map((preset) => `
+    form.querySelector(".morph-release").textContent = appearance.release ? `Catalog ${appearance.release}` : "";
+    starterGrid.innerHTML = appearance.is_loading ? "<p>Loading morphs…</p>" : appearance.presets.map((preset) => `
       <button type="button" class="morph-choice ${selectedPreset?.id === preset.id ? "is-selected" : ""}" data-preset-id="${preset.id}" ${!active || appearance.is_saving ? "disabled" : ""}><span>${preset.display_name}</span><small>${preset.parts.length ? "Ready to play" : "Base morph"}</small></button>`).join("") || "<p>No starter morphs are available.</p>";
     const byKind = new Map();
-    appearance.assets.forEach((asset) => { if (asset.kind !== "base") byKind.set(asset.kind, [...(byKind.get(asset.kind) || []), asset]); });
+    appearance.assets.forEach((asset) => {
+      if (asset.kind !== "base") byKind.set(asset.kind, [...(byKind.get(asset.kind) || []), asset]);
+    });
     customizePanel.innerHTML = [...byKind.entries()].map(([kind, assets]) => `<label class="morph-customize-field"><span>${kind.replaceAll("-", " ")}</span><select data-morph-kind="${kind}" ${!active || appearance.is_saving ? "disabled" : ""}><option value="">None</option>${assets.map((asset) => `<option value="${asset.id}" ${appearance.draft_parts.includes(asset.id) || appearance.draft_face === asset.id ? "selected" : ""}>${asset.display_name}</option>`).join("")}</select></label>`).join("") || "<p>Customize options will appear here.</p>";
-    starterPanel.querySelectorAll("[data-preset-id]").forEach((button) => button.addEventListener("click", () => runtime.dispatch({ type: "select_morph_preset", preset_id: button.dataset.presetId })));
+    starterGrid.querySelectorAll("[data-preset-id]").forEach((button) => button.addEventListener("click", () => runtime.dispatch({ type: "select_morph_preset", preset_id: button.dataset.presetId })));
     customizePanel.querySelectorAll("select").forEach((select) => select.addEventListener("change", () => {
       if (select.value) {
         runtime.dispatch({ type: "set_morph_part", asset_id: select.value });
@@ -638,84 +750,67 @@ async function renderBasics(user) {
       renderAppearance = JSON.parse(appearance.draft_render_json);
     } catch { /* Rust snapshots always contain validated JSON. */ }
     morphPreview?.setAppearance(draftLoadout, renderAppearance);
-    morphEditor.querySelector(".morph-preview-name").textContent = selectedPreset?.display_name || "Custom morph";
-    morphEditor.querySelectorAll("[data-morph-tab]").forEach((tab) => tab.onclick = () => { morphEditor.querySelectorAll("[data-morph-tab]").forEach((item) => item.setAttribute("aria-selected", String(item === tab))); morphEditor.querySelectorAll("[data-morph-panel]").forEach((panel) => { panel.hidden = panel.dataset.morphPanel !== tab.dataset.morphTab; }); });
-    morphEditor.querySelectorAll("[data-preview-action]").forEach((button) => button.onclick = () => morphPreview?.play(button.dataset.previewAction));
-    submit.disabled = !active || savingBasics || profile.username_is_saving
-      || appearance.is_saving || !(profile.username_can_save || appearance.draft_can_save);
-    submit.setAttribute("aria-busy", String(savingBasics
-      || profile.username_is_saving || appearance.is_saving));
-    const feedback = basicsFeedback ?? appearance.feedback ?? profile.username_feedback;
+    form.querySelector(".morph-preview-name").textContent = selectedPreset?.display_name || "Custom morph";
+    submit.disabled = !active || saving || appearance.is_saving || !appearance.draft_can_save;
+    submit.setAttribute("aria-busy", String(saving || appearance.is_saving));
+    const feedback = localFeedback ?? appearance.feedback;
     setFormStatus(status,
       !active ? "Please sign in again."
         : feedback?.kind === "error" ? feedback.message
-          : savingBasics || profile.username_is_saving || appearance.is_saving ? "Saving your basics…"
+          : saving || appearance.is_saving ? "Saving morph…"
             : feedback?.message ?? "",
       !active ? "error" : feedback?.kind === "error" ? "error"
-        : savingBasics || profile.username_is_saving || appearance.is_saving ? "pending" : feedback?.kind ?? "");
+        : saving || appearance.is_saving ? "pending" : feedback?.kind ?? "");
+    selectTab(activeTab);
   };
+
+  form.querySelectorAll("[data-morph-tab]").forEach((tab) => {
+    tab.addEventListener("click", () => selectTab(tab.dataset.morphTab));
+  });
+  form.querySelectorAll("[data-preview-action]").forEach((button) => {
+    button.addEventListener("click", () => morphPreview?.play(button.dataset.previewAction));
+  });
   const unsubscribe = runtime.subscribe(render);
-  basicsCleanup = () => {
+  sectionCleanup = () => {
     previewCancelled = true;
     unsubscribe();
     morphPreview?.destroy();
     morphPreview = null;
   };
+  render(runtime.snapshot);
   try {
-    const preview = await createMorphPreview({ canvas: morphEditor.querySelector(".morph-preview-canvas") });
+    const preview = await createMorphPreview({ canvas: form.querySelector(".morph-preview-canvas") });
     if (previewCancelled || !form.isConnected) preview.destroy();
     else {
       morphPreview = preview;
       render(runtime.snapshot);
     }
   } catch {
-    morphEditor.querySelector(".morph-preview-name").textContent = "Live preview unavailable";
+    form.querySelector(".morph-preview-name").textContent = "Live preview unavailable";
   }
-  input.addEventListener("input", () => {
-    basicsFeedback = null;
-    runtime.dispatch({ type: "username_changed", value: input.value });
-  });
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
-    if (!activeSession() || savingBasics || runtime.snapshot.profile.username_is_saving
-      || runtime.snapshot.appearance.is_saving) return;
-    const shouldSaveAppearance = runtime.snapshot.appearance.draft_can_save;
-    savingBasics = true;
-    basicsFeedback = null;
+    if (!activeSession() || saving || runtime.snapshot.appearance.is_saving
+      || !runtime.snapshot.appearance.draft_can_save) return;
+    saving = true;
+    localFeedback = null;
     render(runtime.snapshot);
     try {
-      // Rust handles validation, unchanged names, pending work and all username errors.
-      await runtime.dispatch({ type: "save_username" });
-      const profile = runtime.snapshot.profile;
-      if (!activeSession() || !form.isConnected || profile.username_validation_error
-        || profile.username_is_dirty || profile.username_feedback?.kind === "error") return;
-      if (shouldSaveAppearance) {
-        await runtime.dispatch({ type: "save_appearance" });
-        if (runtime.snapshot.appearance.feedback?.kind === "error") throw new Error("invalid_appearance");
-      }
-      const finalProfile = runtime.snapshot.profile;
-      if (!activeSession()) return;
-      currentUser = { ...currentUser, username: finalProfile.username, body_id: finalProfile.body_id };
+      await runtime.dispatch({ type: "save_appearance" });
+      if (runtime.snapshot.appearance.feedback?.kind === "error") throw new Error("invalid_appearance");
       const selectedAppearance = runtime.snapshot.appearance.selected_render_json;
       if (selectedAppearance) try {
         window.localStorage.setItem(`cubacadabra.character-appearance:${encodeURIComponent(currentUser.id)}`, selectedAppearance);
       } catch { /* The server remains the source of truth. */ }
-      basicsFeedback = { kind: "success", message: "Basics saved." };
-    } catch (error) {
-      basicsFeedback = {
-        kind: "error",
-        message: error.message === "invalid_appearance" ? "Choose a valid morph option."
-          : error.message === "age_required" ? "Complete the birthday step before choosing your basics."
-            : "We couldn’t save your basics. Please try again.",
-      };
+      localFeedback = { kind: "success", message: "Morph saved." };
+    } catch {
+      localFeedback = { kind: "error", message: "We couldn’t save your morph. Please try again." };
     } finally {
-      savingBasics = false;
+      saving = false;
       render(runtime.snapshot);
     }
   });
-  input.focus();
-  input.select();
 }
 
 function renderCubes() {
@@ -1079,6 +1174,9 @@ menuLinks.forEach((link) => {
     } else if (link.dataset.section === "basics" && currentUser) {
       event.preventDefault();
       renderBasics(currentUser);
+    } else if (link.dataset.section === "morph-editor" && currentUser) {
+      event.preventDefault();
+      renderMorphEditor();
     } else if (link.dataset.section === "subscription" && currentUser) {
       event.preventDefault();
       renderSubscription();
@@ -1122,6 +1220,8 @@ getCurrentUser().then((user) => {
     renderBlockedUsers();
   } else if (window.location.hash === "#subscription") {
     renderSubscription();
+  } else if (window.location.hash === "#morph-editor") {
+    renderMorphEditor();
   } else {
     renderBasics(user);
   }

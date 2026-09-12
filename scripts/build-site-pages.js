@@ -345,6 +345,7 @@ const renderMyCubeSidebar = () => `<aside class="about-sidebar">
 
   <nav class="about-menu" aria-label="My Cube sections">
     <a href="#birthday" data-section="birthday" aria-current="page"><span>Birthday</span></a>
+    <a href="#morph-editor" data-section="morph-editor" hidden><span>Morph Editor</span></a>
     <a href="#cubes" data-section="cubes" hidden><span>Cubes</span></a>
     <a href="#upload-cube" data-section="upload-cube" hidden><span>Upload a Cube</span></a>
     <a href="#blocked-users" data-section="blocked-users" hidden><span>Blocked Users</span></a>
