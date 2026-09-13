@@ -7,7 +7,7 @@ export const SITE = {
   ogImageType: "image/jpeg",
   ogImageWidth: 1672,
   ogImageHeight: 941,
-  ogImageAlt: "cubacadabra World 01 — Empty baseplate",
+  ogImageAlt: "cubacadabra World 01   Empty baseplate",
 };
 
 export const ABOUT_ROUTES = [
@@ -164,7 +164,7 @@ export const SITE_PAGES = [
     path: "/",
     kind: "content",
     content: "world",
-    pageTitle: "cubacadabra — World 01",
+    pageTitle: "cubacadabra   World 01",
     description: "An open-source 3D multiplayer world powered by a Rust simulation and rendered in the browser.",
     themeColor: "#e8e4cd",
     robots: "index, follow, max-image-preview:large",

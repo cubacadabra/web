@@ -189,7 +189,7 @@ export function createHudController({ elements, state, gameDefinition }) {
         : 0;
       elements.worldShell?.classList.toggle("is-countdown", Boolean(authoritativeLaunch.startsAt));
       elements.worldShell?.classList.remove("is-launch-complete");
-      if (elements.launchCountdown) elements.launchCountdown.textContent = authoritativeLaunch.startsAt ? `${seconds}s` : "—";
+      if (elements.launchCountdown) elements.launchCountdown.textContent = authoritativeLaunch.startsAt ? `${seconds}s` : " ";
       if (elements.launchCopy) elements.launchCopy.textContent = authoritativeLaunch.startsAt
         ? `BUILD TOGETHER launches in ${seconds}s`
         : "Stand on the coral gate to join the next build";
@@ -222,7 +222,7 @@ export function createHudController({ elements, state, gameDefinition }) {
     if (!elements.launchCountdown || !elements.launchCopy) return;
 
     if (!padState || !pad) {
-      elements.launchCountdown.textContent = "—";
+      elements.launchCountdown.textContent = " ";
       elements.launchCopy.textContent = "Stand on a pad to join the next launch";
       elements.launchStatus?.classList.remove("is-countdown", "is-complete");
       return;
@@ -242,7 +242,7 @@ export function createHudController({ elements, state, gameDefinition }) {
       elements.launchCountdown.textContent = "OPEN";
       elements.launchCopy.textContent = `${pad.label} · game handoff ready`;
     } else {
-      elements.launchCountdown.textContent = "—";
+      elements.launchCountdown.textContent = " ";
       elements.launchCopy.textContent = "Stand on a pad to join the next launch";
     }
   }

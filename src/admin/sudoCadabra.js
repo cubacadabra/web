@@ -53,7 +53,7 @@ function formatNumber(value) {
 }
 
 function formatDate(value) {
-  if (!value) return "—";
+  if (!value) return " ";
   return new Date(value).toLocaleString([], {
     month: "short",
     day: "numeric",
@@ -64,7 +64,7 @@ function formatDate(value) {
 }
 
 function formatDuration(milliseconds) {
-  if (milliseconds === null || milliseconds === undefined) return "—";
+  if (milliseconds === null || milliseconds === undefined) return " ";
   if (milliseconds <= 0) return "expired";
 
   const totalSeconds = Math.ceil(milliseconds / 1_000);
@@ -85,7 +85,7 @@ function makeCell(value, className = "") {
 
 function makeCountdownCell(timeoutAt) {
   const cell = makeCell(
-    timeoutAt ? formatDuration(timeoutAt - Date.now()) : "—",
+    timeoutAt ? formatDuration(timeoutAt - Date.now()) : " ",
     "sudo-time-left",
   );
   if (timeoutAt) cell.dataset.timeoutAt = String(timeoutAt);
@@ -127,7 +127,7 @@ function createTableRow(cells) {
 function mountLayout(page) {
   document.documentElement.classList.add("sudo-document");
   document.body.className = "sudo-page";
-  document.title = `${page.title} — cubacadabra`;
+  document.title = `${page.title}   cubacadabra`;
   document.body.innerHTML = `
     <div class="sudo-shell">
       <aside class="sudo-sidebar">
@@ -265,7 +265,7 @@ function mountLayout(page) {
               <p class="sudo-eyebrow">Eviction monitor</p>
               <h2>Player clocks</h2>
             </div>
-            <span class="sudo-panel-note" id="sudo-timeout-note">Idle timeout: —</span>
+            <span class="sudo-panel-note" id="sudo-timeout-note">Idle timeout:  </span>
           </div>
           <div class="sudo-table-wrap">
             <table class="sudo-table sudo-player-table" id="sudo-player-table">
@@ -359,7 +359,7 @@ function renderInstanceLedger(payload) {
       makeCell(`${instance.playerCount} / ${world.maxPlayersPerInstance}`),
       makeCell(formatDate(instance.createdAt), "sudo-muted"),
       makeCell(formatDate(instance.lastUsedAt), "sudo-muted"),
-      makeCell(timeout ? formatDate(timeout) : "—", "sudo-mono"),
+      makeCell(timeout ? formatDate(timeout) : " ", "sudo-mono"),
     ]);
   });
   body.replaceChildren(...rows);
@@ -410,7 +410,7 @@ function renderPlayerClocks(payload) {
         makeStatus(player.state),
         makeCell(formatNumber(player.connectionCount ?? 1)),
         makeCell(formatDate(player.lastActivityAt), "sudo-muted"),
-        makeCell(timeoutAt ? formatDate(timeoutAt) : "—", "sudo-mono"),
+        makeCell(timeoutAt ? formatDate(timeoutAt) : " ", "sudo-mono"),
         makeCountdownCell(timeoutAt),
       ]);
     })

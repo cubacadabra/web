@@ -1,4 +1,4 @@
-Yes. Looking back at the pricing direction we had already developed for Cubacadabra, I think **$20/month can work very well — but not as "hosting costs $20."** That framing loses immediately to Roblox.
+Yes. Looking back at the pricing direction we had already developed for Cubacadabra, I think **$20/month can work very well   but not as "hosting costs $20."** That framing loses immediately to Roblox.
 
 Roblox explicitly markets its creator proposition as **“Robust tools with no upfront costs”** and says it covers hosting, storage, customer support, localization, payment processing, and platform fees. Normal multiplayer servers don't require creators to pay for servers. ([Creator Hub][1]) Even its newer paid Extended Services sit *above* generous default limits; for example, standard compute can continue with unlimited player-hours under normal limits without paying for Extended Compute. ([Creator Hub][2])
 
@@ -45,15 +45,15 @@ And it fits the philosophy you've been developing for Cubacadabra: **kids play; 
 | Cubacadabra Studio         |              ✓ |                  ✓ |                ✓ |            ✓ |
 | Publish everywhere         |              ✓ |                  ✓ |                ✓ |            ✓ |
 | Source/Git integration     |          Basic |           Enhanced |         Enhanced |     Enhanced |
-| Private Cubes              |              — |                  ✓ |                ✓ |            ✓ |
+| Private Cubes              |                |                  ✓ |                ✓ |            ✓ |
 | Version history            |          Basic |               Full |             Full |         Full |
 | Analytics                  |          Basic |           Advanced |         Advanced |     Advanced |
 | Crash reports              |          Basic |               Full |             Full |         Full |
-| Cloud builds               |              — |                  ✓ |                ✓ |            ✓ |
-| Preview/staging worlds     |              — |                  ✓ |                ✓ |            ✓ |
-| Custom domain              |              — |                  ✓ |                ✓ |            ✓ |
-| Collaborators              |              — |                2–3 |               ~5 |       Custom |
-| Team permissions           |              — |                  — |                ✓ |            ✓ |
+| Cloud builds               |                |                  ✓ |                ✓ |            ✓ |
+| Preview/staging worlds     |                |                  ✓ |                ✓ |            ✓ |
+| Custom domain              |                |                  ✓ |                ✓ |            ✓ |
+| Collaborators              |                |                2–3 |               ~5 |       Custom |
+| Team permissions           |                |                    |                ✓ |            ✓ |
 | Additional storage/compute |        Metered | Included allowance | Larger allowance |     Contract |
 | Support                    |      Community |           Priority |         Priority |       Direct |
 | **Support Cubacadabra**    |              ♡ |              **✓** |            **✓** |        **✓** |
@@ -142,9 +142,9 @@ I'd actually put it right on the pricing page.
 
 Something like:
 
-> **Creator Pro — $20/month**
+> **Creator Pro   $20/month**
 >
-> Everything you need to take your Cubes further — plus your membership helps fund an independent, open-source alternative to closed game platforms.
+> Everything you need to take your Cubes further   plus your membership helps fund an independent, open-source alternative to closed game platforms.
 
 Now the purchase has two layers.
 
@@ -187,7 +187,7 @@ And $20 isn't crazy for developers. It's approximately one lunch in LA, while de
 
 So I'd actually consider naming the initial tier:
 
-### **Founding Creator — $20/month**
+### **Founding Creator   $20/month**
 
 During the early period.
 
@@ -249,7 +249,7 @@ Your source code is yours
 No ads
 No paid placement
 
-### Cubacadabra Pro — $20/month
+### Cubacadabra Pro   $20/month
 
 Everything above, plus serious professional tooling, higher limits, private development, and **funding the independent platform itself**.
 
@@ -269,15 +269,15 @@ Charging admission attacks the thing you need most.
 
 I'd therefore be generous:
 
-> **CREATE — FREE**
+> **CREATE   FREE**
 >
 > Build. Publish. Host. Multiplayer. Forever.
 
 Then directly underneath:
 
-> **CREATOR PRO — $20/month**
+> **CREATOR PRO   $20/month**
 >
-> Go further — and help keep Cubacadabra independent.
+> Go further   and help keep Cubacadabra independent.
 
 That's a strong pricing page.
 
@@ -378,18 +378,18 @@ And that's much more interesting to me than trying to duplicate Roblox's busines
 
 I wouldn't say:
 
-> **Creator Pro — More storage and compute. $20/month.**
+> **Creator Pro   More storage and compute. $20/month.**
 
 That's weak against free Roblox.
 
 I'd say:
 
-> **Creator Pro — $20/month**
+> **Creator Pro   $20/month**
 > Professional tools, higher limits, private development, and a direct way to support an independent, open-source game platform.
 
 And immediately beside it:
 
-> **Creator — Free forever**
+> **Creator   Free forever**
 > Build, publish, host and share real multiplayer games. No credit card required.
 
 **That makes the $20 price a choice rather than a toll.**

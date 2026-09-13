@@ -123,18 +123,18 @@ repository; use it only when you intend to update the public site.
 
 ## Structure
 
-- `src/app/` — wires the game, engine, renderer, and socket together
-- `src/config/` — browser presentation defaults and backend URL override
-- `src/game/` — loads and normalizes the external game package
-- `src/engine/` — Rust/WebAssembly runtime and renderer boundary
-- `src/network/` — backend WebSocket client and reconnect behavior
-- `src/state/` — mutable game state
-- `src/systems/` — browser input adapters
-- `src/ui/` — DOM access and HUD updates
-- `site/site-routes.js` — all route and shared metadata
-- `site/content/` — page-specific HTML fragments
-- `scripts/build-site-pages.js` — shared HTML templates and page generator
-- `scripts/sync_games.sh` — builds the sibling game packages into `public/`
+- `src/app/`   wires the game, engine, renderer, and socket together
+- `src/config/`   browser presentation defaults and backend URL override
+- `src/game/`   loads and normalizes the external game package
+- `src/engine/`   Rust/WebAssembly runtime and renderer boundary
+- `src/network/`   backend WebSocket client and reconnect behavior
+- `src/state/`   mutable game state
+- `src/systems/`   browser input adapters
+- `src/ui/`   DOM access and HUD updates
+- `site/site-routes.js`   all route and shared metadata
+- `site/content/`   page-specific HTML fragments
+- `scripts/build-site-pages.js`   shared HTML templates and page generator
+- `scripts/sync_games.sh`   builds the sibling game packages into `public/`
 
 The project intentionally remains JavaScript-only. Do not add TypeScript or a
 frontend framework without changing that project decision explicitly.
@@ -168,13 +168,13 @@ quality policy does not change simulation or character identity.
 
 ## Where to look next
 
-- [first-game/README.md](../first-game/README.md) — package schema and first
+- [first-game/README.md](../first-game/README.md)   package schema and first
   game behavior
-- [second-game/README.md](../second-game/README.md) — second game behavior
-- [third-game/README.md](../third-game/README.md) — preview SDK capability probe
-- [tools/docs/cubacadabra-game-developer-guide-preview-0.3.md](../tools/docs/cubacadabra-game-developer-guide-preview-0.3.md) — game developer guide
-- [rust/README.md](../rust/README.md) — simulation and WASM renderer
-- [backend/README.md](../backend/README.md) — local/LAN/production multiplayer
+- [second-game/README.md](../second-game/README.md)   second game behavior
+- [third-game/README.md](../third-game/README.md)   preview SDK capability probe
+- [tools/docs/cubacadabra-game-developer-guide-preview-0.3.md](../tools/docs/cubacadabra-game-developer-guide-preview-0.3.md)   game developer guide
+- [rust/README.md](../rust/README.md)   simulation and WASM renderer
+- [backend/README.md](../backend/README.md)   local/LAN/production multiplayer
 
 ### Licensing
 

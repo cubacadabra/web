@@ -94,7 +94,7 @@ function birthdayFormMarkup() {
           <p class="birthday-kicker">A safer world for everyone</p>
           <h2 id="birthday-guidance-title">Real age, real protections.</h2>
           <p>cubacadabra takes COPPA and child safety seriously, so we need your real age to apply the right safeguards.</p>
-          <p>If you’re a kid, please don’t lie about your age. If you follow the rules, tell us your real birthday, and have a parent sign up too, you can have a fun, safe experience—and your parent will know which cubes you’re using.</p>
+          <p>If you’re a kid, please don’t lie about your age. If you follow the rules, tell us your real birthday, and have a parent sign up too, you can have a fun, safe experience and your parent will know which cubes you’re using.</p>
         </section>
 
         <form class="birthday-form" novalidate>
