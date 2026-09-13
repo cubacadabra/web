@@ -166,6 +166,16 @@
   padding: 40px 0 28px;
 }
 
+.about-section-nav-toggle {
+  display: none;
+}
+
+.about-section-nav-panel {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
 .about-sidebar-heading {
   display: grid;
   gap: 6px;

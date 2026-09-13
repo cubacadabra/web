@@ -297,6 +297,7 @@ const renderAboutSidebar = (currentId) => {
     ["people", "The people and the work"],
   ];
   const overview = ABOUT_ROUTES[0];
+  const currentRoute = ABOUT_ROUTES.find((route) => route.id === currentId) ?? overview;
   const overviewActive = currentId === overview.id
     ? ' class="is-active" aria-current="location"'
     : "";
@@ -317,20 +318,30 @@ ${links}
     </div>`;
   }).join("\n\n");
 
-  return `<aside class="about-sidebar">
-  <div class="about-sidebar-heading">
-    <span>About cubacadabra</span>
-    <span class="about-sidebar-status">Future plans</span>
-  </div>
+  return `<aside class="about-sidebar about-section-nav">
+  <button class="about-section-nav-toggle" type="button" aria-expanded="false" aria-controls="about-section-navigation">
+    <span class="about-section-nav-copy">
+      <span class="about-section-nav-title">About cubacadabra</span>
+      <span class="about-section-nav-current">${escapeHtml(currentRoute.title)}</span>
+    </span>
+    <span class="about-section-nav-chevron" aria-hidden="true">⌄</span>
+  </button>
 
-  <nav class="about-menu" aria-label="About sections">
+  <div class="about-section-nav-panel" id="about-section-navigation">
+    <div class="about-sidebar-heading">
+      <span>About cubacadabra</span>
+      <span class="about-sidebar-status">Future plans</span>
+    </div>
+
+    <nav class="about-menu" aria-label="About sections">
     <a${overviewActive} href="${overview.path}">
       <span>Overview</span>
       <span class="about-menu-arrow" aria-hidden="true">↗</span>
     </a>
 
 ${groupMarkup}
-  </nav>
+    </nav>
+  </div>
 </aside>`;
 };
 

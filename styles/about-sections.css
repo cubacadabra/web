@@ -355,6 +355,74 @@
     margin: 21px 0 0;
   }
 
+  .about-page:not(.landscape-page):not(.developer-page):not(.my-cube-page):not(.download-page) .about-sidebar {
+    padding-top: 18px;
+  }
+
+  .about-page:not(.landscape-page):not(.developer-page):not(.my-cube-page):not(.download-page) .about-section-nav-toggle {
+    display: flex;
+    width: 100%;
+    min-height: 58px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 0 14px;
+    border: 1px solid var(--about-line);
+    border-radius: 7px;
+    background: rgba(255, 255, 255, 0.025);
+    color: var(--about-ink);
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .about-page:not(.landscape-page):not(.developer-page):not(.my-cube-page):not(.download-page) .about-section-nav-toggle:hover {
+    border-color: rgba(139, 156, 246, 0.5);
+    background: var(--about-accent-wash);
+  }
+
+  .about-section-nav-copy {
+    display: grid;
+    gap: 4px;
+  }
+
+  .about-section-nav-title {
+    font-size: 13px;
+    font-weight: 750;
+  }
+
+  .about-section-nav-current {
+    color: var(--about-accent);
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .about-section-nav-chevron {
+    color: var(--about-accent);
+    font-size: 22px;
+    line-height: 1;
+    transform: translateY(-2px);
+    transition: transform 180ms ease;
+  }
+
+  .about-page:not(.landscape-page):not(.developer-page):not(.my-cube-page):not(.download-page) .about-section-nav-panel {
+    display: none;
+    padding-top: 16px;
+  }
+
+  .about-page:not(.landscape-page):not(.developer-page):not(.my-cube-page):not(.download-page) .about-section-nav.is-local-nav-open .about-section-nav-panel {
+    display: flex;
+  }
+
+  .about-page:not(.landscape-page):not(.developer-page):not(.my-cube-page):not(.download-page) .about-section-nav.is-local-nav-open .about-section-nav-chevron {
+    transform: translateY(2px) rotate(180deg);
+  }
+
+  .about-page:not(.landscape-page):not(.developer-page):not(.my-cube-page):not(.download-page) .about-section-nav-panel .about-sidebar-heading {
+    display: none;
+  }
+
   .about-content {
     padding-top: 50px;
     padding-bottom: 70px;
