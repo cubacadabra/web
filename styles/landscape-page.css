@@ -25,6 +25,7 @@
 
 .landscape-heading h1 {
   max-width: 720px;
+  letter-spacing: -0.035em;
 }
 
 .landscape-signal-grid {
