@@ -169,11 +169,11 @@ function hasDeveloperAccess(subscription) {
 
 function developerActionMarkup(plan, subscription, canUpgrade, higherPlanActive) {
   const details = DEVELOPER_PLANS[plan];
-  if (hasDeveloperAccess(subscription)) {
-    return `<button class="developer-plan-action developer-plan-manage" data-developer-manage="cancel" data-developer-plan="${plan}" data-developer-subscription-id="${subscription.id}" type="button">Cancel ${details.name} <span aria-hidden="true">×</span></button>`;
-  }
   if (plan === "creator-pro" && higherPlanActive) {
     return `<span class="developer-plan-action developer-plan-plan-note" aria-label="Included with Studio">Included with Studio</span>`;
+  }
+  if (hasDeveloperAccess(subscription)) {
+    return `<button class="developer-plan-action developer-plan-manage" data-developer-manage="cancel" data-developer-plan="${plan}" data-developer-subscription-id="${subscription.id}" type="button">Cancel ${details.name} <span aria-hidden="true">×</span></button>`;
   }
   if (plan === "studio" && canUpgrade) {
     return `<button class="developer-plan-action developer-plan-manage developer-plan-upgrade" data-developer-manage="upgrade" data-developer-plan="${plan}" data-developer-subscription-id="${canUpgrade.id}" type="button">Upgrade to Studio <span aria-hidden="true">↗</span></button>`;
