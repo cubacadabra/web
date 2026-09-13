@@ -73,6 +73,7 @@ export function mountStripeEmbeddedCheckout({
   statusElement,
   clientSecret,
   publishableKey,
+  submitLabel = "Subscribe for $9.99/month",
   onComplete,
   onError,
 }) {
@@ -147,7 +148,7 @@ export function mountStripeEmbeddedCheckout({
       if (destroyed) return;
       const message = error?.message || "Unable to activate subscription.";
       submitButton.disabled = false;
-      submitButton.textContent = "Subscribe for $9.99/month";
+      submitButton.textContent = submitLabel;
       setStatus(statusElement, message, "error");
       onError?.(message);
     }

@@ -1,16 +1,37 @@
 import { getCurrentUser, initializeLogoutButton } from "../src/auth/session.js";
 import { backendApiUrl } from "../src/config/clientConfig.js";
+import { mountStripeEmbeddedCheckout } from "../src/payments/stripeEmbeddedCheckout.js";
 
 const content = document.querySelector(".developer-content");
 const menuLinks = [...document.querySelectorAll(".about-menu > a[data-section]")];
 const defaultContent = content?.innerHTML || "";
 const MAX_CUBE_ZIP_BYTES = 25 * 1024 * 1024;
 const CUBE_UPLOAD_PATH = "/cubes/upload";
+const DEVELOPER_CHECKOUT_PATH = "/developer";
+const DEVELOPER_PLANS = {
+  "creator-pro": {
+    name: "Creator Pro",
+    price: "$20",
+    submitLabel: "Subscribe to Creator Pro · $20/month",
+  },
+  studio: {
+    name: "Studio",
+    price: "$99",
+    submitLabel: "Subscribe to Studio · $99/month",
+  },
+};
 let currentUserPromise = null;
 let routeVersion = 0;
+let developerCheckoutCleanup = null;
 
-function loginPath() {
-  const returnTo = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+function developerPath(plan = "") {
+  const params = new URLSearchParams();
+  if (DEVELOPER_PLANS[plan]) params.set("plan", plan);
+  const query = params.toString();
+  return `${window.location.pathname}${query ? `?${query}` : ""}${window.location.hash}`;
+}
+
+function loginPath(returnTo = developerPath()) {
   return `/login/?returnTo=${encodeURIComponent(returnTo)}`;
 }
 
@@ -26,6 +47,77 @@ function setMenuState(activeSection) {
 function setFormStatus(statusElement, message, state = "") {
   statusElement.textContent = message;
   statusElement.dataset.state = state;
+}
+
+function clearCheckoutReturnParams() {
+  const params = new URLSearchParams(window.location.search);
+  params.delete("developer_return");
+  params.delete("checkout_session_id");
+  params.delete("plan");
+  const query = params.toString();
+  window.history.replaceState(
+    {},
+    "",
+    window.location.pathname + (query ? `?${query}` : "") + window.location.hash,
+  );
+}
+
+function developerCheckoutMarkup(plan) {
+  const details = DEVELOPER_PLANS[plan];
+  return `
+    <div class="developer-checkout-view" id="developer-checkout" aria-labelledby="developer-checkout-title">
+      <div class="developer-checkout-heading">
+        <button class="developer-checkout-back" type="button">← Back to plans</button>
+        <p class="developer-kicker">Secure checkout</p>
+        <h1 id="developer-checkout-title">${details.name}</h1>
+        <p>Enter your payment details to start your monthly developer subscription.</p>
+      </div>
+      <div class="developer-checkout-plan">
+        <div>
+          <strong>${details.name}</strong>
+          <span>${details.price} USD / month</span>
+        </div>
+        <p>Please note cubacadabra is a work in progress and your subscription helps fund it. Cancel anytime but please understand you are not buying a finished product yet only helping to support a new one.</p>
+      </div>
+      <p class="developer-checkout-status" role="status" aria-live="polite">Preparing secure payment…</p>
+      <form class="developer-checkout-form" hidden>
+        <div class="developer-checkout-payment" aria-label="Payment details"></div>
+        <p class="developer-checkout-form-status" role="status" aria-live="polite"></p>
+        <button class="developer-checkout-submit" type="submit" disabled>${details.submitLabel}</button>
+      </form>
+    </div>`;
+}
+
+function developerCheckoutErrorMessage(error) {
+  if (error.message === "not_authenticated") return "Your session has expired. Please sign in again.";
+  if (error.message === "age_required") return "Complete your birthday before starting a subscription.";
+  if (error.message === "invalid_plan") return "Choose a valid developer plan.";
+  if (error.message.includes("not configured")) return "Developer subscriptions are not configured yet. Please try again later.";
+  return "We couldn’t load the payment form. Please try again.";
+}
+
+async function createDeveloperCheckout(plan) {
+  const response = await fetch(backendApiUrl(DEVELOPER_CHECKOUT_PATH + "/checkout-session"), {
+    method: "POST",
+    credentials: "include",
+    headers: { Accept: "application/json", "content-type": "application/json" },
+    body: JSON.stringify({ plan }),
+  });
+  const result = await response.json().catch(() => null);
+  if (!response.ok) throw new Error(result?.error || "developer_checkout_failed");
+  return result;
+}
+
+async function completeDeveloperCheckout(checkoutSessionId) {
+  const response = await fetch(backendApiUrl(DEVELOPER_CHECKOUT_PATH + "/checkout-session/complete"), {
+    method: "POST",
+    credentials: "include",
+    headers: { Accept: "application/json", "content-type": "application/json" },
+    body: JSON.stringify({ checkout_session_id: checkoutSessionId }),
+  });
+  const result = await response.json().catch(() => null);
+  if (!response.ok) throw new Error(result?.error || "developer_completion_failed");
+  return result;
 }
 
 function cubeUploadMarkup() {
@@ -147,14 +239,21 @@ function renderUploadForm() {
 }
 
 async function getUploadUser() {
+  const user = await getDeveloperUser();
+  if (!user) {
+    window.location.replace(loginPath());
+    return null;
+  }
+  return user;
+}
+
+function getDeveloperUser() {
   if (!currentUserPromise) {
     currentUserPromise = getCurrentUser().then((user) => {
-      if (!user) {
-        window.location.replace(loginPath());
-        return null;
+      if (user) {
+        initializeLogoutButton(user);
+        document.body.dataset.authenticated = "true";
       }
-      initializeLogoutButton(user);
-      document.body.dataset.authenticated = "true";
       return user;
     });
   }
@@ -172,8 +271,124 @@ async function showUpload() {
 
 function showPublicContent() {
   routeVersion += 1;
+  developerCheckoutCleanup?.();
+  developerCheckoutCleanup = null;
   if (content.innerHTML !== defaultContent) content.innerHTML = defaultContent;
   setMenuState(window.location.hash === "#included" ? "included" : "pricing");
+}
+
+function showDeveloperCheckoutSuccess(plan) {
+  const details = DEVELOPER_PLANS[plan];
+  const status = content.querySelector(".developer-checkout-status");
+  const form = content.querySelector(".developer-checkout-form");
+  developerCheckoutCleanup?.();
+  developerCheckoutCleanup = null;
+  form.hidden = true;
+  status.textContent = `${details.name} is active. Thank you for supporting cubacadabra.`;
+  status.dataset.state = "success";
+  clearCheckoutReturnParams();
+}
+
+async function renderDeveloperCheckout(plan) {
+  const details = DEVELOPER_PLANS[plan];
+  if (!details) {
+    showPublicContent();
+    return;
+  }
+
+  const version = ++routeVersion;
+  developerCheckoutCleanup?.();
+  developerCheckoutCleanup = null;
+  setMenuState("pricing");
+  content.innerHTML = developerCheckoutMarkup(plan);
+
+  const back = content.querySelector(".developer-checkout-back");
+  const status = content.querySelector(".developer-checkout-status");
+  const form = content.querySelector(".developer-checkout-form");
+  const payment = content.querySelector(".developer-checkout-payment");
+  const formStatus = content.querySelector(".developer-checkout-form-status");
+  const submit = content.querySelector(".developer-checkout-submit");
+  const params = new URLSearchParams(window.location.search);
+  const returnSessionId = params.get("developer_return") === "1"
+    && params.get("plan") === plan
+    ? params.get("checkout_session_id")
+    : "";
+
+  back.addEventListener("click", () => {
+    clearCheckoutReturnParams();
+    showPublicContent();
+  });
+
+  try {
+    const user = await getDeveloperUser();
+    if (!user) {
+      window.location.replace(loginPath(developerPath(plan)));
+      return;
+    }
+    if (version !== routeVersion) return;
+
+    if (returnSessionId) {
+      status.textContent = "Finalizing subscription…";
+      status.dataset.state = "pending";
+      await completeDeveloperCheckout(returnSessionId);
+      if (version === routeVersion) showDeveloperCheckoutSuccess(plan);
+      return;
+    }
+
+    const checkout = await createDeveloperCheckout(plan);
+    if (version !== routeVersion) return;
+    if (!checkout.client_secret || !checkout.publishable_key) {
+      throw new Error("developer_checkout_unavailable");
+    }
+
+    form.hidden = false;
+    status.textContent = "Enter your payment details below.";
+    status.dataset.state = "";
+    developerCheckoutCleanup = mountStripeEmbeddedCheckout({
+      container: payment,
+      form,
+      submitButton: submit,
+      statusElement: formStatus,
+      clientSecret: checkout.client_secret,
+      publishableKey: checkout.publishable_key,
+      submitLabel: details.submitLabel,
+      onComplete: async (session) => {
+        formStatus.textContent = "Finalizing subscription…";
+        formStatus.dataset.state = "pending";
+        if (!session?.id) throw new Error("developer_completion_failed");
+        await completeDeveloperCheckout(session?.id);
+        if (version === routeVersion) showDeveloperCheckoutSuccess(plan);
+      },
+      onError: (message) => {
+        formStatus.textContent = message;
+        formStatus.dataset.state = "error";
+      },
+    });
+  } catch (error) {
+    if (version !== routeVersion) return;
+    status.textContent = developerCheckoutErrorMessage(error);
+    status.dataset.state = "error";
+  }
+}
+
+function handleDeveloperContentClick(event) {
+  const planLink = event.target.closest("[data-developer-plan]");
+  if (planLink) {
+    event.preventDefault();
+    const plan = planLink.dataset.developerPlan;
+    getDeveloperUser().then((user) => {
+      if (!user) {
+        window.location.assign(loginPath(developerPath(plan)));
+        return;
+      }
+      const nextUrl = new URL(window.location.href);
+      nextUrl.searchParams.set("plan", plan);
+      nextUrl.hash = "";
+      window.history.pushState({}, "", nextUrl);
+      renderDeveloperCheckout(plan);
+    });
+    return;
+  }
 }
 
 function routeFromHash() {
@@ -182,4 +397,17 @@ function routeFromHash() {
 }
 
 window.addEventListener("hashchange", routeFromHash);
+content?.addEventListener("click", handleDeveloperContentClick);
 routeFromHash();
+
+getDeveloperUser().then((user) => {
+  const params = new URLSearchParams(window.location.search);
+  const plan = params.get("plan");
+  if (window.location.hash === "#upload" || !plan || !DEVELOPER_PLANS[plan]
+    || content.querySelector(".developer-checkout-view")) return;
+  if (!user) {
+    window.location.replace(loginPath(developerPath(plan)));
+    return;
+  }
+  renderDeveloperCheckout(plan);
+});
