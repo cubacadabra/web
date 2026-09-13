@@ -372,6 +372,16 @@ async function renderDeveloperCheckout(plan) {
 }
 
 function handleDeveloperContentClick(event) {
+  const uploadLink = event.target.closest("[data-developer-upload]");
+  if (uploadLink) {
+    event.preventDefault();
+    getDeveloperUser().then((user) => {
+      const uploadPath = "/developer/#upload";
+      window.location.assign(user ? uploadPath : loginPath(uploadPath));
+    });
+    return;
+  }
+
   const planLink = event.target.closest("[data-developer-plan]");
   if (planLink) {
     event.preventDefault();
