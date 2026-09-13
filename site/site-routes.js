@@ -3,7 +3,7 @@ import { LANDSCAPE_ENTRIES } from "./landscape-data.js";
 export const SITE = {
   origin: "https://cubacadabra.com",
   name: "cubacadabra",
-  ogImage: "/og-image2.jpg",
+  ogImage: "/og-image3.jpg",
   ogImageType: "image/jpeg",
   ogImageWidth: 1672,
   ogImageHeight: 941,
