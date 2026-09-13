@@ -21,8 +21,10 @@ const DEVELOPER_PLANS = {
   },
 };
 let currentUserPromise = null;
+let currentUser = null;
 let routeVersion = 0;
 let developerCheckoutCleanup = null;
+const DEVELOPER_ACTIVE_STATUSES = new Set(["active", "trialing", "past_due", "unpaid", "paused"]);
 
 function developerPath(plan = "") {
   const params = new URLSearchParams();
@@ -96,6 +98,13 @@ function developerCheckoutErrorMessage(error) {
   return "We couldn’t load the payment form. Please try again.";
 }
 
+function developerPlanErrorMessage(error) {
+  if (error.message === "not_authenticated") return "Your session has expired. Please sign in again.";
+  if (error.message === "age_required") return "Complete your birthday before changing a subscription.";
+  if (error.message.includes("not configured")) return "Developer subscriptions are not configured yet. Please try again later.";
+  return "We couldn’t update your developer plan. Please try again.";
+}
+
 async function createDeveloperCheckout(plan) {
   const response = await fetch(backendApiUrl(DEVELOPER_CHECKOUT_PATH + "/checkout-session"), {
     method: "POST",
@@ -118,6 +127,115 @@ async function completeDeveloperCheckout(checkoutSessionId) {
   const result = await response.json().catch(() => null);
   if (!response.ok) throw new Error(result?.error || "developer_completion_failed");
   return result;
+}
+
+async function fetchDeveloperSubscriptions() {
+  const response = await fetch(backendApiUrl(DEVELOPER_CHECKOUT_PATH), {
+    credentials: "include",
+    headers: { Accept: "application/json" },
+  });
+  const result = await response.json().catch(() => null);
+  if (!response.ok) throw new Error(result?.error || "developer_subscriptions_failed");
+  return result;
+}
+
+async function cancelDeveloperSubscription(subscriptionId) {
+  const response = await fetch(backendApiUrl(DEVELOPER_CHECKOUT_PATH + "/cancel"), {
+    method: "POST",
+    credentials: "include",
+    headers: { Accept: "application/json", "content-type": "application/json" },
+    body: JSON.stringify({ subscription_id: subscriptionId }),
+  });
+  const result = await response.json().catch(() => null);
+  if (!response.ok) throw new Error(result?.error || "developer_cancel_failed");
+  return result;
+}
+
+async function upgradeDeveloperSubscription(subscriptionId) {
+  const response = await fetch(backendApiUrl(DEVELOPER_CHECKOUT_PATH + "/upgrade"), {
+    method: "POST",
+    credentials: "include",
+    headers: { Accept: "application/json", "content-type": "application/json" },
+    body: JSON.stringify({ subscription_id: subscriptionId }),
+  });
+  const result = await response.json().catch(() => null);
+  if (!response.ok) throw new Error(result?.error || "developer_upgrade_failed");
+  return result;
+}
+
+function hasDeveloperAccess(subscription) {
+  return DEVELOPER_ACTIVE_STATUSES.has(subscription?.status);
+}
+
+function developerActionMarkup(plan, subscription, canUpgrade, higherPlanActive) {
+  const details = DEVELOPER_PLANS[plan];
+  if (hasDeveloperAccess(subscription)) {
+    return `<button class="developer-plan-action developer-plan-manage" data-developer-manage="cancel" data-developer-plan="${plan}" data-developer-subscription-id="${subscription.id}" type="button">Cancel ${details.name} <span aria-hidden="true">×</span></button>`;
+  }
+  if (plan === "creator-pro" && higherPlanActive) {
+    return `<span class="developer-plan-action developer-plan-plan-note" aria-label="Included with Studio">Included with Studio</span>`;
+  }
+  if (plan === "studio" && canUpgrade) {
+    return `<button class="developer-plan-action developer-plan-manage developer-plan-upgrade" data-developer-manage="upgrade" data-developer-plan="${plan}" data-developer-subscription-id="${canUpgrade.id}" type="button">Upgrade to Studio <span aria-hidden="true">↗</span></button>`;
+  }
+  return `<a class="developer-plan-action" data-developer-plan="${plan}" href="${loginPath(developerPath(plan))}">${plan === "studio" ? "Plan a Studio" : "Choose Creator Pro"} <span aria-hidden="true">↗</span></a>`;
+}
+
+function setDeveloperPlansStatus(message, state = "") {
+  const status = content.querySelector(".developer-plans-status");
+  if (!status) return;
+  status.textContent = message;
+  status.dataset.state = state;
+}
+
+function renderDeveloperPlanActions(payload) {
+  const pricing = content.querySelector(".developer-pricing");
+  if (!pricing) return;
+  const subscriptions = payload?.plans || {};
+  const creatorPro = subscriptions["creator-pro"];
+  const cards = {
+    "creator-pro": content.querySelector("#creator-pro"),
+    studio: content.querySelector("#studio"),
+  };
+
+  Object.entries(cards).forEach(([plan, card]) => {
+    if (!card) return;
+    const badge = card.querySelector(".developer-plan-badge");
+    if (badge && !badge.dataset.defaultLabel) badge.dataset.defaultLabel = badge.textContent;
+    const activeSubscription = subscriptions[plan];
+    const isActive = hasDeveloperAccess(activeSubscription);
+    if (badge) badge.textContent = isActive ? "Current plan" : badge.dataset.defaultLabel;
+
+    const action = card.querySelector(".developer-plan-action");
+    if (action) {
+      action.outerHTML = developerActionMarkup(
+        plan,
+        activeSubscription,
+        plan === "studio" && hasDeveloperAccess(creatorPro) ? creatorPro : null,
+        plan === "creator-pro" && hasDeveloperAccess(subscriptions.studio),
+      );
+    }
+  });
+  pricing.dataset.planState = "ready";
+}
+
+async function loadDeveloperPlanStatus(user) {
+  if (!user || window.location.hash === "#upload") return;
+  const version = routeVersion;
+  const pricing = content.querySelector(".developer-pricing");
+  if (!pricing) return;
+  pricing.dataset.planState = "loading";
+  setDeveloperPlansStatus("Checking your current plan…", "pending");
+  try {
+    const payload = await fetchDeveloperSubscriptions();
+    if (version !== routeVersion || !content.querySelector(".developer-pricing")) return;
+    renderDeveloperPlanActions(payload);
+    setDeveloperPlansStatus("", "");
+  } catch (error) {
+    if (version !== routeVersion || !content.querySelector(".developer-pricing")) return;
+    pricing.dataset.planState = "ready";
+    setDeveloperPlansStatus(developerCheckoutErrorMessage(error), "error");
+  }
 }
 
 function cubeUploadMarkup() {
@@ -250,6 +368,7 @@ async function getUploadUser() {
 function getDeveloperUser() {
   if (!currentUserPromise) {
     currentUserPromise = getCurrentUser().then((user) => {
+      currentUser = user;
       if (user) {
         initializeLogoutButton(user);
         document.body.dataset.authenticated = "true";
@@ -275,6 +394,7 @@ function showPublicContent() {
   developerCheckoutCleanup = null;
   if (content.innerHTML !== defaultContent) content.innerHTML = defaultContent;
   setMenuState(window.location.hash === "#included" ? "included" : "pricing");
+  if (currentUser) loadDeveloperPlanStatus(currentUser);
 }
 
 function showDeveloperCheckoutSuccess(plan) {
@@ -372,6 +492,34 @@ async function renderDeveloperCheckout(plan) {
 }
 
 function handleDeveloperContentClick(event) {
+  const manageButton = event.target.closest("[data-developer-manage]");
+  if (manageButton) {
+    event.preventDefault();
+    const action = manageButton.dataset.developerManage;
+    const plan = manageButton.dataset.developerPlan;
+    const subscriptionId = manageButton.dataset.developerSubscriptionId;
+    if (!action || !plan || !subscriptionId || manageButton.disabled) return;
+    const planName = DEVELOPER_PLANS[plan]?.name || "developer";
+    if (action === "cancel" && !window.confirm(`Cancel your ${planName} subscription now?`)) return;
+
+    manageButton.disabled = true;
+    setDeveloperPlansStatus(action === "upgrade" ? "Upgrading to Studio…" : `Cancelling ${planName}…`, "pending");
+    const request = action === "upgrade"
+      ? upgradeDeveloperSubscription(subscriptionId)
+      : cancelDeveloperSubscription(subscriptionId);
+    request.then(async () => {
+      await loadDeveloperPlanStatus(currentUser);
+      setDeveloperPlansStatus(
+        action === "upgrade" ? "Studio is now your current plan." : `${planName} was canceled.`,
+        "success",
+      );
+    }).catch((error) => {
+      manageButton.disabled = false;
+      setDeveloperPlansStatus(developerPlanErrorMessage(error), "error");
+    });
+    return;
+  }
+
   const uploadLink = event.target.closest("[data-developer-upload]");
   if (uploadLink) {
     event.preventDefault();
@@ -413,11 +561,11 @@ routeFromHash();
 getDeveloperUser().then((user) => {
   const params = new URLSearchParams(window.location.search);
   const plan = params.get("plan");
-  if (window.location.hash === "#upload" || !plan || !DEVELOPER_PLANS[plan]
-    || content.querySelector(".developer-checkout-view")) return;
+  if (window.location.hash === "#upload" || content.querySelector(".developer-checkout-view")) return;
   if (!user) {
-    window.location.replace(loginPath(developerPath(plan)));
+    if (plan && DEVELOPER_PLANS[plan]) window.location.replace(loginPath(developerPath(plan)));
     return;
   }
-  renderDeveloperCheckout(plan);
+  if (!plan) loadDeveloperPlanStatus(user);
+  else if (DEVELOPER_PLANS[plan]) renderDeveloperCheckout(plan);
 });

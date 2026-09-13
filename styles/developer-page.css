@@ -135,6 +135,30 @@
   margin: 0;
 }
 
+.developer-plans-status {
+  min-height: 18px;
+  margin: 10px 4px 0;
+  color: var(--about-soft);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.developer-plans-status[data-state="error"] {
+  color: #ef9a88;
+}
+
+.developer-plans-status[data-state="success"] {
+  color: #a8d8a5;
+}
+
+.developer-plans-status[data-state="pending"] {
+  color: var(--about-faint);
+}
+
+.developer-pricing[data-plan-state="loading"] .developer-plan:not(:first-child) .developer-plan-action {
+  visibility: hidden;
+}
+
 .developer-plan-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -286,6 +310,35 @@
   border-color: #aeb9ff;
   background: #aeb9ff;
   color: #111315;
+}
+
+.developer-plan-manage {
+  cursor: pointer;
+}
+
+.developer-plan-manage:not(.developer-plan-upgrade) {
+  border-color: rgba(231, 233, 236, 0.32);
+  background: transparent;
+  color: var(--about-soft);
+}
+
+.developer-plan-manage:not(.developer-plan-upgrade):hover,
+.developer-plan-manage:not(.developer-plan-upgrade):focus-visible {
+  border-color: #ef9a88;
+  background: rgba(239, 154, 136, 0.08);
+  color: #ef9a88;
+}
+
+.developer-plan-manage:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.developer-plan-plan-note {
+  border-color: rgba(231, 233, 236, 0.12);
+  color: var(--about-faint);
+  cursor: default;
+  font-weight: 650;
 }
 
 .developer-included {
