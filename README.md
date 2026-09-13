@@ -23,8 +23,8 @@ Then read
 [rust/README.md](../rust/README.md) for the engine boundary or
 [backend/README.md](../backend/README.md) for the multiplayer service.
 
-The repositories are expected to be sibling directories because the sync and
-Rust build scripts use the sibling game projects and `../rust`.
+The repositories are expected to be sibling directories because the default
+sync and Rust build scripts use the sibling game projects and `../rust`.
 
 ## Local development
 
@@ -70,6 +70,18 @@ The browser joins the backend at `/world/lobby` and changes to the destination
 world from the game manifest after a launch-pad session. `npm run sync:games`
 builds the sibling game packages into the served directory; run it when you
 want to refresh only the game packages.
+
+To run a newly created project without editing this repository, build it into
+the served local package directory:
+
+```sh
+PYTHONPATH=../tools/src python3 -m cubacadabra build-game \
+  --source ~/games/my-game --output public/games/my-game
+```
+
+Then open `?game=my-game`. The loader checks any local `public/games/<id>/`
+package before falling back to the uploaded-game endpoint. Multiple projects
+can also be synced with `sh scripts/sync_games.sh ~/games/my-game`.
 
 ## Dev LAN mode
 

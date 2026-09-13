@@ -2,13 +2,6 @@ import { backendApiUrl } from "../config/clientConfig.js";
 
 const DEFAULT_GAME_ID = "first-game";
 const GAME_ID_PATTERN = /^(?=.{3,64}$)[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const LOCAL_GAME_IDS = new Set([
-  "first-game",
-  "second-game",
-  "third-game",
-  "survival-101",
-  "adventure-101",
-]);
 const AUDIO_ID_PATTERN = /^[A-Za-z0-9._-]{1,64}$/;
 const AUDIO_PATH_PATTERN = /^assets\/(?:[A-Za-z0-9_-][A-Za-z0-9._-]*\/)*[A-Za-z0-9_-][A-Za-z0-9._-]*\.wav$/i;
 const IMAGE_ID_PATTERN = /^[A-Za-z0-9._-]{1,64}$/;
@@ -65,23 +58,51 @@ async function sha256(bytes) {
     .join("");
 }
 
-async function validatePackageDescriptor(descriptor, gameId, manifest, manifestSource, script) {
+async function validatePackageDescriptor(
+  descriptor,
+  gameId,
+  manifest,
+  manifestSource,
+  script,
+  baseUrl,
+) {
   if (
     !descriptor
     || descriptor.id !== gameId
     || descriptor.entry !== "game.luau"
     || descriptor.manifest !== "manifest.json"
     || String(descriptor.version) !== String(manifest.version)
+    || !Array.isArray(descriptor.files)
     || !descriptor.sha256
     || typeof descriptor.sha256 !== "object"
   ) throw new Error("The game package descriptor is invalid.");
 
-  const manifestHash = await sha256(new TextEncoder().encode(manifestSource));
-  const scriptHash = await sha256(new TextEncoder().encode(script));
+  const payloads = new Map([
+    ["manifest.json", new TextEncoder().encode(manifestSource)],
+    ["game.luau", new TextEncoder().encode(script)],
+  ]);
+  const files = new Set(descriptor.files);
   if (
-    descriptor.sha256["manifest.json"] !== manifestHash
-    || descriptor.sha256["game.luau"] !== scriptHash
-  ) throw new Error("The game package files do not match their release descriptor.");
+    files.size !== descriptor.files.length
+    || !files.has("manifest.json")
+    || !files.has("game.luau")
+    || descriptor.files.some((path) => (
+      typeof path !== "string"
+      || path.length === 0
+      || path.startsWith("/")
+      || path.split("/").some((segment) => segment === "..")
+      || !descriptor.sha256[path]
+    ))
+  ) throw new Error("The game package descriptor file table is invalid.");
+
+  for (const path of descriptor.files) {
+    if (!payloads.has(path)) {
+      payloads.set(path, await loadBytes(new URL(path, baseUrl), `game package file "${path}"`));
+    }
+    if (descriptor.sha256[path] !== await sha256(payloads.get(path))) {
+      throw new Error("The game package files do not match their release descriptor.");
+    }
+  }
 }
 
 async function loadUploadedCubeBaseUrl(gameId) {
@@ -107,6 +128,21 @@ async function loadUploadedCubeBaseUrl(gameId) {
     throw new Error("The uploaded cube package origin is invalid.");
   }
   return packageUrl;
+}
+
+function localGameBaseUrl(gameId) {
+  // Any package placed under public/games is eligible for local development;
+  // the browser should not need a source edit for every newly created game.
+  return new URL(`games/${gameId}/`, new URL(import.meta.env.BASE_URL, document.baseURI));
+}
+
+async function hasLocalGamePackage(baseUrl) {
+  const response = await fetch(new URL("package.json", baseUrl), {
+    cache: "no-store",
+  });
+  if (response.ok) return true;
+  if (response.status === 404) return false;
+  throw new Error(`The local game package could not be checked (${response.status}).`);
 }
 
 function normalizeAudioAssets(assets, baseUrl) {
@@ -192,11 +228,9 @@ function normalizeMorphPacks(assets, baseUrl) {
 
 export async function loadGamePackage() {
   const gameId = requestedGameId();
-  const baseUrl = LOCAL_GAME_IDS.has(gameId)
-    // Account pages live below routes such as /my-cube/. Resolve bundled game
-    // packages from the site base rather than accidentally requesting
-    // /my-cube/games/<id>/.
-    ? new URL(`games/${gameId}/`, new URL(import.meta.env.BASE_URL, document.baseURI))
+  const localBaseUrl = localGameBaseUrl(gameId);
+  const baseUrl = await hasLocalGamePackage(localBaseUrl)
+    ? localBaseUrl
     : await loadUploadedCubeBaseUrl(gameId);
   const packageDescriptor = await loadPackageDescriptor(
     new URL("package.json", baseUrl),
@@ -211,7 +245,7 @@ export async function loadGamePackage() {
   if (!script.trim()) {
     throw new Error("The game script is empty.");
   }
-  await validatePackageDescriptor(packageDescriptor, gameId, manifest, manifestSource, script);
+  await validatePackageDescriptor(packageDescriptor, gameId, manifest, manifestSource, script, baseUrl);
 
   function normalizeWorld(world = {}) {
     const palette = Object.fromEntries(

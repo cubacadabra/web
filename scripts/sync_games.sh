@@ -19,8 +19,9 @@ if [ ! -f "$tools_dir/pyproject.toml" ] || [ ! -d "$tools_dir/src/cubacadabra" ]
   exit 1
 fi
 
-for game_id in first-game second-game third-game; do
-  game_dir="$web_dir/../$game_id"
+sync_game() {
+  game_dir="$1"
+  game_id=$(basename "$game_dir")
   public_dir="$web_dir/public/games/$game_id"
 
   if [ ! -f "$game_dir/manifest.json" ] || [ ! -f "$game_dir/src/main.luau" ]; then
@@ -31,8 +32,20 @@ for game_id in first-game second-game third-game; do
   prepare_generated_output "$public_dir"
   PYTHONPATH="$tools_dir/src${PYTHONPATH:+:$PYTHONPATH}" \
     python3 -m cubacadabra build-game "$game_dir" --output "$public_dir"
-done
+}
 
+if [ "$#" -gt 0 ]; then
+  for game_dir in "$@"; do
+    sync_game "$game_dir"
+  done
+else
+  for game_dir in "$web_dir/../first-game" "$web_dir/../second-game" \
+    "$web_dir/../third-game"; do
+    sync_game "$game_dir"
+  done
+fi
+
+if [ "$#" -eq 0 ]; then
 # The newer example projects live together under examples/ while they are
 # being developed. Keep Survival 101 locally playable without requiring an
 # upload to the cube catalog first.
@@ -43,6 +56,7 @@ if [ -f "$game_dir/manifest.json" ] && [ -f "$game_dir/src/main.luau" ]; then
   prepare_generated_output "$public_dir"
   PYTHONPATH="$tools_dir/src${PYTHONPATH:+:$PYTHONPATH}" \
     python3 -m cubacadabra build-game "$game_dir" --output "$public_dir"
+fi
 fi
 
 game_id=adventure-101
