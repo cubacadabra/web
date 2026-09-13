@@ -9,8 +9,6 @@ const LOCAL_GAME_IDS = new Set([
   "survival-101",
   "adventure-101",
 ]);
-const CUBE_CATALOG_PAGE_SIZE = 50;
-const MAX_CUBE_CATALOG_PAGES = 200;
 const AUDIO_ID_PATTERN = /^[A-Za-z0-9._-]{1,64}$/;
 const AUDIO_PATH_PATTERN = /^assets\/(?:[A-Za-z0-9_-][A-Za-z0-9._-]*\/)*[A-Za-z0-9_-][A-Za-z0-9._-]*\.wav$/i;
 const IMAGE_ID_PATTERN = /^[A-Za-z0-9._-]{1,64}$/;
@@ -19,10 +17,11 @@ const MORPH_ID_PATTERN = /^[a-z0-9-]+:[a-z0-9_-]+(?:\/[a-z0-9_-]+)*\.v[1-9][0-9]
 const MORPH_PATH_PATTERN = /^assets\/(?:[A-Za-z0-9_-][A-Za-z0-9._-]*\/)*[A-Za-z0-9_-][A-Za-z0-9._-]*\.morphpack$/i;
 
 function requestedGameId() {
-  const gameId = new URLSearchParams(window.location.search).get("game");
-  return gameId && gameId.trim() === gameId && GAME_ID_PATTERN.test(gameId)
-    ? gameId
-    : DEFAULT_GAME_ID;
+  const params = new URLSearchParams(window.location.search);
+  const gameId = params.get("game");
+  if (gameId === null) return DEFAULT_GAME_ID;
+  if (gameId.trim() === gameId && GAME_ID_PATTERN.test(gameId)) return gameId;
+  throw new Error("The requested game ID is invalid.");
 }
 
 function parseColor(value, fallback = 0xffffff) {
@@ -34,54 +33,80 @@ function parseColor(value, fallback = 0xffffff) {
   return Number.parseInt(normalized, 16);
 }
 
-async function loadManifest(url) {
+async function loadBytes(url, description) {
   const response = await fetch(url);
   if (!response.ok) {
-    throw new Error(`The game manifest could not be loaded (${response.status}).`);
+    throw new Error(`The ${description} could not be loaded (${response.status}).`);
   }
-  const source = await response.text();
+  return new Uint8Array(await response.arrayBuffer());
+}
+
+async function loadManifest(url) {
+  const bytes = await loadBytes(url, "game manifest");
+  const source = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
   return { source, manifest: JSON.parse(source) };
 }
 
 async function loadText(url) {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`The game script could not be loaded (${response.status}).`);
-  }
-  return response.text();
+  return new TextDecoder("utf-8", { fatal: true }).decode(
+    await loadBytes(url, "game script"),
+  );
+}
+
+async function loadPackageDescriptor(url) {
+  const bytes = await loadBytes(url, "game package descriptor");
+  return JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes));
+}
+
+async function sha256(bytes) {
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return [...new Uint8Array(digest)]
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+async function validatePackageDescriptor(descriptor, gameId, manifest, manifestSource, script) {
+  if (
+    !descriptor
+    || descriptor.id !== gameId
+    || descriptor.entry !== "game.luau"
+    || descriptor.manifest !== "manifest.json"
+    || String(descriptor.version) !== String(manifest.version)
+    || !descriptor.sha256
+    || typeof descriptor.sha256 !== "object"
+  ) throw new Error("The game package descriptor is invalid.");
+
+  const manifestHash = await sha256(new TextEncoder().encode(manifestSource));
+  const scriptHash = await sha256(new TextEncoder().encode(script));
+  if (
+    descriptor.sha256["manifest.json"] !== manifestHash
+    || descriptor.sha256["game.luau"] !== scriptHash
+  ) throw new Error("The game package files do not match their release descriptor.");
 }
 
 async function loadUploadedCubeBaseUrl(gameId) {
   const backendRoot = new URL(backendApiUrl("/"));
-  for (let page = 1; page <= MAX_CUBE_CATALOG_PAGES; page += 1) {
-    const catalogUrl = new URL(backendApiUrl("/cubes"));
-    catalogUrl.searchParams.set("page", String(page));
-    catalogUrl.searchParams.set("page_size", String(CUBE_CATALOG_PAGE_SIZE));
-    const response = await fetch(catalogUrl, {
-      headers: { Accept: "application/json" },
-    });
-    const result = await response.json().catch(() => null);
-    if (!response.ok) {
-      throw new Error(result?.error || `The cube catalog could not be loaded (${response.status}).`);
-    }
-
-    const cube = Array.isArray(result?.cubes)
-      ? result.cubes.find((entry) => entry?.cubeId === gameId)
-      : null;
-    if (cube) {
-      if (typeof cube.packagePath !== "string" || !cube.packagePath.startsWith("/cubes/")) {
-        throw new Error("The uploaded cube package path is invalid.");
-      }
-      const packageUrl = new URL(cube.packagePath, backendRoot);
-      if (packageUrl.origin !== backendRoot.origin || !packageUrl.pathname.startsWith("/cubes/")) {
-        throw new Error("The uploaded cube package origin is invalid.");
-      }
-      return packageUrl;
-    }
-    if (result?.hasNextPage !== true) break;
+  const detailUrl = new URL(backendApiUrl(`/cubes/${encodeURIComponent(gameId)}`));
+  const response = await fetch(detailUrl, {
+    headers: { Accept: "application/json" },
+  });
+  const result = await response.json().catch(() => null);
+  if (!response.ok) {
+    throw new Error(result?.error || `The uploaded cube could not be loaded (${response.status}).`);
   }
 
-  throw new Error(`The uploaded cube "${gameId}" could not be found.`);
+  const cube = result?.cube;
+  if (cube?.id !== gameId) {
+    throw new Error("The uploaded cube ID does not match the requested game.");
+  }
+  if (typeof cube.packagePath !== "string" || !cube.packagePath.startsWith("/cubes/")) {
+    throw new Error("The uploaded cube package path is invalid.");
+  }
+  const packageUrl = new URL(cube.packagePath, backendRoot);
+  if (packageUrl.origin !== backendRoot.origin || !packageUrl.pathname.startsWith("/cubes/")) {
+    throw new Error("The uploaded cube package origin is invalid.");
+  }
+  return packageUrl;
 }
 
 function normalizeAudioAssets(assets, baseUrl) {
@@ -173,6 +198,9 @@ export async function loadGamePackage() {
     // /my-cube/games/<id>/.
     ? new URL(`games/${gameId}/`, new URL(import.meta.env.BASE_URL, document.baseURI))
     : await loadUploadedCubeBaseUrl(gameId);
+  const packageDescriptor = await loadPackageDescriptor(
+    new URL("package.json", baseUrl),
+  );
   const { source: manifestSource, manifest } = await loadManifest(
     new URL("manifest.json", baseUrl),
   );
@@ -183,6 +211,7 @@ export async function loadGamePackage() {
   if (!script.trim()) {
     throw new Error("The game script is empty.");
   }
+  await validatePackageDescriptor(packageDescriptor, gameId, manifest, manifestSource, script);
 
   function normalizeWorld(world = {}) {
     const palette = Object.fromEntries(
@@ -234,6 +263,7 @@ export async function loadGamePackage() {
     gameId,
     lobbyEnabled,
     manifestSource,
+    packageDescriptor,
     script,
     worlds,
     runtimeWorldIds: Object.keys(worlds),
