@@ -12,7 +12,8 @@ let googleInitialized = false;
 const loginParams = new URLSearchParams(window.location.search);
 const appRedirectURI = loginParams.get("app_redirect_uri");
 const appState = loginParams.get("state");
-const isAppLogin = appRedirectURI === "cubacadabra://auth/callback";
+const isLoopbackAppLogin = /^http:\/\/(?:127\.0\.0\.1|localhost):\d{4,5}\/auth\/callback$/.test(appRedirectURI || "");
+const isAppLogin = appRedirectURI === "cubacadabra://auth/callback" || isLoopbackAppLogin;
 
 const setStatus = (message, state = "") => {
   if (!status) return;
