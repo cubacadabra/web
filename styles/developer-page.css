@@ -23,6 +23,23 @@
   align-items: start;
 }
 
+.developer-support-message {
+  display: flex;
+  min-height: 390px;
+  align-items: center;
+  padding: 18px 12px;
+}
+
+.developer-support-message p {
+  max-width: 260px;
+  margin: 0;
+  color: var(--about-soft);
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: 1.45;
+}
+
 .developer-heading {
   display: flex;
   align-items: end;
@@ -442,8 +459,10 @@
 
 @media (max-width: 1120px) {
   .developer-workspace { grid-template-columns: minmax(0, 1fr); }
-  .developer-inspector { min-height: 0; }
-  .developer-support-note { margin-top: 28px; }
+  .developer-support-message {
+    min-height: 0;
+    padding: 8px 4px 0;
+  }
 }
 
 @media (max-width: 900px) {
