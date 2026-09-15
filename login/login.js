@@ -1,7 +1,6 @@
-import { backendApiUrl } from "../src/config/clientConfig.js";
+import { backendApiUrl, googleClientId } from "../src/config/clientConfig.js";
 import { getCurrentUser, getPostLoginPath } from "../src/auth/session.js";
 
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 const googleButton = document.querySelector("#google-button");
 const fallbackButton = document.querySelector(".google-button-fallback");
 const emailLoginForm = document.querySelector("#email-login-form");
@@ -122,14 +121,14 @@ const initializeGoogleButton = () => {
   if (googleInitialized) return true;
   if (!googleButton || !window.google?.accounts?.id) return false;
 
-  if (!GOOGLE_CLIENT_ID) {
+  if (!googleClientId) {
     setStatus("Google sign-in is not configured for this environment.", "error");
     fallbackButton?.setAttribute("disabled", "disabled");
     return true;
   }
 
   window.google.accounts.id.initialize({
-    client_id: GOOGLE_CLIENT_ID,
+    client_id: googleClientId,
     callback: handleCredentialResponse,
     context: "signin",
     ux_mode: "popup",

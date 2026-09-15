@@ -13,6 +13,12 @@ export const playerPresentationConfig = {
 
 const productionBackendUrl = "wss://api.cubacadabra.com";
 const localBackendUrl = "ws://127.0.0.1:8787";
+const defaultGoogleClientId = "488093116930-15iua7ac30985v925s2d66alqplk6ib6.apps.googleusercontent.com";
+
+export const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
+  && import.meta.env.VITE_GOOGLE_CLIENT_ID !== "changeme"
+  ? import.meta.env.VITE_GOOGLE_CLIENT_ID
+  : defaultGoogleClientId;
 
 export const backendConfig = {
   webSocketUrl: import.meta.env.VITE_BACKEND_WS_URL
