@@ -400,6 +400,7 @@ const renderDeveloperSidebar = () => `<aside class="about-sidebar">
     <a href="#upload" data-section="upload"><span>Upload</span></a>
     <a class="is-active" href="#pricing" data-section="pricing" aria-current="page"><span>Pricing</span></a>
     <a href="#included" data-section="included"><span>What stays free</span></a>
+    <a href="https://developer.cubacadabra.com/docs/" target="_blank" rel="noreferrer"><span>Documentation</span><span class="about-menu-arrow" aria-hidden="true">↗</span></a>
   </nav>
 </aside>`;
 
