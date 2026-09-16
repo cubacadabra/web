@@ -184,7 +184,7 @@ quality policy does not change simulation or character identity.
   game behavior
 - [second-game/README.md](../second-game/README.md)   second game behavior
 - [third-game/README.md](../third-game/README.md)   preview SDK capability probe
-- [tools/docs/cubacadabra-game-developer-guide-preview-0.3.md](../tools/docs/cubacadabra-game-developer-guide-preview-0.3.md)   game developer guide
+- [Cubacadabra creator guide](https://github.com/cubacadabra/docs/blob/main/contracts/creator-guide.md)   game developer guide
 - [rust/README.md](../rust/README.md)   simulation and WASM renderer
 - [backend/README.md](../backend/README.md)   local/LAN/production multiplayer
 
