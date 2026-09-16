@@ -103,29 +103,6 @@
   justify-self: start;
 }
 
-.download-menu button {
-  display: flex;
-  width: 100%;
-  min-height: 32px;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 14px;
-  border: 0;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--about-soft);
-  cursor: not-allowed;
-  font: inherit;
-  font-size: 13px;
-  line-height: 1.2;
-  text-align: left;
-}
-
-.download-menu button:disabled {
-  color: var(--about-faint);
-  opacity: 0.62;
-}
-
 @media (max-width: 960px) {
   .download-layout {
     grid-template-columns: minmax(0, 1fr);
@@ -165,10 +142,4 @@
     width: min(100%, 260px);
   }
 
-  .download-menu button {
-    min-height: 38px;
-    padding-right: 10px;
-    padding-left: 10px;
-  }
 }
-

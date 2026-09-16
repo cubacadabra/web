@@ -368,9 +368,18 @@ const renderDownloadSidebar = (currentPlatform) => {
       <span>Android</span>
       <span class="about-menu-arrow" aria-hidden="true">↗</span>
     </a>
-    <button type="button" disabled>MacOS Desktop</button>
-    <button type="button" disabled>Windows</button>
-    <button type="button" disabled>Linux</button>
+    <a href="https://github.com/cubacadabra/studio/releases" target="_blank" rel="noreferrer">
+      <span>MacOS Desktop</span>
+      <span>Studio <span class="about-menu-arrow" aria-hidden="true">↗</span></span>
+    </a>
+    <a href="https://github.com/cubacadabra/studio/releases" target="_blank" rel="noreferrer">
+      <span>Windows</span>
+      <span>Studio <span class="about-menu-arrow" aria-hidden="true">↗</span></span>
+    </a>
+    <a href="https://github.com/cubacadabra/studio/releases" target="_blank" rel="noreferrer">
+      <span>Linux</span>
+      <span>Studio <span class="about-menu-arrow" aria-hidden="true">↗</span></span>
+    </a>
   </nav>
 </aside>`;
 };
