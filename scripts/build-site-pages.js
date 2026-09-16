@@ -345,7 +345,14 @@ ${groupMarkup}
 </aside>`;
 };
 
-const renderDownloadSidebar = () => {
+const renderDownloadSidebar = (currentPlatform) => {
+  const iosActive = currentPlatform === "ios"
+    ? ' class="is-active" aria-current="page"'
+    : "";
+  const androidActive = currentPlatform === "android"
+    ? ' class="is-active" aria-current="page"'
+    : "";
+
   return `<aside class="about-sidebar">
   <div class="about-sidebar-heading">
     <span>Download cubacadabra</span>
@@ -353,13 +360,21 @@ const renderDownloadSidebar = () => {
   </div>
 
   <nav class="about-menu download-menu" aria-label="Download apps">
+    <a${iosActive} href="/download/">
+      <span>iPhone/iPad</span>
+      <span class="about-menu-arrow" aria-hidden="true">↗</span>
+    </a>
+    <a${androidActive} href="/download/android/">
+      <span>Android</span>
+      <span class="about-menu-arrow" aria-hidden="true">↗</span>
+    </a>
     <a href="https://github.com/cubacadabra/studio/releases" target="_blank" rel="noreferrer" aria-label="Studio for MacOS, Windows, and Linux">
-      <span>Studio</span>
-      <span>(MacOS/Windows/Linux) <span class="about-menu-arrow" aria-hidden="true">↗</span></span>
+      <span>Studio <span class="download-menu-platforms">(MacOS/Windows/Linux)</span></span>
+      <span class="about-menu-arrow" aria-hidden="true">↗</span>
     </a>
     <a href="https://github.com/cubacadabra/desktop/releases" target="_blank" rel="noreferrer" aria-label="Desktop for MacOS, Windows, and Linux">
-      <span>Desktop</span>
-      <span>(MacOS/Windows/Linux) <span class="about-menu-arrow" aria-hidden="true">↗</span></span>
+      <span>Desktop <span class="download-menu-platforms">(MacOS/Windows/Linux)</span></span>
+      <span class="about-menu-arrow" aria-hidden="true">↗</span>
     </a>
   </nav>
 </aside>`;
@@ -550,7 +565,7 @@ ${indent(renderFooter(page), 2)}
 const renderShellPage = (page, content) => {
   const center = page.sidebar === "download"
     ? `<div class="about-layout">
-${indent(renderDownloadSidebar(), 2)}
+${indent(renderDownloadSidebar(page.downloadPlatform), 2)}
 
 ${indent(content, 2)}
 </div>`

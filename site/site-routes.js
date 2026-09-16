@@ -203,6 +203,7 @@ export const SITE_PAGES = [
     header: "product",
     footerCurrent: "download",
     sidebar: "download",
+    downloadPlatform: "ios",
   },
   {
     id: "download-android",
@@ -219,6 +220,7 @@ export const SITE_PAGES = [
     header: "product",
     footerCurrent: "download",
     sidebar: "download",
+    downloadPlatform: "android",
   },
   {
     id: "terms",

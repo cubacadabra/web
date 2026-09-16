@@ -4,6 +4,18 @@
   padding-top: 58px;
 }
 
+.download-menu > a {
+  padding-right: 10px;
+  padding-left: 10px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.download-menu-platforms {
+  color: var(--about-faint);
+  font-size: 11px;
+}
+
 .download-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(220px, 304px);
