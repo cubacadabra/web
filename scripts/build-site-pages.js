@@ -345,40 +345,21 @@ ${groupMarkup}
 </aside>`;
 };
 
-const renderDownloadSidebar = (currentPlatform) => {
-  const iosActive = currentPlatform === "ios"
-    ? ' class="is-active" aria-current="page"'
-    : "";
-  const androidActive = currentPlatform === "android"
-    ? ' class="is-active" aria-current="page"'
-    : "";
-
+const renderDownloadSidebar = () => {
   return `<aside class="about-sidebar">
   <div class="about-sidebar-heading">
     <span>Download cubacadabra</span>
-    <span class="about-sidebar-status">More platforms to come</span>
+    <span class="about-sidebar-status">Installed apps</span>
   </div>
 
-  <nav class="about-menu download-menu" aria-label="Download platforms">
-    <a${iosActive} href="/download/">
-      <span>iPhone/iPad</span>
-      <span class="about-menu-arrow" aria-hidden="true">↗</span>
+  <nav class="about-menu download-menu" aria-label="Download apps">
+    <a href="https://github.com/cubacadabra/studio/releases" target="_blank" rel="noreferrer" aria-label="Studio for MacOS, Windows, and Linux">
+      <span>Studio</span>
+      <span>(MacOS/Windows/Linux) <span class="about-menu-arrow" aria-hidden="true">↗</span></span>
     </a>
-    <a${androidActive} href="/download/android/">
-      <span>Android</span>
-      <span class="about-menu-arrow" aria-hidden="true">↗</span>
-    </a>
-    <a href="https://github.com/cubacadabra/studio/releases" target="_blank" rel="noreferrer">
-      <span>MacOS Desktop</span>
-      <span>Studio <span class="about-menu-arrow" aria-hidden="true">↗</span></span>
-    </a>
-    <a href="https://github.com/cubacadabra/studio/releases" target="_blank" rel="noreferrer">
-      <span>Windows</span>
-      <span>Studio <span class="about-menu-arrow" aria-hidden="true">↗</span></span>
-    </a>
-    <a href="https://github.com/cubacadabra/studio/releases" target="_blank" rel="noreferrer">
-      <span>Linux</span>
-      <span>Studio <span class="about-menu-arrow" aria-hidden="true">↗</span></span>
+    <a href="https://github.com/cubacadabra/desktop/releases" target="_blank" rel="noreferrer" aria-label="Desktop for MacOS, Windows, and Linux">
+      <span>Desktop</span>
+      <span>(MacOS/Windows/Linux) <span class="about-menu-arrow" aria-hidden="true">↗</span></span>
     </a>
   </nav>
 </aside>`;
@@ -569,7 +550,7 @@ ${indent(renderFooter(page), 2)}
 const renderShellPage = (page, content) => {
   const center = page.sidebar === "download"
     ? `<div class="about-layout">
-${indent(renderDownloadSidebar(page.downloadPlatform), 2)}
+${indent(renderDownloadSidebar(), 2)}
 
 ${indent(content, 2)}
 </div>`
