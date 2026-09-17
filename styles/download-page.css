@@ -53,6 +53,34 @@
   line-height: 1.5;
 }
 
+.store-button {
+  display: inline-flex;
+  justify-self: end;
+  min-height: 48px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  transition: transform .2s ease;
+}
+
+.store-button:hover,
+.store-button:focus-visible {
+  background: transparent;
+  transform: translateY(-2px);
+}
+
+.store-button:focus-visible {
+  outline: 2px solid var(--about-accent);
+  outline-offset: 4px;
+}
+
+.store-badge {
+  display: block;
+  width: 120px;
+  height: 40px;
+}
+
 .download-layout-android {
   display: block;
   min-height: 0;
@@ -123,6 +151,10 @@
   }
 
   .download-qr {
+    justify-self: start;
+  }
+
+  .store-button {
     justify-self: start;
   }
 
