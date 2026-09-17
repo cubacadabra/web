@@ -8,6 +8,7 @@ const IMAGE_ID_PATTERN = /^[A-Za-z0-9._-]{1,64}$/;
 const IMAGE_PATH_PATTERN = /^assets\/(?:[A-Za-z0-9_-][A-Za-z0-9._-]*\/)*[A-Za-z0-9_-][A-Za-z0-9._-]*\.(?:jpg|jpeg|png)$/i;
 const MORPH_ID_PATTERN = /^[a-z0-9-]+:[a-z0-9_-]+(?:\/[a-z0-9_-]+)*\.v[1-9][0-9]*$/;
 const MORPH_PATH_PATTERN = /^assets\/(?:[A-Za-z0-9_-][A-Za-z0-9._-]*\/)*[A-Za-z0-9_-][A-Za-z0-9._-]*\.morphpack$/i;
+const MODEL_PATH_PATTERN = /^assets\/(?:[A-Za-z0-9_-][A-Za-z0-9._-]*\/)*[A-Za-z0-9_-][A-Za-z0-9._-]*\.glb$/i;
 const SERVER_ONLY_PACKAGE_FILES = new Set(["authority.luau"]);
 
 function requestedGameId() {
@@ -228,6 +229,31 @@ function normalizeMorphPacks(assets, baseUrl) {
   }));
 }
 
+function normalizeWorldModels(assets, baseUrl) {
+  const models = assets?.models;
+  if (models === undefined) return {};
+  if (!models || typeof models !== "object" || Array.isArray(models)) {
+    throw new Error("Game manifest assets.models must be an object.");
+  }
+  const entries = Object.entries(models);
+  if (entries.length > 64) {
+    throw new Error("A game package may declare at most 64 world models.");
+  }
+  return Object.fromEntries(entries.map(([id, definition]) => {
+    if (!IMAGE_ID_PATTERN.test(id)) {
+      throw new Error(`Game model id "${id}" is invalid.`);
+    }
+    if (!definition || typeof definition !== "object" || Array.isArray(definition)) {
+      throw new Error(`Game model asset "${id}" must be an object.`);
+    }
+    const path = definition.path;
+    if (typeof path !== "string" || !MODEL_PATH_PATTERN.test(path)) {
+      throw new Error(`Game model asset "${id}" must reference a GLB inside assets/.`);
+    }
+    return [id, { url: new URL(path, baseUrl).href }];
+  }));
+}
+
 export async function loadGamePackage() {
   const gameId = requestedGameId();
   const localBaseUrl = localGameBaseUrl(gameId);
@@ -307,5 +333,6 @@ export async function loadGamePackage() {
     audioAssets: normalizeAudioAssets(manifest.assets, baseUrl),
     imageAssets: normalizeImageAssets(manifest.assets, baseUrl),
     morphPacks: normalizeMorphPacks(manifest.assets, baseUrl),
+    worldModels: normalizeWorldModels(manifest.assets, baseUrl),
   };
 }

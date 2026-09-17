@@ -38,6 +38,10 @@ export async function createRustRenderer({ canvas }) {
       if (destroyed) return false;
       return renderer.register_morph_pack(bytes);
     },
+    registerWorldMesh(id, bytes) {
+      if (destroyed) return false;
+      return renderer.register_world_mesh(id, bytes);
+    },
     setAvatarPreviewMode(enabled) {
       if (destroyed) return;
       renderer.set_avatar_preview_mode(Boolean(enabled));

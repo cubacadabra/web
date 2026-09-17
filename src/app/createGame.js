@@ -81,6 +81,18 @@ async function loadMorphPacks(morphPacks) {
   return loaded;
 }
 
+async function loadWorldModels(models) {
+  return Promise.all(Object.entries(models).map(async ([id, definition]) => ({
+    id,
+    bytes: await fetch(definition.url).then(async (response) => {
+      if (!response.ok) {
+        throw new Error(`The world model "${id}" could not be loaded (${response.status}).`);
+      }
+      return new Uint8Array(await response.arrayBuffer());
+    }),
+  })));
+}
+
 function nextPowerOfTwo(value) {
   let result = 1;
   while (result < value) result *= 2;
@@ -191,6 +203,11 @@ export async function createGame() {
     typeof navigator !== "undefined" && navigator.maxTouchPoints > 0;
   elements.worldShell?.classList.toggle("is-touch-device", isTouchDevice);
   const renderer = await createRustRenderer({ canvas: elements.canvas });
+  for (const { id, bytes } of await loadWorldModels(gameDefinition.worldModels)) {
+    if (!renderer.registerWorldMesh(id, bytes)) {
+      throw new Error(`The world model "${id}" was rejected by the renderer.`);
+    }
+  }
   for (const { id, bytes } of await loadMorphPacks(gameDefinition.morphPacks)) {
     if (!renderer.registerMorphPack(bytes)) {
       throw new Error(`The morph pack "${id}" was rejected by the renderer.`);
