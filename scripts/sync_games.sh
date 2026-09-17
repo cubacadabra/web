@@ -50,7 +50,8 @@ if [ "$#" -eq 0 ]; then
   # being developed. Keep them locally playable without requiring an upload to
   # the cube catalog first.
   for game_dir in "$web_dir/../examples/survival-101" \
-    "$web_dir/../examples/adventure-101"; do
+    "$web_dir/../examples/adventure-101" \
+    "$web_dir/../examples/maze-101"; do
     if [ -f "$game_dir/manifest.json" ] && [ -f "$game_dir/src/main.luau" ]; then
       sync_game "$game_dir"
     fi

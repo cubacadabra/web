@@ -8,6 +8,7 @@ const IMAGE_ID_PATTERN = /^[A-Za-z0-9._-]{1,64}$/;
 const IMAGE_PATH_PATTERN = /^assets\/(?:[A-Za-z0-9_-][A-Za-z0-9._-]*\/)*[A-Za-z0-9_-][A-Za-z0-9._-]*\.(?:jpg|jpeg|png)$/i;
 const MORPH_ID_PATTERN = /^[a-z0-9-]+:[a-z0-9_-]+(?:\/[a-z0-9_-]+)*\.v[1-9][0-9]*$/;
 const MORPH_PATH_PATTERN = /^assets\/(?:[A-Za-z0-9_-][A-Za-z0-9._-]*\/)*[A-Za-z0-9_-][A-Za-z0-9._-]*\.morphpack$/i;
+const SERVER_ONLY_PACKAGE_FILES = new Set(["authority.luau"]);
 
 function requestedGameId() {
   const params = new URLSearchParams(window.location.search);
@@ -96,6 +97,7 @@ async function validatePackageDescriptor(
   ) throw new Error("The game package descriptor file table is invalid.");
 
   for (const path of descriptor.files) {
+    if (SERVER_ONLY_PACKAGE_FILES.has(path)) continue;
     if (!payloads.has(path)) {
       payloads.set(path, await loadBytes(new URL(path, baseUrl), `game package file "${path}"`));
     }
