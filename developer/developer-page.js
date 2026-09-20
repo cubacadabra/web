@@ -271,6 +271,8 @@ function loadingMarkup() {
 
 function cubeUploadErrorMessage(error) {
   switch (error.message) {
+    case "uploads_not_allowed_in_free_plan":
+      return "Uploads are not allowed in the free plan. Choose Creator Pro or Studio to upload a Cube.";
     case "cube_zip_too_large":
       return "That ZIP is larger than the 25 MiB limit.";
     case "zip_required":
