@@ -235,6 +235,11 @@ export function createWorldSocket({
       if (socket !== nextSocket || expectedGeneration !== generation) return;
       socket = null;
       if (destroyed || !worldId) return;
+      // Cube deltas belong to the old connection's local prediction. The
+      // retained server position will be replayed on the next connection.
+      pendingGameMessages = pendingGameMessages.filter(
+        ({ event }) => event?.type !== "world_block_move",
+      );
 
       reconnectAttempt += 1;
       setStatus("reconnecting");
@@ -395,7 +400,9 @@ export function createWorldSocket({
     } catch {
       return false;
     }
+    const liveCubeMove = event?.type === "world_block_move";
     if (!socket || socket.readyState !== WebSocket.OPEN) {
+      if (liveCubeMove) return false;
       queueGameMessage(event);
       return true;
     }
@@ -403,6 +410,7 @@ export function createWorldSocket({
       socket.send(source);
       return true;
     } catch {
+      if (liveCubeMove) return false;
       queueGameMessage(event);
       return true;
     }
