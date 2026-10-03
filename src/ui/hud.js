@@ -249,14 +249,7 @@ export function createHudController({ elements, state, gameDefinition }) {
 
   function markReady() {
     elements.worldShell?.classList.add("is-ready");
-    elements.loadingState?.classList.add("is-ready");
-  }
-
-  function markError(message) {
-    if (elements.loadingState) {
-      elements.loadingState.textContent = message;
-      elements.loadingState.classList.add("is-error");
-    }
+    if (elements.loadingState) elements.loadingState.hidden = true;
   }
 
   function destroy() {
@@ -282,7 +275,6 @@ export function createHudController({ elements, state, gameDefinition }) {
     },
     updateCompass,
     markReady,
-    markError,
     destroy,
   };
 }

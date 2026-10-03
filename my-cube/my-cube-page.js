@@ -239,17 +239,25 @@ function cubesMarkup() {
         <tbody>
           <tr>
             <td colspan="2">
+              <a class="cube-link" href="/?game=heavy2">
+                <div class="cube-copy">
+                  <span class="cube-name">Cuboom</span>
+                  <span class="cube-detail">Restore letter strokes and build a tower together</span>
+                </div>
+              </a>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2">
               <a class="cube-link" href="/?game=first-game">
-                <div class="cube-thumbnail" aria-hidden="true"><span>Thumbnail</span></div>
-                <span class="cube-name">first-game</span>
+                <span class="cube-name">Spellbound Schoolyard</span>
               </a>
             </td>
           </tr>
           <tr>
             <td colspan="2">
               <a class="cube-link" href="/?game=second-game">
-                <div class="cube-thumbnail" aria-hidden="true"><span>Thumbnail</span></div>
-                <span class="cube-name">second-game</span>
+                <span class="cube-name">Signal Run</span>
               </a>
             </td>
           </tr>

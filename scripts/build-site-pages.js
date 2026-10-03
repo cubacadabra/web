@@ -74,9 +74,9 @@ const createStructuredData = (page) => {
         },
         {
           "@type": "VideoGame",
-          name: "cubacadabra World 01",
+          name: "Cuboom",
           url: `${SITE.origin}/`,
-          description: "An open-source 3D multiplayer world you can explore in the browser.",
+          description: "A cooperative game about collecting letter strokes and rebuilding a wall of cubes.",
           gamePlatform: "Web browser",
           genre: ["Sandbox", "Multiplayer"],
         },
@@ -269,7 +269,7 @@ const footerLinks = [
 
 const renderFooter = (page) => {
   const status = page.footerStatus
-    ? '  <span class="meta-line" aria-hidden="true"></span>\n  <span>World 01 · In progress</span>\n'
+    ? '  <span class="meta-line" aria-hidden="true"></span>\n  <span>Public preview · In progress</span>\n'
     : "";
   const social = socialLinks
     .map(([href, label]) => `    <a href="${href}" target="_blank" rel="noreferrer">${label}</a>`)
@@ -396,16 +396,12 @@ const renderMyCubeSidebar = () => `<aside class="about-sidebar">
 </aside>`;
 
 const renderDeveloperSidebar = () => `<aside class="about-sidebar">
-  <div class="about-sidebar-heading">
-    <span>Developer</span>
-    <span class="about-sidebar-status">Early access</span>
-  </div>
-
   <nav class="about-menu" aria-label="Developer sections">
-    <a href="#upload" data-section="upload"><span>Upload</span></a>
-    <a class="is-active" href="#pricing" data-section="pricing" aria-current="page"><span>Pricing</span></a>
-    <a href="#included" data-section="included"><span>What stays free</span></a>
-    <a href="https://developer.cubacadabra.com/docs/" target="_blank" rel="noreferrer"><span>Documentation</span><span class="about-menu-arrow" aria-hidden="true">↗</span></a>
+    <a class="is-active" href="#start" data-section="start" aria-current="location"><span>Get started</span></a>
+    <a href="#included" data-section="included"><span>Current capabilities</span></a>
+    <a href="#upload" data-section="upload"><span>Upload a Cube</span></a>
+    <a href="#pricing" data-section="pricing"><span>Service plans</span></a>
+    <a href="https://github.com/cubacadabra/docs" target="_blank" rel="noreferrer"><span>Documentation</span><span class="about-menu-arrow" aria-hidden="true">↗</span></a>
   </nav>
 </aside>`;
 

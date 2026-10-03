@@ -1,7 +1,7 @@
 import { backendApiUrl } from "../config/clientConfig.js";
+import { GAME_ID_PATTERN } from "./gameId.js";
 
-const DEFAULT_GAME_ID = "first-game";
-const GAME_ID_PATTERN = /^(?=.{3,64}$)[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const DEFAULT_GAME_ID = "heavy2"; // Cuboom's retained package identity.
 const AUDIO_ID_PATTERN = /^[A-Za-z0-9._-]{1,64}$/;
 const AUDIO_PATH_PATTERN = /^assets\/(?:[A-Za-z0-9_-][A-Za-z0-9._-]*\/)*[A-Za-z0-9_-][A-Za-z0-9._-]*\.wav$/i;
 const IMAGE_ID_PATTERN = /^[A-Za-z0-9._-]{1,64}$/;

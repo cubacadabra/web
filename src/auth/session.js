@@ -10,14 +10,21 @@ const requestOptions = {
 };
 
 export async function getCurrentUser() {
+  const controller = new AbortController();
+  const deadline = setTimeout(() => controller.abort(), 5_000);
   try {
-    const response = await fetch(backendApiUrl("/auth/me"), requestOptions);
+    const response = await fetch(backendApiUrl("/auth/me"), {
+      ...requestOptions,
+      signal: controller.signal,
+    });
     if (!response.ok) return null;
 
     const result = await response.json().catch(() => null);
     return result?.user || null;
   } catch {
     return null;
+  } finally {
+    clearTimeout(deadline);
   }
 }
 

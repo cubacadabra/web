@@ -41,7 +41,7 @@ function setMenuState(activeSection) {
   menuLinks.forEach((link) => {
     const isActive = link.dataset.section === activeSection;
     link.classList.toggle("is-active", isActive);
-    if (isActive) link.setAttribute("aria-current", "page");
+    if (isActive) link.setAttribute("aria-current", "location");
     else link.removeAttribute("aria-current");
   });
 }
@@ -70,7 +70,6 @@ function developerCheckoutMarkup(plan) {
     <div class="developer-checkout-view" id="developer-checkout" aria-labelledby="developer-checkout-title">
       <div class="developer-checkout-heading">
         <button class="developer-checkout-back" type="button">← Back to plans</button>
-        <p class="developer-kicker">Secure checkout</p>
         <h1 id="developer-checkout-title">${details.name}</h1>
         <p>Enter your payment details to start your monthly developer subscription.</p>
       </div>
@@ -79,7 +78,7 @@ function developerCheckoutMarkup(plan) {
           <strong>${details.name}</strong>
           <span>${details.price} USD / month</span>
         </div>
-        <p>Please note cubacadabra is a work in progress and your subscription helps fund it. Cancel anytime but please understand you are not buying a finished product yet only helping to support a new one.</p>
+        <p>Cubacadabra is pre-launch. This subscription supports ongoing development and hosted uploads. Cancel any time.</p>
       </div>
       <p class="developer-checkout-status" role="status" aria-live="polite">Preparing secure payment…</p>
       <form class="developer-checkout-form" hidden>
@@ -178,7 +177,7 @@ function developerActionMarkup(plan, subscription, canUpgrade, higherPlanActive)
   if (plan === "studio" && canUpgrade) {
     return `<button class="developer-plan-action developer-plan-manage developer-plan-upgrade" data-developer-manage="upgrade" data-developer-plan="${plan}" data-developer-subscription-id="${canUpgrade.id}" type="button">Upgrade to Studio <span aria-hidden="true">↗</span></button>`;
   }
-  return `<a class="developer-plan-action" data-developer-plan="${plan}" href="${loginPath(developerPath(plan))}">${plan === "studio" ? "Plan a Studio" : "Choose Creator Pro"} <span aria-hidden="true">↗</span></a>`;
+  return `<a class="developer-plan-action" data-developer-plan="${plan}" href="${loginPath(developerPath(plan))}">${plan === "studio" ? "Support with Studio" : "Choose Creator Pro"} <span aria-hidden="true">↗</span></a>`;
 }
 
 function setDeveloperPlansStatus(message, state = "") {
@@ -395,7 +394,9 @@ function showPublicContent() {
   developerCheckoutCleanup?.();
   developerCheckoutCleanup = null;
   if (content.innerHTML !== defaultContent) content.innerHTML = defaultContent;
-  setMenuState(window.location.hash === "#included" ? "included" : "pricing");
+  const section = window.location.hash.slice(1);
+  setMenuState(["included", "pricing"].includes(section) ? section : "start");
+  if (section === "pricing") content.querySelector("#pricing").open = true;
   if (currentUser) loadDeveloperPlanStatus(currentUser);
 }
 
@@ -494,6 +495,22 @@ async function renderDeveloperCheckout(plan) {
 }
 
 function handleDeveloperContentClick(event) {
+  const copyButton = event.target.closest("[data-copy-quickstart]");
+  if (copyButton) {
+    const commands = content.querySelector("[data-quickstart]");
+    const status = content.querySelector("[data-copy-status]");
+    if (!commands || !status) return;
+    if (!navigator.clipboard?.writeText) {
+      status.textContent = "Select the commands above to copy them.";
+      return;
+    }
+    navigator.clipboard.writeText(commands.textContent).then(() => {
+      status.textContent = "Commands copied.";
+    }).catch(() => {
+      status.textContent = "Select the commands above to copy them.";
+    });
+    return;
+  }
   const manageButton = event.target.closest("[data-developer-manage]");
   if (manageButton) {
     event.preventDefault();

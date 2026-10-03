@@ -12,6 +12,7 @@ import { getDomElements } from "../ui/dom.js";
 import { createHudController } from "../ui/hud.js";
 import { createCharacterShowcaseController } from "../ui/characterShowcase.js";
 import { getCurrentUser } from "../auth/session.js";
+import { showGameStartupError } from "../ui/gameStartup.js";
 
 const DEFAULT_BODY_ID = "cuba:person.v1";
 const PLAYER_BODY_IDS = new Set([
@@ -196,13 +197,16 @@ function playerBodyId(value) {
 }
 
 export async function createGame() {
-  const currentUser = await getCurrentUser();
   const elements = getDomElements();
+  const currentUser = await getCurrentUser();
   const gameDefinition = await loadGamePackage();
+  document.title = `${gameDefinition.displayName || gameDefinition.gameId} · cubacadabra`;
   const isTouchDevice =
     typeof navigator !== "undefined" && navigator.maxTouchPoints > 0;
   elements.worldShell?.classList.toggle("is-touch-device", isTouchDevice);
+  document.querySelector("#loading-copy").textContent = "Starting graphics";
   const renderer = await createRustRenderer({ canvas: elements.canvas });
+  document.querySelector("#loading-copy").textContent = "Loading game assets";
   for (const { id, bytes } of await loadWorldModels(gameDefinition.worldModels)) {
     if (!renderer.registerWorldMesh(id, bytes)) {
       throw new Error(`The world model "${id}" was rejected by the renderer.`);
@@ -565,7 +569,14 @@ export async function createGame() {
     if (disposed) return;
     const delta = Math.min((currentTime - previousTime) / 1000, 0.05);
     previousTime = currentTime;
-    render(delta);
+    try {
+      render(delta);
+    } catch (error) {
+      console.error(error);
+      dispose();
+      showGameStartupError(error);
+      return;
+    }
     animationFrame = requestAnimationFrame(animate);
   }
 
@@ -586,6 +597,12 @@ export async function createGame() {
     window.removeEventListener("pagehide", dispose);
   }
 
+  try {
+    renderer.render(engine.rendererHandle());
+  } catch (error) {
+    dispose();
+    throw error;
+  }
   hud.markReady();
   animationFrame = requestAnimationFrame(animate);
 

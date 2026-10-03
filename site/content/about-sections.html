@@ -17,15 +17,15 @@
               </div>
               <div>
                 <p class="about-overview-copy">
-                  We plan to open-source most of cubacadabra: the engine, clients,
+                  Cubacadabra is open source under GPL-3.0-or-later: the engine, clients,
                   creator tooling, world formats, and more.
                 </p>
                 <ul class="repository-list" aria-label="Planned open-source repositories">
                   <li><a href="https://github.com/cubacadabra/web" target="_blank" rel="noreferrer"><span>web</span><span aria-hidden="true">↗</span></a></li>
                   <li><a href="https://github.com/cubacadabra/rust" target="_blank" rel="noreferrer"><span>rust</span><span aria-hidden="true">↗</span></a></li>
-                  <li><a href="https://github.com/cubacadabra/ios_app" target="_blank" rel="noreferrer"><span>ios_app</span><span aria-hidden="true">↗</span></a></li>
-                  <li><a href="https://github.com/cubacadabra/android_app" target="_blank" rel="noreferrer"><span>android_app</span><span aria-hidden="true">↗</span></a></li>
-                  <li><a href="https://github.com/cubacadabra/first-game" target="_blank" rel="noreferrer"><span>first_game</span><span aria-hidden="true">↗</span></a></li>
+                  <li><a href="https://github.com/cubacadabra/ios" target="_blank" rel="noreferrer"><span>ios</span><span aria-hidden="true">↗</span></a></li>
+                  <li><a href="https://github.com/cubacadabra/android" target="_blank" rel="noreferrer"><span>android</span><span aria-hidden="true">↗</span></a></li>
+                  <li><a href="https://github.com/cubacadabra/examples" target="_blank" rel="noreferrer"><span>examples</span><span aria-hidden="true">↗</span></a></li>
                   <li><a href="https://github.com/cubacadabra/font" target="_blank" rel="noreferrer"><span>font</span><span aria-hidden="true">↗</span></a></li>
                 </ul>
                 <a class="about-inline-link" href="https://github.com/orgs/cubacadabra/repositories" target="_blank" rel="noreferrer">
@@ -62,7 +62,7 @@
 
               <dl class="about-code-map">
                 <div><dt>Entry point</dt><dd><code>src/main.js</code> → <code>src/app/createGame.js</code></dd></div>
-                <div><dt>Package host</dt><dd><code>/games/first-game/</code>, populated from the sibling <code>first-game</code> repo</dd></div>
+                <div><dt>Package host</dt><dd><code>/games/first-game/</code>, populated from the sibling <code>examples</code> repo</dd></div>
                 <div><dt>Runtime boundary</dt><dd><code>src/engine/wasm.js</code> writes buffers and reads the flat Rust snapshot</dd></div>
                 <div><dt>Network boundary</dt><dd><code>src/network/worldSocket.js</code> joins <code>/world/:worldId</code> and publishes changed movement at 12 Hz</dd></div>
               </dl>
@@ -84,7 +84,7 @@
                   <ul class="about-code-list">
                     <li><code>npm run dev</code> syncs the game package and builds the browser renderer before Vite starts.</li>
                     <li><code>npm run build:renderer</code> invokes the Rust WASM build and <code>wasm-bindgen</code> output step.</li>
-                    <li>Change content in <code>../first-game</code>; change simulation in <code>../rust</code>; keep this repo for browser behavior.</li>
+                    <li>Change content in <code>../examples/cuboom</code>; change simulation in <code>../rust</code>; keep this repo for browser behavior.</li>
                     <li>The browser currently preserves the game-script seam, but does not run the native Luau host in WASM yet.</li>
                   </ul>
                 </article>
@@ -141,7 +141,7 @@
               <p class="about-callout">When changing the engine, verify the three consumers together: the C header and native adapters, the generated WASM binding, and the snapshot layout. A field added to one side is an ABI change, even if the Rust code compiles.</p>
               <div class="about-final-links">
                 <a class="about-primary-link" href="https://github.com/cubacadabra/rust" target="_blank" rel="noreferrer"><span>Open rust on GitHub</span><span aria-hidden="true">↗</span></a>
-                <a class="about-inline-link" href="/about/open-source/ios-app/"><span>Next: ios_app</span><span aria-hidden="true">→</span></a>
+                <a class="about-inline-link" href="/about/open-source/ios-app/"><span>Next: ios</span><span aria-hidden="true">→</span></a>
               </div>
             </div>
           </section>
@@ -150,13 +150,13 @@
 <!-- about-section:open-source-ios-app:start -->
           <section id="open-source-ios-app" class="about-section about-code-section" aria-labelledby="open-source-ios-app-title">
             <div class="about-section-header">
-              <p class="about-kicker">03 / Open Source / ios_app</p>
+              <p class="about-kicker">03 / Open Source / ios</p>
               <h2 id="open-source-ios-app-title">iOS is a SwiftUI client wrapped around the same engine.</h2>
               <p class="about-section-side-copy">Swift owns lifecycle, touch, identity, and platform presentation. Rust still owns the world.</p>
             </div>
             <div class="about-section-body">
               <div class="about-code-intro">
-                <p>The <code>ios_app</code> repository is intentionally an adapter rather than a second game implementation. SwiftUI drives loading and screen state, <code>GameViewModel</code> owns the engine lifecycle and 60 Hz tick, and the app sends the same package data and world-socket messages as the browser.</p>
+                <p>The <code>ios</code> repository is intentionally an adapter rather than a second game implementation. SwiftUI drives loading and screen state, <code>GameViewModel</code> owns the engine lifecycle and 60 Hz tick, and the app sends the same package data and world-socket messages as the browser.</p>
                 <p>The app can start with a bundled manifest and script, use a cached manifest on the next launch, and refresh declarative content from the web host for a later launch. Executable rules remain bundled; this gives content some update room without downloading arbitrary native behavior.</p>
               </div>
 
@@ -188,8 +188,8 @@
 
               <p class="about-callout">The native integration is intentionally boring at the boundary: copy bytes in, call the engine, decode a known snapshot, and let SwiftUI handle platform UX. That makes iOS-specific work safer to review.</p>
               <div class="about-final-links">
-                <a class="about-primary-link" href="https://github.com/cubacadabra/ios_app" target="_blank" rel="noreferrer"><span>Open ios_app on GitHub</span><span aria-hidden="true">↗</span></a>
-                <a class="about-inline-link" href="/about/open-source/android-app/"><span>Next: android_app</span><span aria-hidden="true">→</span></a>
+                <a class="about-primary-link" href="https://github.com/cubacadabra/ios" target="_blank" rel="noreferrer"><span>Open ios on GitHub</span><span aria-hidden="true">↗</span></a>
+                <a class="about-inline-link" href="/about/open-source/android-app/"><span>Next: android</span><span aria-hidden="true">→</span></a>
               </div>
             </div>
           </section>
@@ -198,13 +198,13 @@
 <!-- about-section:open-source-android-app:start -->
           <section id="open-source-android-app" class="about-section about-code-section" aria-labelledby="open-source-android-app-title">
             <div class="about-section-header">
-              <p class="about-kicker">04 / Open Source / android_app</p>
+              <p class="about-kicker">04 / Open Source / android</p>
               <h2 id="open-source-android-app-title">Android brings the same runtime through Compose and JNI.</h2>
               <p class="about-section-side-copy">Kotlin owns state and touch. A small native shim turns an Android surface into the Rust renderer's window.</p>
             </div>
             <div class="about-section-body">
               <div class="about-code-intro">
-                <p>The <code>android_app</code> repository is the Kotlin/Jetpack Compose port of the iOS client. <code>GameViewModel</code> is the single state holder: it loads and validates the package, creates the native engine, ticks simulation, owns the socket, and exposes a <code>StateFlow</code> for the Compose UI.</p>
+                <p>The <code>android</code> repository is the Kotlin/Jetpack Compose port of the iOS client. <code>GameViewModel</code> is the single state holder: it loads and validates the package, creates the native engine, ticks simulation, owns the socket, and exposes a <code>StateFlow</code> for the Compose UI.</p>
                 <p>Android's platform-specific complexity is concentrated in the build and surface bridge. Gradle builds Rust for the selected ABIs, CMake links a JNI shim, and the shim keeps an <code>ANativeWindow</code> alive long enough for <code>wgpu</code> to create and destroy its surface safely.</p>
               </div>
 
@@ -236,8 +236,8 @@
 
               <p class="about-callout">If an Android rendering issue appears, inspect the full chain Gradle ABI output, CMake library loading, JNI surface lifetime, and Rust <code>wgpu</code> backend before changing Compose code.</p>
               <div class="about-final-links">
-                <a class="about-primary-link" href="https://github.com/cubacadabra/android_app" target="_blank" rel="noreferrer"><span>Open android_app on GitHub</span><span aria-hidden="true">↗</span></a>
-                <a class="about-inline-link" href="/about/open-source/first-game/"><span>Next: first_game</span><span aria-hidden="true">→</span></a>
+                <a class="about-primary-link" href="https://github.com/cubacadabra/android" target="_blank" rel="noreferrer"><span>Open android on GitHub</span><span aria-hidden="true">↗</span></a>
+                <a class="about-inline-link" href="/about/open-source/first-game/"><span>Next: examples</span><span aria-hidden="true">→</span></a>
               </div>
             </div>
           </section>
@@ -246,14 +246,14 @@
 <!-- about-section:open-source-first-game:start -->
           <section id="open-source-first-game" class="about-section about-code-section" aria-labelledby="open-source-first-game-title">
             <div class="about-section-header">
-              <p class="about-kicker">05 / Open Source / first_game</p>
-              <h2 id="open-source-first-game-title">The first game is a portable package, not a client fork.</h2>
+              <p class="about-kicker">05 / Open Source / examples</p>
+              <h2 id="open-source-first-game-title">Cuboom is a portable game with inspectable source.</h2>
               <p class="about-section-side-copy">JSON describes worlds. Luau supplies game-specific rules. Every client consumes the same package.</p>
             </div>
             <div class="about-section-body">
               <div class="about-code-intro">
-                <p>The <code>first-game</code> repository is content and rules only. It has no browser, Swift, Kotlin, Rust, or server code. That constraint is what lets the same lobby and session travel across the web, iOS, and Android clients.</p>
-                <p><code>manifest.json</code> describes presentation-independent world data: palette, bounds, spawn points, clouds, blocks, portals, launch pads, settings room, avatars, and the runtime world map. The game source lives under <code>first-game/src/</code>; the package builder assembles its Luau modules into the single <code>game.luau</code> entry consumed by the host.</p>
+                <p>The <code>examples</code> repository contains game content and Luau rules, with Cuboom as the featured game. It has no browser, Swift, Kotlin, Rust, or server code. That constraint is what lets the same lobby and session travel across the web, iOS, and Android clients.</p>
+                <p><code>manifest.json</code> describes presentation-independent world data: palette, bounds, spawn points, clouds, blocks, portals, launch pads, settings room, avatars, and the runtime world map. The game source lives under <code>examples/&lt;game&gt;/src/</code>; the package builder assembles its Luau modules into the single <code>game.luau</code> entry consumed by the host.</p>
               </div>
 
               <dl class="about-code-map">
@@ -284,7 +284,7 @@
 
               <p class="about-callout">This repository is the test of the architecture: if a world or rule needs a platform-specific rewrite, the boundary is in the wrong place or the package contract needs to become more explicit.</p>
               <div class="about-final-links">
-                <a class="about-primary-link" href="https://github.com/cubacadabra/first-game" target="_blank" rel="noreferrer"><span>Open first_game on GitHub</span><span aria-hidden="true">↗</span></a>
+                <a class="about-primary-link" href="https://github.com/cubacadabra/examples" target="_blank" rel="noreferrer"><span>Open examples on GitHub</span><span aria-hidden="true">↗</span></a>
                 <a class="about-inline-link" href="/about/open-source/web/"><span>Back to web</span><span aria-hidden="true">↺</span></a>
               </div>
             </div>

@@ -9,31 +9,32 @@ selected content.
 The repositories work together as follows:
 
 ```text
-first-game  -> src/ + manifest.json (game package)
-second-game -> src/ + manifest.json (game package)
-third-game  -> src/ + manifest.json (SDK capability probe)
+examples    -> authored game projects, with Cuboom as the starting point
 rust        -> simulation and renderer compiled to WebAssembly
 web         -> this browser shell and package host
-backend     -> multiplayer Worker at /world/:worldId
-ios_app     -> native client using the same package and Rust runtime
+backend     -> identity, package delivery, and world WebSockets
+ios/android -> native clients using the same package and Rust runtime
 ```
 
-When starting here, read the README for the game package you want to work on.
+Start with [Cuboom](https://github.com/cubacadabra/examples/blob/main/cuboom/README.md) and the
+[platform contribution guide](https://github.com/cubacadabra/docs/blob/main/CONTRIBUTING.md). Cubacadabra is pre-launch;
+[the current scope](https://github.com/cubacadabra/docs/blob/main/CURRENT_STATE.md) names the available foundations and gaps.
 Then read
-[rust/README.md](../rust/README.md) for the engine boundary or
-[backend/README.md](../backend/README.md) for the multiplayer service.
+[rust/README.md](https://github.com/cubacadabra/rust/blob/main/README.md) for the engine boundary or
+[backend/README.md](https://github.com/cubacadabra/backend/blob/main/README.md) for the multiplayer service.
 
 The repositories are expected to be sibling directories because the default
 sync and Rust build scripts use the sibling game projects and `../rust`.
 
 ## Local development
 
-Install dependencies and start Vite. The command automatically syncs the
+Install Node 22.18 or newer, stable Rust, and the matching WASM binding tool,
+then start Vite. The command automatically syncs the
 sibling game packages and builds the Rust renderer before starting:
 
 ```sh
-cargo install wasm-bindgen-cli  # one time; requires Rust/Cargo
-npm install
+cargo install wasm-bindgen-cli --version 0.2.127 --locked  # matches rust/Cargo.lock
+npm ci
 npm run dev
 ```
 
@@ -61,13 +62,13 @@ generated pages in the ignored `.generated/` directory.
 Development defaults are:
 
 ```text
-Game packages: http://localhost:5173/games/first-game/, /games/second-game/,
-and /games/third-game/
+Default game: http://localhost:5173/?game=heavy2 (Cuboom)
+Packages:     http://localhost:5173/games/<manifest-id>/
 Backend:      ws://127.0.0.1:8787
 ```
 
-The browser joins the backend at `/world/lobby` and changes to the destination
-world from the game manifest after a launch-pad session. `npm run sync:games`
+The browser follows the package launch configuration. Cuboom starts directly
+in its game world; older examples may pass through the shared lobby. `npm run sync:games`
 builds the sibling game packages into the served directory; run it when you
 want to refresh only the game packages.
 
@@ -75,7 +76,7 @@ To run a newly created project without editing this repository, build it into
 the served local package directory:
 
 ```sh
-PYTHONPATH=../tools/src python3 -m cubacadabra build-game \
+sh ../tools/scripts/cubacadabra.sh build-game \
   --source ~/games/my-game --output public/games/my-game
 ```
 
@@ -100,7 +101,7 @@ Open `http://192.168.1.10:5173` on the other device. The
 `VITE_BACKEND_WS_URL` override matters because `127.0.0.1` on a phone or
 tablet means that device, not the Mac running Wrangler. For iOS, also set the
 package and backend URLs in the Xcode scheme as shown in
-[ios_app/README.md](../ios_app/README.md).
+[ios/README.md](https://github.com/cubacadabra/ios/blob/main/README.md).
 
 ## Production endpoints
 
@@ -108,15 +109,15 @@ Production uses the deployed web site and Worker:
 
 ```text
 Web:     https://cubacadabra.com/
-Package: https://cubacadabra.com/games/first-game/
-Backend: wss://cubacadabra.andrew-f97.workers.dev
+Package: https://cubacadabra.com/games/heavy2/
+Backend: wss://api.cubacadabra.com
 ```
 
 Production Vite builds select the production Worker automatically. To run the
 development server against the production Worker while keeping live reload:
 
 ```sh
-VITE_BACKEND_WS_URL=wss://cubacadabra.andrew-f97.workers.dev npm run dev
+VITE_BACKEND_WS_URL=wss://api.cubacadabra.com npm run dev
 ```
 
 To build and preview the production web client locally:
@@ -129,9 +130,33 @@ npm run preview
 That preview serves the package locally but uses the production Worker because
 the build is a production build. `dist/` is the complete GitHub Pages
 artifact, including the generated route tree, sitemap, `CNAME`, `.nojekyll`,
-and `404.html` fallback. The deployment helper `./deploy.sh` rebuilds the
-site and publishes that artifact unchanged to the sibling `deployed`
-repository; use it only when you intend to update the public site.
+and `404.html` fallback. The deployment helper `sh deploy.sh` rebuilds and prepares local changes in
+an existing, clean sibling `deployed` checkout. It preserves Git history and
+performs no commit or push. It rejects generated JSON above 4,000,000 bytes
+before touching that checkout. Review the diff before any explicit publication.
+The public release build includes Cuboom, Schoolyard, and Signal Run, defined
+in `scripts/featured-games.js`. Regular `npm run build` includes all examples.
+Maze and Vegas generate runtime JSON above the commit limit and remain local
+import experiments until their distribution representation is redesigned.
+
+## Verification
+
+```sh
+npm run check:app
+npm run check:startup
+npm run check:deployment
+npm run build:release
+```
+
+If browser graphics does not start within 30 seconds, the player offers retry,
+the Studio guide, and downloads. A stalled identity lookup falls back to guest
+play after five seconds. GPU startup still needs real browser/device testing;
+successful WASM package loading alone does not prove rendering.
+
+Review `/developer/` at mobile and desktop widths. Its start commands and
+capability notes come from local source; the canonical docs live in `../docs`.
+The `developer` sibling is a small resource gateway, not a second documentation
+corpus. Service plans are secondary to the open-source build path.
 
 ## Structure
 
@@ -180,13 +205,12 @@ quality policy does not change simulation or character identity.
 
 ## Where to look next
 
-- [first-game/README.md](../first-game/README.md)   package schema and first
-  game behavior
-- [second-game/README.md](../second-game/README.md)   second game behavior
-- [third-game/README.md](../third-game/README.md)   preview SDK capability probe
+- [Cuboom](https://github.com/cubacadabra/examples/blob/main/cuboom/README.md)   default game and contribution priorities
+- [second-game/README.md](https://github.com/cubacadabra/examples/blob/main/second-game/README.md)   second game behavior
+- [third-game/README.md](https://github.com/cubacadabra/examples/blob/main/third-game/README.md)   preview SDK capability probe
 - [Cubacadabra creator guide](https://github.com/cubacadabra/docs/blob/main/contracts/creator-guide.md)   game developer guide
-- [rust/README.md](../rust/README.md)   simulation and WASM renderer
-- [backend/README.md](../backend/README.md)   local/LAN/production multiplayer
+- [rust/README.md](https://github.com/cubacadabra/rust/blob/main/README.md)   simulation and WASM renderer
+- [backend/README.md](https://github.com/cubacadabra/backend/blob/main/README.md)   local/LAN/production multiplayer
 
 ### Licensing
 

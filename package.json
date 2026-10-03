@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "check:app": "node scripts/check-app-contract.mjs",
+    "check:startup": "node --test src/engine/renderer-startup.test.js",
     "sync:games": "sh scripts/sync_games.sh",
     "build:pages": "node scripts/build-site-pages.js",
     "dev": "npm run sync:games && npm run build:renderer && vite",
@@ -12,13 +13,16 @@
     "build:renderer": "sh ../rust/scripts/build_web_renderer.sh",
     "build:renderer:release": "sh ../rust/scripts/build_web_renderer.sh --release",
     "build": "npm run sync:games && npm run build:renderer && vite build && node scripts/normalize-static-output.js",
-    "build:release": "npm run sync:games && npm run build:renderer:release && vite build && node scripts/normalize-static-output.js",
-    "preview": "vite preview"
+    "build:release": "npm run sync:games:featured && npm run build:renderer:release && vite build && node scripts/normalize-static-output.js --featured",
+    "preview": "vite preview",
+    "check:deployment": "node --test scripts/prepare-deployment.test.js",
+    "sync:games:featured": "sh scripts/sync_games.sh --featured"
   },
   "dependencies": {
     "@stripe/stripe-js": "^9.2.0"
   },
   "devDependencies": {
     "vite": "latest"
-  }
+  },
+  "license": "GPL-3.0-or-later"
 }

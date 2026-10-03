@@ -1,3 +1,5 @@
+import { showGameStartupError } from "./ui/gameStartup.js";
+
 const route = window.location.pathname.replace(/\/+$/, "") || "/";
 
 if (route === "/about") {
@@ -14,10 +16,6 @@ if (route === "/about") {
     .then(({ createGame }) => createGame())
     .catch((error) => {
       console.error(error);
-      const loadingState = document.querySelector("#loading-state");
-      if (loadingState) {
-        loadingState.textContent = "The world could not start. Refresh to try again.";
-        loadingState.classList.add("is-error");
-      }
+      showGameStartupError(error);
     });
 }

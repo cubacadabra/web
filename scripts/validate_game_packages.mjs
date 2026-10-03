@@ -11,7 +11,7 @@ if (!bindingsPath || !wasmPath || packagePaths.length === 0) {
 }
 
 const bindings = await import(pathToFileURL(path.resolve(bindingsPath)));
-const exports = await bindings.default(await fs.readFile(wasmPath));
+const exports = await bindings.default({ module_or_path: await fs.readFile(wasmPath) });
 
 const traceInputs = [
   [0, 0, 0, 0, 0, 0, 0, 0],

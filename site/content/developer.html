@@ -1,91 +1,65 @@
-<main class="about-content developer-content">
-  <header class="developer-heading">
-    <div>
-      <p class="developer-kicker">Pricing</p>
-      <h1 id="developer-title">Build in the open.</h1>
-      <p class="developer-lede">Create real multiplayer Cubes for free. Upgrade when you’re ready to upload them and unlock professional tools.</p>
-    </div>
-    <p class="developer-heading-note"><i aria-hidden="true"></i> Free to build · Paid to upload</p>
+<main class="about-content developer-content developer-preview">
+  <header class="developer-start" id="start">
+    <h1 id="developer-title">Developer preview</h1>
+    <p>Build and inspect games in JSON and Luau. Cubacadabra is pre-launch, open source, and GPL-3.0-or-later.</p>
+    <nav class="developer-start-links" aria-label="Developer resources">
+      <a href="https://github.com/cubacadabra/docs/blob/main/start/build-your-first-cube.md">Build your first Cube ↗</a>
+      <a href="https://github.com/cubacadabra/docs/blob/main/CONTRIBUTING.md">Contribute ↗</a>
+      <a href="https://github.com/cubacadabra/docs/blob/main/CURRENT_STATE.md">Current state ↗</a>
+    </nav>
   </header>
 
-  <div class="developer-workspace">
-    <section class="developer-pricing" id="pricing" aria-labelledby="developer-plans-title">
-      <div class="developer-section-heading">
-        <div>
-          <h2 id="developer-plans-title">Plans</h2>
-          <p>No credit card required to create. Uploads are included with Creator Pro and Studio.</p>
-        </div>
-        <span>Monthly billing</span>
-      </div>
-      <p class="developer-plans-status" role="status" aria-live="polite"></p>
-
-      <div class="developer-plan-grid">
-        <article class="developer-plan">
-          <div class="developer-plan-badge">Free forever</div>
-          <div class="developer-plan-heading">
-            <h3>Creator</h3>
-            <p>For everyone getting started.</p>
-          </div>
-          <div class="developer-plan-price"><strong>$0</strong><span>forever</span></div>
-          <ul>
-            <li>Create and build</li>
-            <li>Multiplayer hosting</li>
-            <li>Basic source and version history</li>
-            <li>Community support</li>
-          </ul>
-          <a class="developer-plan-action" data-developer-upload href="/login/?returnTo=%2Fdeveloper%2F%23upload">Start creating <span aria-hidden="true">↗</span></a>
-        </article>
-
-        <article class="developer-plan developer-plan-featured" id="creator-pro">
-          <div class="developer-plan-badge">Recommended</div>
-          <div class="developer-plan-heading">
-            <h3>Creator Pro</h3>
-            <p>For serious creators and supporters.</p>
-          </div>
-          <div class="developer-plan-price"><strong>$20</strong><span>/ month</span></div>
-          <ul>
-            <li>Private Cubes and full history</li>
-            <li>Cloud builds and staging</li>
-            <li>Advanced analytics and crash reports</li>
-            <li>2–3 collaborators</li>
-          </ul>
-          <a class="developer-plan-action" data-developer-plan="creator-pro" href="/login/?returnTo=%2Fdeveloper%2F%3Fplan%3Dcreator-pro">Choose Creator Pro <span aria-hidden="true">↗</span></a>
-        </article>
-
-        <article class="developer-plan" id="studio">
-          <div class="developer-plan-badge">For teams</div>
-          <div class="developer-plan-heading">
-            <h3>Studio</h3>
-            <p>For small professional teams.</p>
-          </div>
-          <div class="developer-plan-price"><strong>$99</strong><span>/ month</span></div>
-          <ul>
-            <li>Everything in Creator Pro</li>
-            <li>Team permissions</li>
-            <li>Larger storage and compute allowances</li>
-            <li>6 collaborators</li>
-          </ul>
-          <a class="developer-plan-action" data-developer-plan="studio" href="/login/?returnTo=%2Fdeveloper%2F%3Fplan%3Dstudio">Plan a Studio <span aria-hidden="true">↗</span></a>
-        </article>
-      </div>
-    </section>
-
-    <aside class="developer-support-message" aria-label="Support cubacadabra">
-      <p>Your membership helps fund the independent, open-source alternative.</p>
-    </aside>
-  </div>
-
-  <section class="developer-included" id="included" aria-labelledby="developer-included-title">
-    <div class="developer-section-heading">
-      <div>
-        <h2 id="developer-included-title">Included with every Cube</h2>
-        <p>The foundation stays open, no matter which level you choose.</p>
-      </div>
+  <section class="developer-guide" aria-labelledby="developer-cuboom-title">
+    <h2 id="developer-cuboom-title">Start with Cuboom</h2>
+    <p>Restore loose letter strokes to pushable cubes and build a tower together. Help us improve its playability, multiplayer behavior, and creator workflow.</p>
+    <div class="developer-start-links">
+      <a href="/?game=heavy2">Play Cuboom</a>
+      <a href="https://github.com/cubacadabra/examples/tree/main/cuboom">Read the game source ↗</a>
     </div>
-    <div class="developer-included-list">
-      <div><span>01</span><strong>Publish everywhere</strong><p>Web, iOS, and Android are part of the same open runtime.</p></div>
-      <div><span>02</span><strong>Your source is yours</strong><p>Use open formats and keep control of the project you build.</p></div>
-      <div><span>03</span><strong>No ads. No paid placement.</strong><p>Discovery stays authentic and the world stays made for people.</p></div>
+    <p>Keep <code>rust</code>, <code>tools</code>, <code>examples</code>, and <code>studio</code> as sibling checkouts. Install stable Rust, then run from their parent directory:</p>
+    <pre tabindex="0" aria-label="Local build and preview commands"><code data-quickstart>cargo run --manifest-path tools/Cargo.toml --bin cubacadabra -- \
+  build-game examples/cuboom --output examples/cuboom/build/package
+cargo run --manifest-path studio/Cargo.toml -- --path examples/cuboom</code></pre>
+    <div class="developer-command-actions">
+      <button type="button" data-copy-quickstart>Copy commands</button>
+      <span data-copy-status role="status" aria-live="polite"></span>
     </div>
+    <p>Press Play in Studio. Local creation and preview are free and require no account. Multiplayer shared state needs a reachable backend; the <a href="https://github.com/cubacadabra/backend#readme">backend README</a> covers local setup.</p>
   </section>
+
+  <section class="developer-guide" id="included" aria-labelledby="developer-limits-title">
+    <h2 id="developer-limits-title">What works today</h2>
+    <dl class="developer-capabilities">
+      <div><dt>Author and preview</dt><dd>Scene hierarchy, properties, grouping, transforms, undo, save/rebuild, and Play/Stop use the same source and runtime as the CLI.</dd></div>
+      <div><dt>Bring a Roblox project</dt><dd>XML import converts supported scene content. Scripts, unsupported classes, and external assets need review and adaptation. <a href="https://github.com/cubacadabra/docs/blob/main/products/studio/roblox-project-interchange.md">Import limits ↗</a></dd></div>
+      <div><dt>Test across hosts</dt><dd>Web, iOS, Android, and Desktop share Rust runtime behavior. Device conformance and performance evidence are still being built.</dd></div>
+      <div><dt>Know the limits</dt><dd>Trusted game authority, durable progression, complete Morph package wiring, and shared editing remain open work. <a href="https://github.com/cubacadabra/docs/blob/main/reference/roadmap.md">Roadmap ↗</a></dd></div>
+    </dl>
+  </section>
+
+  <section class="developer-guide" aria-labelledby="developer-share-title">
+    <h2 id="developer-share-title">Share a build or a fix</h2>
+    <p>Open an issue or pull request in the repository that owns the change. Include reproduction steps and the host you tested. The docs repository owns cross-repository contracts.</p>
+    <div class="developer-start-links">
+      <a href="https://github.com/cubacadabra/examples/issues">Help with Cuboom ↗</a>
+      <a href="https://github.com/cubacadabra/docs/blob/main/repos/README.md">Find the right repository ↗</a>
+      <a data-developer-upload href="/developer/#upload">Upload a Cube</a>
+    </div>
+    <p>Hosted ZIP uploads require sign-in and a service plan. Source, local tools, and local preview stay available under GPL-3.0-or-later.</p>
+  </section>
+
+  <details class="developer-support developer-pricing" id="pricing">
+    <summary>Hosted service plans and development support</summary>
+    <p>Optional monthly subscriptions fund development and enable hosted uploads. Cloud builds, advanced analytics, team permissions, and shared editing remain roadmap work.</p>
+    <p class="developer-plans-status" role="status" aria-live="polite"></p>
+    <div class="developer-support-plan" id="creator-pro">
+      <div><h3>Creator Pro · $20/month</h3><span class="developer-plan-badge">Hosted uploads</span></div>
+      <a class="developer-plan-action" data-developer-plan="creator-pro" href="/login/?returnTo=%2Fdeveloper%2F%3Fplan%3Dcreator-pro">Choose Creator Pro ↗</a>
+    </div>
+    <div class="developer-support-plan" id="studio">
+      <div><h3>Studio · $99/month</h3><span class="developer-plan-badge">Development support and hosted uploads</span></div>
+      <a class="developer-plan-action" data-developer-plan="studio" href="/login/?returnTo=%2Fdeveloper%2F%3Fplan%3Dstudio">Support with Studio ↗</a>
+    </div>
+    <p>These plans support a work in progress. Review the terms and current capabilities before subscribing. Cancel from your plan controls.</p>
+  </details>
 </main>

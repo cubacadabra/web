@@ -1,0 +1,43 @@
+/* The creator entry point is a compact guide; billing is a secondary workflow. */
+.developer-page .about-layout { max-width: 1160px; }
+.developer-page .about-shell { background: var(--about-bg); }
+.developer-page .about-menu > a { min-height: 44px; }
+.developer-page .brand-caption { display: none; }
+.developer-page .about-topbar a { min-height: 44px; display: inline-flex; align-items: center; }
+.developer-preview { max-width: 900px; }
+.developer-preview h1 { margin: 0; font-size: 28px; letter-spacing: -.02em; line-height: 1.2; }
+.developer-preview h2 { margin: 0 0 8px; font-size: 18px; letter-spacing: -.01em; }
+.developer-preview p { max-width: 76ch; margin: 8px 0 12px; color: var(--about-soft); font-size: 14px; line-height: 1.6; }
+.developer-preview p a, .developer-capabilities a { color: var(--about-ink); text-decoration: underline; text-underline-offset: 3px; }
+.developer-start { margin-bottom: 28px; }
+.developer-guide { margin: 0 0 28px; scroll-margin-top: 88px; }
+.developer-start-links { display: flex; flex-wrap: wrap; gap: 4px 20px; }
+.developer-start-links a { display: inline-flex; align-items: center; min-height: 44px; color: var(--about-accent); font-size: 14px; font-weight: 650; text-decoration: underline; text-underline-offset: 4px; }
+.developer-preview a:hover { text-decoration-thickness: 2px; }
+.developer-preview :focus-visible { outline: 2px solid var(--about-accent); outline-offset: 4px; }
+.developer-preview pre { max-width: 100%; margin: 12px 0 8px; padding: 16px; overflow-x: auto; border: 1px solid var(--about-line); border-radius: 4px; background: var(--about-bg); color: var(--about-ink); font-size: 12px; line-height: 1.7; }
+.developer-preview code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+.developer-command-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.developer-command-actions button { min-height: 44px; padding: 0 12px; border: 1px solid var(--about-line); border-radius: 4px; background: transparent; color: var(--about-ink); font: inherit; font-size: 13px; cursor: pointer; transition: border-color 180ms ease; }
+.developer-command-actions button:hover { border-color: var(--about-accent); }
+.developer-command-actions span { color: var(--about-soft); font-size: 13px; }
+.developer-capabilities { margin: 0; }
+.developer-capabilities > div { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--about-line); font-size: 14px; line-height: 1.55; }
+.developer-capabilities dt { font-weight: 650; }
+.developer-capabilities dd { margin: 0; color: var(--about-soft); }
+.developer-preview .developer-support { border-top: 1px solid var(--about-line); padding-top: 16px; animation: none; scroll-margin-top: 88px; }
+.developer-support summary { min-height: 44px; color: var(--about-ink); font-size: 14px; font-weight: 650; cursor: pointer; }
+.developer-support-plan { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 20px; padding: 12px 0; border-bottom: 1px solid var(--about-line); }
+.developer-support-plan h3 { margin: 0 0 4px; font-size: 14px; font-weight: 650; }
+.developer-support-plan .developer-plan-badge { margin: 0; color: var(--about-soft); font-size: 12px; font-weight: 400; letter-spacing: normal; text-transform: none; }
+.developer-support-plan .developer-plan-action { min-height: 44px; margin: 0; font-size: 13px; }
+@media (max-width: 600px) {
+  .developer-page .about-menu { display: flex; flex-wrap: wrap; gap: 4px 8px; }
+  .developer-page .about-menu > a { padding: 0 10px; font-size: 12px; }
+  .developer-capabilities > div { grid-template-columns: 1fr; gap: 4px; }
+  .developer-preview h1 { font-size: 24px; }
+  .developer-start-links { gap: 0 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .developer-preview * { animation: none !important; transition: none !important; scroll-behavior: auto; }
+}
